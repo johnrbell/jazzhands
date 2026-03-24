@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var isOrbitVisible = false
     private var activationTimestamp: Date?
     private let tapThreshold: TimeInterval = 0.2
+    private var didCycle = false
 
     private var hotKeyRef: EventHotKeyRef?
     nonisolated(unsafe) var eventTap: CFMachPort?
@@ -210,21 +211,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func onHotkeyDown() {
         AppDelegate.log("onHotkeyDown isOrbitVisible=\(isOrbitVisible)")
-        guard !isOrbitVisible else { return }
+        if isOrbitVisible {
+            didCycle = true
+            overlayController?.cycleSelection()
+            return
+        }
         isOrbitVisible = true
         activationTimestamp = Date()
+        didCycle = false
 
         if overlayController == nil {
             overlayController = OverlayWindowController()
         }
         overlayController?.showOrbit()
+        overlayController?.cycleSelection()
     }
 
     private func onOptionReleased() {
         guard isOrbitVisible else { return }
 
         let wasTap: Bool
-        if let ts = activationTimestamp {
+        if !didCycle, let ts = activationTimestamp {
             wasTap = Date().timeIntervalSince(ts) < tapThreshold
         } else {
             wasTap = false
@@ -232,6 +239,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         isOrbitVisible = false
         activationTimestamp = nil
+        didCycle = false
 
         if wasTap {
             overlayController?.switchToLastApp()

@@ -209,6 +209,20 @@ final class OrbitViewModel: ObservableObject {
         stopCancelZoneTimer()
     }
 
+    // MARK: - Tab Cycling
+
+    func cycleSelectionCounterClockwise() {
+        guard !apps.isEmpty, case .primary = tier else { return }
+        if selectedIndex < 0 {
+            selectedIndex = 0
+        } else {
+            selectedIndex = (selectedIndex + 1) % apps.count
+        }
+        centerLabel = apps[selectedIndex].name
+        hoveredIndex = -1
+        cancelHoverTimer()
+    }
+
     // MARK: - Selection
 
     func confirmSelection() {
