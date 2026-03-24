@@ -13,11 +13,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let tapThreshold: TimeInterval = 0.2
 
     private var hotKeyRef: EventHotKeyRef?
-    private static var shared: AppDelegate?
+    nonisolated(unsafe) var eventTap: CFMachPort?
+    private var tapRunLoopSource: CFRunLoopSource?
+    nonisolated(unsafe) static var shared: AppDelegate?
 
     private static let logFile = "/tmp/orbit.log"
 
-    static func log(_ msg: String) {
+    nonisolated static func log(_ msg: String) {
         let line = "\(Date()): \(msg)\n"
         if let handle = FileHandle(forWritingAtPath: logFile) {
             handle.seekToEndOfFile()
@@ -45,9 +47,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         WindowManager.shared.requestScreenCaptureIfNeeded()
     }
 
-    // MARK: - Carbon Hot Key
+    // MARK: - Hotkey Installation
 
     private func installHotKey() {
+        let s = OrbitSettings.shared
+        let keyCode = s.keyCode
+        let modFlag = s.modifierFlag
+
+        let isSystemShortcut = modFlag == .maskCommand && keyCode == Int64(kVK_Tab)
+
+        if isSystemShortcut {
+            installEventTap()
+        } else {
+            installCarbonHotKey()
+        }
+    }
+
+    private func installCarbonHotKey() {
         let s = OrbitSettings.shared
 
         var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
@@ -71,6 +87,80 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let status = RegisterEventHotKey(keyCode, modifiers, hotKeyID, GetApplicationEventTarget(), 0, &hotKeyRef)
         AppDelegate.log("RegisterEventHotKey status=\(status) keyCode=\(keyCode) modifiers=\(modifiers)")
+    }
+
+    private nonisolated func installEventTap() {
+        let selfPtr = Unmanaged.passUnretained(AppDelegate.shared!).toOpaque()
+
+        func tapCallback(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent, refcon: UnsafeMutableRawPointer?) -> Unmanaged<CGEvent>? {
+            if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+                if let refcon {
+                    let delegate = Unmanaged<AppDelegate>.fromOpaque(refcon).takeUnretainedValue()
+                    if let tap = delegate.eventTap {
+                        CGEvent.tapEnable(tap: tap, enable: true)
+                    }
+                }
+                return Unmanaged.passUnretained(event)
+            }
+
+            guard type == .keyDown else {
+                return Unmanaged.passUnretained(event)
+            }
+
+            let s = OrbitSettings.shared
+            let kc = event.getIntegerValueField(.keyboardEventKeycode)
+            let flags = event.flags
+            let targetMod = s.modifierFlag
+
+            let modMatch: Bool
+            if targetMod == .maskCommand {
+                modMatch = flags.contains(.maskCommand)
+            } else if targetMod == .maskAlternate {
+                modMatch = flags.contains(.maskAlternate)
+            } else if targetMod == .maskControl {
+                modMatch = flags.contains(.maskControl)
+            } else {
+                modMatch = false
+            }
+
+            if kc == s.keyCode && modMatch {
+                if let refcon {
+                    let delegate = Unmanaged<AppDelegate>.fromOpaque(refcon).takeUnretainedValue()
+                    Task { @MainActor in
+                        delegate.onHotkeyDown()
+                    }
+                }
+                return nil
+            }
+
+            return Unmanaged.passUnretained(event)
+        }
+
+        guard let tap = CGEvent.tapCreate(
+            tap: .cgSessionEventTap,
+            place: .headInsertEventTap,
+            options: .defaultTap,
+            eventsOfInterest: CGEventMask(1 << CGEventType.keyDown.rawValue),
+            callback: tapCallback,
+            userInfo: selfPtr
+        ) else {
+            AppDelegate.log("CGEventTap creation failed — falling back to Carbon")
+            Task { @MainActor in
+                self.installCarbonHotKey()
+            }
+            return
+        }
+
+        let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
+        CGEvent.tapEnable(tap: tap, enable: true)
+
+        Task { @MainActor in
+            self.eventTap = tap
+            self.tapRunLoopSource = source
+        }
+
+        AppDelegate.log("CGEventTap installed for system shortcut override")
     }
 
     // MARK: - Flags Monitor (for key release detection)
@@ -185,6 +275,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         if let ref = hotKeyRef { UnregisterEventHotKey(ref) }
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+            if let source = tapRunLoopSource {
+                CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
+            }
+        }
         if let m = globalFlagsMonitor { NSEvent.removeMonitor(m) }
     }
 }
