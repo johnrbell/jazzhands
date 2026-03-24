@@ -58,7 +58,7 @@ struct OrbitView: View {
                       viewModel.selectedIndex < viewModel.apps.count {
                 Image(nsImage: viewModel.apps[viewModel.selectedIndex].icon)
                     .resizable()
-                    .frame(width: 56, height: 56)
+                    .frame(width: CGFloat(s.centerIconSize), height: CGFloat(s.centerIconSize))
                     .shadow(color: glowColor.opacity(0.6), radius: 12)
             }
 
@@ -82,15 +82,15 @@ struct OrbitView: View {
                 Circle()
                     .fill(.ultraThinMaterial)
                     .environment(\.colorScheme, .dark)
-                    .frame(width: 52, height: 52)
+                    .frame(width: CGFloat(s.centerIconSize), height: CGFloat(s.centerIconSize))
 
                 Circle()
                     .fill(Color.white.opacity(hovered ? 0.18 : 0.06))
-                    .frame(width: 52, height: 52)
+                    .frame(width: CGFloat(s.centerIconSize), height: CGFloat(s.centerIconSize))
 
                 Circle()
                     .stroke(Color.white.opacity(hovered ? 0.6 : 0.25), lineWidth: hovered ? 2 : 1.5)
-                    .frame(width: 52, height: 52)
+                    .frame(width: CGFloat(s.centerIconSize), height: CGFloat(s.centerIconSize))
 
                 Image(systemName: "xmark")
                     .font(.system(size: 18, weight: .semibold))

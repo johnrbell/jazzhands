@@ -18,6 +18,7 @@ final class OrbitSettings: ObservableObject {
     // Layout
     @AppStorage("primaryRadius") var primaryRadius: Double = 140
     @AppStorage("iconSize") var iconSize: Double = 48
+    @AppStorage("centerIconSize") var centerIconSize: Double = 56
 
     // Colors (stored as hex strings)
     @AppStorage("glowColorHex") var glowColorHex: String = "#4D99FF"
