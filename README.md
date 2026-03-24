@@ -1,6 +1,6 @@
 # Orbit
 
-A radial app switcher for macOS. Hold **Option + Space** to summon a circular ring of your active apps, move the mouse to highlight, and release to switch.
+A radial app switcher for macOS. Hold a pre-defined key combo to summon a circular ring of your active apps, move the mouse to highlight, and release to switch.
 
 ![Orbit Demo](demo.gif)
 
