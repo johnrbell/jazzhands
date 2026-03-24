@@ -21,11 +21,11 @@ struct OrbitView: View {
                             DebugCanvasView(viewModel: viewModel)
                         }
                         ZStack {
-                            primaryRing
-                            centerInfo
                             if case .deep(let appIndex) = viewModel.tier {
                                 deepOrbitRing(appIndex: appIndex)
                             }
+                            primaryRing
+                            centerInfo
                             cursorIndicator
                         }
                         .position(x: cx, y: cy)
@@ -132,15 +132,17 @@ struct OrbitView: View {
             ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
                 let pos = viewModel.positionForSegment(at: index, total: total, radius: viewModel.primaryRadius)
                 let isSelected = index == viewModel.selectedIndex
+                let isDeepParent = dimmed && isSelected
 
                 AppSegmentView(
                     app: app,
                     isSelected: isSelected,
                     glowColor: glowColor,
-                    iconSize: viewModel.segmentIconSize
+                    iconSize: viewModel.segmentIconSize,
+                    showBackground: isDeepParent
                 )
                 .offset(x: pos.x, y: pos.y)
-                .opacity(dimmed ? 0.4 : 1.0)
+                .opacity(dimmed && !isDeepParent ? 0.4 : 1.0)
                 .animation(.easeOut(duration: 0.15), value: isSelected)
             }
         }
@@ -205,11 +207,14 @@ struct OrbitView: View {
                 )
                 let title = window.title.isEmpty ? "Window" : String(window.title.prefix(20))
                 let labelColor: Color = isSelected ? .white : .white.opacity(0.7)
-                context.draw(
+                var labelCtx = context
+                labelCtx.translateBy(x: labelPos.x, y: labelPos.y)
+                labelCtx.rotate(by: .radians(angle + .pi / 2))
+                labelCtx.draw(
                     Text(title)
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(labelColor),
-                    at: labelPos
+                    at: .zero
                 )
             }
         }
@@ -253,12 +258,21 @@ struct AppSegmentView: View {
     let isSelected: Bool
     let glowColor: Color
     let iconSize: CGFloat
+    var showBackground: Bool = false
 
     private var s: OrbitSettings { OrbitSettings.shared }
 
     var body: some View {
         ZStack {
-            if isSelected {
+            if showBackground {
+                Circle()
+                    .fill(Color.black.opacity(0.7))
+                    .frame(width: iconSize + 24, height: iconSize + 24)
+
+                Circle()
+                    .stroke(s.hoverColor.opacity(0.8), lineWidth: 2)
+                    .frame(width: iconSize + 24, height: iconSize + 24)
+            } else if isSelected {
                 Circle()
                     .fill(s.hoverColor.opacity(0.2))
                     .frame(width: iconSize + 20, height: iconSize + 20)
