@@ -28,12 +28,18 @@ struct SettingsView: View {
                     Text("⌘ Command").tag("command")
                     Text("⌃ Control").tag("control")
                 }
+                .onChange(of: settings.hotkeyModifier) { _ in
+                    AppDelegate.shared?.reinstallHotKey()
+                }
 
                 Picker("Key", selection: $settings.hotkeyKey) {
                     Text("Space").tag("space")
                     Text("Tab").tag("tab")
                     Text("Escape").tag("escape")
                     Text("Return").tag("return")
+                }
+                .onChange(of: settings.hotkeyKey) { _ in
+                    AppDelegate.shared?.reinstallHotKey()
                 }
 
                 Text("Current: \(settings.shortcutDisplayName)")

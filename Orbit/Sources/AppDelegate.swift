@@ -49,6 +49,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Hotkey Installation
 
+    private func tearDownHotKey() {
+        if let ref = hotKeyRef {
+            UnregisterEventHotKey(ref)
+            hotKeyRef = nil
+        }
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+            if let source = tapRunLoopSource {
+                CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
+            }
+            eventTap = nil
+            tapRunLoopSource = nil
+        }
+    }
+
+    func reinstallHotKey() {
+        tearDownHotKey()
+        installHotKey()
+        AppDelegate.log("Hotkey reinstalled")
+    }
+
     private func installHotKey() {
         let s = OrbitSettings.shared
         let keyCode = s.keyCode
