@@ -123,58 +123,207 @@ struct SettingsView: View {
 
     // MARK: - Live Preview
 
+    private struct PreviewParams {
+        let center: CGPoint
+        let radius: CGFloat
+        let iconSz: CGFloat
+        let innerR: CGFloat
+        let outerR: CGFloat
+        let parentAngle: Double
+        let total: Int
+        let deepAppIndex: Int
+    }
+
+    private static let previewApps: [(String, Color)] = [
+        ("globe", .blue), ("safari", .cyan), ("doc.text", .orange),
+        ("terminal", .green), ("music.note", .pink), ("gear", .gray),
+        ("envelope.fill", .blue), ("photo", .teal),
+    ]
+    private static let previewWindowTitles = ["window a", "window b"]
+
     private var appearancePreview: some View {
-        let radius = CGFloat(settings.primaryRadius) * 0.55
-        let iconSz = CGFloat(settings.iconSize) * 0.6
-        let sampleApps: [(String, Color)] = [
-            ("globe", .blue), ("safari", .cyan), ("envelope", .orange),
-            ("terminal", .green), ("music.note", .pink), ("gear", .gray),
-        ]
-        let total = sampleApps.count
-
-        return ZStack {
-            Circle()
-                .stroke(settings.ringColor.opacity(settings.ringOpacity), lineWidth: 1.5)
-                .frame(width: radius * 2, height: radius * 2)
-                .shadow(color: settings.glowColor.opacity(0.15 * settings.glowIntensity), radius: 12)
-
-            ForEach(0..<total, id: \.self) { i in
-                let angle = (2.0 * Double.pi / Double(total)) * Double(i) - Double.pi / 2.0
-                let x = radius * CGFloat(cos(angle))
-                let y = radius * CGFloat(sin(angle))
-                let selected = i == 0
-
-                ZStack {
-                    if selected {
-                        Circle()
-                            .fill(settings.hoverColor.opacity(0.2))
-                            .frame(width: iconSz + 14, height: iconSz + 14)
-
-                        Circle()
-                            .stroke(settings.hoverColor.opacity(0.6), lineWidth: 1.5)
-                            .frame(width: iconSz + 14, height: iconSz + 14)
-                    }
-
-                    Image(systemName: sampleApps[i].0)
-                        .font(.system(size: iconSz * 0.5))
-                        .foregroundColor(sampleApps[i].1)
-                        .frame(width: iconSz, height: iconSz)
-                        .scaleEffect(selected ? 1.15 : 1.0)
-                }
-                .offset(x: x, y: y)
-            }
-
-            Text("Preview")
-                .font(.system(size: 10, weight: .medium, design: .rounded))
-                .foregroundColor(.white.opacity(0.5))
+        Canvas { context, size in
+            let sc: CGFloat = 0.38
+            let radius = CGFloat(settings.primaryRadius) * sc
+            let iconSz = CGFloat(settings.iconSize) * sc
+            let total = Self.previewApps.count
+            let deepAppIndex = 1
+            let p = PreviewParams(
+                center: CGPoint(x: size.width / 2, y: size.height / 2),
+                radius: radius, iconSz: iconSz,
+                innerR: radius + 10,
+                outerR: (CGFloat(settings.primaryRadius) + 200) * sc,
+                parentAngle: (2.0 * .pi / Double(total)) * Double(deepAppIndex) - .pi / 2.0,
+                total: total, deepAppIndex: deepAppIndex
+            )
+            drawPreviewWedges(&context, p: p)
+            drawPreviewRing(&context, p: p)
+            drawPreviewCancelButton(&context, p: p)
+            drawPreviewIcons(&context, p: p)
+            drawPreviewParentLabel(&context, p: p)
         }
         .animation(.easeOut(duration: 0.2), value: settings.primaryRadius)
         .animation(.easeOut(duration: 0.2), value: settings.iconSize)
         .animation(.easeOut(duration: 0.2), value: settings.glowColorHex)
+        .animation(.easeOut(duration: 0.2), value: settings.deepGlowColorHex)
         .animation(.easeOut(duration: 0.2), value: settings.hoverColorHex)
         .animation(.easeOut(duration: 0.2), value: settings.ringColorHex)
         .animation(.easeOut(duration: 0.2), value: settings.ringOpacity)
         .animation(.easeOut(duration: 0.2), value: settings.glowIntensity)
+        .animation(.easeOut(duration: 0.2), value: settings.backgroundOpacity)
+    }
+
+    private func drawPreviewWedges(_ context: inout GraphicsContext, p: PreviewParams) {
+        let spread: Double = 0.7
+        let windowCount = Self.previewWindowTitles.count
+        let totalSpread = spread * Double(windowCount - 1)
+
+        for wi in 0..<windowCount {
+            let wAngle = p.parentAngle - totalSpread / 2.0 + spread * Double(wi)
+            let half = spread / 2.0
+            let gap = 0.02
+            var wedge = Path()
+            wedge.addArc(center: p.center, radius: p.outerR,
+                         startAngle: .radians(wAngle - half + gap),
+                         endAngle: .radians(wAngle + half - gap), clockwise: false)
+            wedge.addArc(center: p.center, radius: p.innerR,
+                         startAngle: .radians(wAngle + half - gap),
+                         endAngle: .radians(wAngle - half + gap), clockwise: true)
+            wedge.closeSubpath()
+
+            let isSel = wi == 0
+            let hl = settings.deepGlowColor
+            let fillC: Color = isSel ? hl.opacity(0.22) : Color.white.opacity(0.05)
+            let strokeC: Color = isSel ? hl.opacity(0.9) : Color.white.opacity(0.13)
+            context.fill(wedge, with: .color(fillC))
+            context.stroke(wedge, with: .color(strokeC), lineWidth: isSel ? 2.5 : 1)
+
+            drawPreviewThumb(&context, p: p, wAngle: wAngle, wi: wi)
+            drawPreviewWedgeLabel(&context, p: p, wAngle: wAngle, wi: wi, isSel: isSel)
+
+            if isSel {
+                let dotR = p.innerR + (p.outerR - p.innerR) * 0.42
+                let dp = CGPoint(x: p.center.x + dotR * CGFloat(cos(wAngle)),
+                                 y: p.center.y + dotR * CGFloat(sin(wAngle)))
+                let dotRect = CGRect(x: dp.x - 3, y: dp.y - 3, width: 6, height: 6)
+                context.fill(Circle().path(in: dotRect), with: .color(.white.opacity(0.7)))
+            }
+        }
+    }
+
+    private func drawPreviewThumb(_ context: inout GraphicsContext, p: PreviewParams,
+                                   wAngle: Double, wi: Int) {
+        let depth = p.outerR - p.innerR
+        let thumbR = p.innerR + depth * 0.62
+        let thumbPos = CGPoint(x: p.center.x + thumbR * CGFloat(cos(wAngle)),
+                                y: p.center.y + thumbR * CGFloat(sin(wAngle)))
+        let thumbW: CGFloat = depth * 0.55
+        let thumbH: CGFloat = thumbW * 0.65
+        let rect = CGRect(x: -thumbW/2, y: -thumbH/2, width: thumbW, height: thumbH)
+
+        var tc = context
+        tc.translateBy(x: thumbPos.x, y: thumbPos.y)
+        tc.rotate(by: .radians(wAngle + .pi / 2))
+        tc.clip(to: RoundedRectangle(cornerRadius: 5).path(in: rect))
+
+        if wi == 0 {
+            tc.fill(Rectangle().path(in: rect), with: .color(Color(white: 0.10)))
+            let widths: [CGFloat] = [0.75, 0.55, 0.85, 0.40, 0.65]
+            for row in 0..<5 {
+                let y = -thumbH/2 + 5 + CGFloat(row) * 7
+                let lineRect = CGRect(x: -thumbW/2 + 5, y: y, width: widths[row] * thumbW, height: 3)
+                tc.fill(Rectangle().path(in: lineRect), with: .color(Color.green.opacity(0.4)))
+            }
+        } else {
+            tc.fill(Rectangle().path(in: rect), with: .color(Color(white: 0.88)))
+            let headerRect = CGRect(x: -thumbW/2, y: -thumbH/2, width: thumbW, height: 8)
+            tc.fill(Rectangle().path(in: headerRect), with: .color(Color(white: 0.75)))
+            let b1 = CGRect(x: -thumbW/2 + 4, y: -thumbH/2 + 12,
+                            width: thumbW * 0.5, height: thumbH * 0.55)
+            tc.fill(RoundedRectangle(cornerRadius: 3).path(in: b1), with: .color(Color(white: 0.70)))
+            let b2 = CGRect(x: 5, y: -thumbH/2 + 12,
+                            width: thumbW * 0.35, height: thumbH * 0.35)
+            tc.fill(RoundedRectangle(cornerRadius: 2).path(in: b2), with: .color(Color(white: 0.65)))
+        }
+    }
+
+    private func drawPreviewWedgeLabel(_ context: inout GraphicsContext, p: PreviewParams,
+                                        wAngle: Double, wi: Int, isSel: Bool) {
+        let labelR = p.innerR + (p.outerR - p.innerR) * 0.20
+        let labelPos = CGPoint(x: p.center.x + labelR * CGFloat(cos(wAngle)),
+                                y: p.center.y + labelR * CGFloat(sin(wAngle)))
+        let labelColor: Color = isSel ? .white : .white.opacity(0.6)
+        var lc = context
+        lc.translateBy(x: labelPos.x, y: labelPos.y)
+        lc.rotate(by: .radians(wAngle + .pi / 2))
+        lc.draw(
+            Text(Self.previewWindowTitles[wi])
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundColor(labelColor),
+            at: .zero
+        )
+    }
+
+    private func drawPreviewRing(_ context: inout GraphicsContext, p: PreviewParams) {
+        let ringRect = CGRect(x: p.center.x - p.radius, y: p.center.y - p.radius,
+                              width: p.radius * 2, height: p.radius * 2)
+        context.stroke(Circle().path(in: ringRect),
+                       with: .color(settings.ringColor.opacity(settings.ringOpacity)),
+                       lineWidth: 1.5)
+    }
+
+    private func drawPreviewCancelButton(_ context: inout GraphicsContext, p: PreviewParams) {
+        let xPos = CGPoint(x: p.center.x, y: p.center.y + p.radius * 0.42)
+        let sz: CGFloat = 20
+        let rect = CGRect(x: xPos.x - sz/2, y: xPos.y - sz/2, width: sz, height: sz)
+        context.fill(Circle().path(in: rect), with: .color(Color.white.opacity(0.10)))
+        context.stroke(Circle().path(in: rect), with: .color(Color.white.opacity(0.18)), lineWidth: 1)
+        context.draw(
+            Text("\u{2715}").font(.system(size: 11, weight: .medium))
+                .foregroundColor(.white.opacity(0.45)),
+            at: xPos
+        )
+    }
+
+    private func drawPreviewIcons(_ context: inout GraphicsContext, p: PreviewParams) {
+        for i in 0..<p.total {
+            let angle = (2.0 * .pi / Double(p.total)) * Double(i) - .pi / 2.0
+            let pos = CGPoint(x: p.center.x + p.radius * CGFloat(cos(angle)),
+                              y: p.center.y + p.radius * CGFloat(sin(angle)))
+            let isParent = i == p.deepAppIndex
+            let bgSz = p.iconSz + 8
+            let bgRect = CGRect(x: pos.x - bgSz/2, y: pos.y - bgSz/2,
+                                width: bgSz, height: bgSz)
+
+            if isParent {
+                context.fill(Circle().path(in: bgRect), with: .color(Color(white: 0.08)))
+                context.stroke(Circle().path(in: bgRect),
+                               with: .color(settings.ringColor.opacity(0.7)), lineWidth: 2)
+            } else {
+                context.fill(Circle().path(in: bgRect), with: .color(Color(white: 0.10).opacity(0.55)))
+                context.stroke(Circle().path(in: bgRect),
+                               with: .color(Color.white.opacity(0.06)), lineWidth: 0.5)
+            }
+
+            let app = Self.previewApps[i]
+            context.draw(
+                Text(Image(systemName: app.0))
+                    .font(.system(size: p.iconSz * 0.45))
+                    .foregroundColor(app.1),
+                at: pos
+            )
+        }
+    }
+
+    private func drawPreviewParentLabel(_ context: inout GraphicsContext, p: PreviewParams) {
+        let nameLabelR = p.radius - p.iconSz * 0.65
+        let pos = CGPoint(x: p.center.x + nameLabelR * CGFloat(cos(p.parentAngle)),
+                          y: p.center.y + nameLabelR * CGFloat(sin(p.parentAngle)))
+        context.draw(
+            Text("Chrome").font(.system(size: 8, weight: .medium))
+                .foregroundColor(.white.opacity(0.65)),
+            at: pos
+        )
     }
 
     // MARK: - Advanced
