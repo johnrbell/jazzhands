@@ -150,26 +150,70 @@ struct OrbitView: View {
 
     private func deepOrbitRing(appIndex: Int) -> some View {
         let windows = viewModel.deepOrbitWindows
+        let innerR = viewModel.primaryRadius + 15
+        let outerR = viewModel.deepOrbitOuterRadius
 
-        return ZStack {
-            ForEach(Array(windows.enumerated()), id: \.element.id) { index, window in
+        return Canvas { context, size in
+            let center = CGPoint(x: size.width / 2, y: size.height / 2)
+            let highlight = s.deepGlowColor
+
+            for (index, window) in windows.enumerated() {
                 let isSelected = index == viewModel.selectedWindowIndex
-                let icon = appIndex < viewModel.apps.count ? viewModel.apps[appIndex].icon : nil
+                let angle = viewModel.deepOrbitAngle(windowIndex: index, appIndex: appIndex)
+                let half = viewModel.deepOrbitSpread / 2.0
+                let gap = 0.015
+                let startA = Angle.radians(angle - half + gap)
+                let endA = Angle.radians(angle + half - gap)
 
-                WindowArcSegment(
-                    window: window,
-                    thumbnail: viewModel.windowThumbnails[window.id],
-                    appIcon: icon,
-                    isSelected: isSelected,
-                    glowColor: deepGlowColor,
-                    centerAngle: viewModel.deepOrbitAngle(windowIndex: index, appIndex: appIndex),
-                    halfSpread: viewModel.deepOrbitSpread / 2.0,
-                    innerRadius: viewModel.primaryRadius + 20,
-                    outerRadius: viewModel.deepOrbitRadius + 50
+                var wedge = Path()
+                wedge.addArc(center: center, radius: outerR, startAngle: startA, endAngle: endA, clockwise: false)
+                wedge.addArc(center: center, radius: innerR, startAngle: endA, endAngle: startA, clockwise: true)
+                wedge.closeSubpath()
+
+                let fillColor = isSelected ? highlight.opacity(0.25) : Color.white.opacity(0.08)
+                context.fill(wedge, with: .color(fillColor))
+
+                let strokeColor = isSelected ? highlight.opacity(0.9) : Color.white.opacity(0.15)
+                context.stroke(wedge, with: .color(strokeColor), lineWidth: isSelected ? 3 : 1)
+
+                let midR = innerR + (outerR - innerR) * 0.62
+                let thumbPos = CGPoint(
+                    x: center.x + midR * CGFloat(cos(angle)),
+                    y: center.y + midR * CGFloat(sin(angle))
                 )
-                .animation(.easeOut(duration: 0.15), value: isSelected)
+
+                let wedgeWidth = outerR - innerR
+                let thumbW: CGFloat = wedgeWidth * 0.55
+                let thumbH: CGFloat = wedgeWidth * 0.38
+
+                if let thumb = viewModel.windowThumbnails[window.id] {
+                    let img = Image(nsImage: thumb)
+                    var thumbCtx = context
+                    thumbCtx.translateBy(x: thumbPos.x, y: thumbPos.y)
+                    thumbCtx.rotate(by: .radians(angle + .pi / 2))
+                    thumbCtx.clip(to: RoundedRectangle(cornerRadius: 6).path(in: CGRect(x: -thumbW/2, y: -thumbH/2, width: thumbW, height: thumbH)))
+                    thumbCtx.draw(img, in: CGRect(x: -thumbW/2, y: -thumbH/2, width: thumbW, height: thumbH))
+                } else if let icon = (appIndex < viewModel.apps.count ? viewModel.apps[appIndex].icon : nil) {
+                    let img = Image(nsImage: icon)
+                    context.draw(img, in: CGRect(x: thumbPos.x - 18, y: thumbPos.y - 18, width: 36, height: 36))
+                }
+
+                let labelR = innerR + (outerR - innerR) * 0.18
+                let labelPos = CGPoint(
+                    x: center.x + labelR * CGFloat(cos(angle)),
+                    y: center.y + labelR * CGFloat(sin(angle))
+                )
+                let title = window.title.isEmpty ? "Window" : String(window.title.prefix(20))
+                let labelColor: Color = isSelected ? .white : .white.opacity(0.7)
+                context.draw(
+                    Text(title)
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(labelColor),
+                    at: labelPos
+                )
             }
         }
+        .allowsHitTesting(false)
         .transition(.opacity)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: viewModel.tier == .primary)
     }
@@ -250,8 +294,8 @@ struct WindowArcSegment: View {
 
     private var s: OrbitSettings { OrbitSettings.shared }
 
-    private var arcPath: Path {
-        let gap = 0.02
+    private var wedgePath: Path {
+        let gap = 0.015
         let start = Angle.radians(centerAngle - halfSpread + gap)
         let end = Angle.radians(centerAngle + halfSpread - gap)
         var path = Path()
@@ -261,59 +305,67 @@ struct WindowArcSegment: View {
         return path
     }
 
-    private var midRadius: CGFloat { (innerRadius + outerRadius) / 2 }
-
-    private var iconPos: CGPoint {
-        CGPoint(
-            x: midRadius * CGFloat(cos(centerAngle)),
-            y: midRadius * CGFloat(sin(centerAngle))
-        )
-    }
-
-    private var labelPos: CGPoint {
-        let r = outerRadius + 14
+    private var previewCenter: CGPoint {
+        let r = innerRadius + (outerRadius - innerRadius) * 0.62
         return CGPoint(
             x: r * CGFloat(cos(centerAngle)),
             y: r * CGFloat(sin(centerAngle))
         )
     }
 
+    private var previewSize: CGSize {
+        let wedgeWidth = outerRadius - innerRadius
+        return CGSize(width: wedgeWidth * 0.55, height: wedgeWidth * 0.38)
+    }
+
+    private var labelPos: CGPoint {
+        let r = innerRadius + (outerRadius - innerRadius) * 0.15
+        return CGPoint(
+            x: r * CGFloat(cos(centerAngle)),
+            y: r * CGFloat(sin(centerAngle))
+        )
+    }
+
+    private var rotationDegrees: Double {
+        centerAngle * 180.0 / .pi + 90
+    }
+
     var body: some View {
         let highlight = s.deepGlowColor
 
         ZStack {
-            arcPath
-                .fill(.ultraThinMaterial)
-                .environment(\.colorScheme, .dark)
+            wedgePath
+                .fill(isSelected ? highlight.opacity(0.25) : Color.white.opacity(0.08))
 
-            arcPath
-                .fill(isSelected ? highlight.opacity(0.2) : Color.white.opacity(0.04))
-
-            arcPath
-                .stroke(isSelected ? highlight.opacity(0.7) : Color.white.opacity(0.2), lineWidth: isSelected ? 2 : 1)
+            wedgePath
+                .stroke(isSelected ? highlight.opacity(0.9) : Color.white.opacity(0.15), lineWidth: isSelected ? 3 : 1)
 
             if let thumb = thumbnail {
                 Image(nsImage: thumb)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 32, height: 24)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-                    .offset(x: iconPos.x, y: iconPos.y)
+                    .frame(width: previewSize.width, height: previewSize.height)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .rotationEffect(.degrees(rotationDegrees))
+                    .offset(x: previewCenter.x, y: previewCenter.y)
+                    .allowsHitTesting(false)
             } else if let icon = appIcon {
                 Image(nsImage: icon)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 24, height: 24)
-                    .offset(x: iconPos.x, y: iconPos.y)
+                    .frame(width: 36, height: 36)
+                    .offset(x: previewCenter.x, y: previewCenter.y)
+                    .allowsHitTesting(false)
             }
 
-            Text(window.title.isEmpty ? "Window" : String(window.title.prefix(16)))
-                .font(.system(size: 9, weight: .medium))
+            Text(window.title.isEmpty ? "Window" : String(window.title.prefix(20)))
+                .font(.system(size: 10, weight: .semibold))
                 .foregroundColor(.white.opacity(isSelected ? 1.0 : 0.7))
                 .lineLimit(1)
+                .rotationEffect(.degrees(rotationDegrees))
                 .offset(x: labelPos.x, y: labelPos.y)
+                .allowsHitTesting(false)
         }
-        .shadow(color: isSelected ? highlight.opacity(0.4 * s.glowIntensity) : .black.opacity(0.2), radius: isSelected ? 10 : 4)
     }
 }
 

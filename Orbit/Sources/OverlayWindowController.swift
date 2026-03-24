@@ -12,7 +12,7 @@ final class OverlayWindowController {
     private var accumulatedDelta: CGPoint = .zero
     private var ignoreEventsUntil: TimeInterval = 0
     private var maxCursorRadius: CGFloat {
-        CGFloat(OrbitSettings.shared.primaryRadius) + 140
+        CGFloat(OrbitSettings.shared.primaryRadius) + 220
     }
 
     func showOrbit() {
