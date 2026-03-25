@@ -138,9 +138,32 @@ final class OrbitSettings: ObservableObject {
         segmentBorderWidth = preset.segmentBorderWidth
     }
 
+    static let defaultPreset = AppearancePreset(
+        primaryRadius: 160, iconSize: 92, centerIconSize: 92,
+        centerDeadZone: 80,
+        glowColorHex: "#DEE9F8", deepGlowColorHex: "#9966FF",
+        ringColorHex: "#4D99FF", hoverColorHex: "#4D99FF",
+        backgroundColorHex: "#000000", ringFillColorHex: "#FFFFFF",
+        segmentBorderColorHex: "#FFFFFF",
+        backgroundOpacity: 0.65, glowIntensity: 1.0,
+        ringOpacity: 0.25, ringFillOpacity: 0.0,
+        deepOrbitFillOpacity: 0.25,
+        cancelButtonSize: 56, cancelButtonOpacity: 0.7,
+        segmentBorderOpacity: 0.0, segmentBorderWidth: 1.0
+    )
+
     func savedPresets() -> [NamedPreset] {
-        guard let data = UserDefaults.standard.data(forKey: "appearancePresets"),
-              let presets = try? JSONDecoder().decode([NamedPreset].self, from: data) else { return [] }
+        var presets: [NamedPreset] = []
+        if let data = UserDefaults.standard.data(forKey: "appearancePresets"),
+           let decoded = try? JSONDecoder().decode([NamedPreset].self, from: data) {
+            presets = decoded
+        }
+        if !presets.contains(where: { $0.name == "default 1" }) {
+            presets.insert(NamedPreset(name: "default 1", preset: Self.defaultPreset), at: 0)
+            if let data = try? JSONEncoder().encode(presets) {
+                UserDefaults.standard.set(data, forKey: "appearancePresets")
+            }
+        }
         return presets
     }
 
