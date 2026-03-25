@@ -14,6 +14,7 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("cursorSensitivity") var cursorSensitivity: Double = 1.0
     @AppStorage("centerDeadZone") var centerDeadZone: Double = 80
     @AppStorage("maxCursorRadius") var maxCursorRadius: Double = 120
+    @AppStorage("deepOrbitSwitchOnHover") var deepOrbitSwitchOnHover: Bool = true
     @AppStorage("showHiddenApps") var showHiddenApps: Bool = false
     @AppStorage("showMinimizedWindows") var showMinimizedWindows: Bool = false
     @AppStorage("hideFinderUnlessWindowed") var hideFinderUnlessWindowed: Bool = false

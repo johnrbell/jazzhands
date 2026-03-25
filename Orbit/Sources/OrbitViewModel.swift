@@ -94,7 +94,7 @@ final class OrbitViewModel: ObservableObject {
         case .primary:
             updatePrimarySelection(normalizedAngle: normalized, distance: distance)
         case .deep(let appIndex):
-            updateDeepOrbitSelection(normalizedAngle: normalized, appIndex: appIndex)
+            updateDeepOrbitSelection(normalizedAngle: normalized, distance: distance, appIndex: appIndex)
         }
     }
 
@@ -116,10 +116,47 @@ final class OrbitViewModel: ObservableObject {
         }
     }
 
-    private func updateDeepOrbitSelection(normalizedAngle: Double, appIndex: Int) {
+    private func updateDeepOrbitSelection(normalizedAngle: Double, distance: Double, appIndex: Int) {
         guard !deepOrbitWindows.isEmpty else { return }
-        let count = deepOrbitWindows.count
 
+        let primaryZoneInner = Double(centerDeadZone)
+        let primaryZoneOuter = Double(primaryRadius + segmentIconSize / 2 + 5)
+        let inPrimaryZone = distance >= primaryZoneInner && distance <= primaryZoneOuter
+
+        if inPrimaryZone && settings.deepOrbitSwitchOnHover && !apps.isEmpty {
+            let segmentAngle = (2.0 * Double.pi) / Double(apps.count)
+            let offset = Double.pi / 2.0 + segmentAngle / 2.0
+            let adjusted = normalizeAngle(normalizedAngle + offset)
+            let hoveredApp = Int(adjusted / segmentAngle) % apps.count
+
+            selectedIndex = hoveredApp
+            centerLabel = apps[hoveredApp].name
+
+            if hoveredApp != appIndex {
+                if hoveredApp != hoveredIndex {
+                    hoveredIndex = hoveredApp
+                    hoverTimer?.invalidate()
+                    hoverTimer = Timer.scheduledTimer(withTimeInterval: hoverDelay, repeats: false) { [weak self] _ in
+                        Task { @MainActor in
+                            guard let self else { return }
+                            self.cancelDeepOrbit()
+                            self.selectedIndex = hoveredApp
+                            self.centerLabel = self.apps[hoveredApp].name
+                            if self.apps[hoveredApp].windows.count > 1 {
+                                self.enterDeepOrbit(for: hoveredApp)
+                            }
+                        }
+                    }
+                }
+                return
+            } else {
+                cancelHoverTimer()
+            }
+        } else {
+            cancelHoverTimer()
+        }
+
+        let count = deepOrbitWindows.count
         var bestIndex = 0
         var bestDist = Double.greatestFiniteMagnitude
 
