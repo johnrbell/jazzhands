@@ -133,6 +133,9 @@ struct SettingsView: View {
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                         sliderRow("Segment border width", value: $settings.segmentBorderWidth,
                                   range: 0.5...5, step: 0.5, format: { String(format: "%.1fpt", $0) })
+                        Toggle("Segment border cutout", isOn: $settings.segmentBorderCutout)
+                        Text("Cut borders as negative space instead of drawing colored lines")
+                            .font(.caption).foregroundColor(.secondary)
                     }
 
                     Button("Reset to Defaults") {

@@ -45,6 +45,7 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("segmentBorderColorHex") var segmentBorderColorHex: String = "#FFFFFF"
     @AppStorage("segmentBorderOpacity") var segmentBorderOpacity: Double = 0.0
     @AppStorage("segmentBorderWidth") var segmentBorderWidth: Double = 1.0
+    @AppStorage("segmentBorderCutout") var segmentBorderCutout: Bool = false
 
     // Debug
     @AppStorage("showDebugOverlay") var showDebugOverlay: Bool = false
@@ -114,7 +115,8 @@ final class OrbitSettings: ObservableObject {
             ringOpacity: ringOpacity, ringFillOpacity: ringFillOpacity,
             deepOrbitFillOpacity: deepOrbitFillOpacity,
             cancelButtonSize: cancelButtonSize, cancelButtonOpacity: cancelButtonOpacity,
-            segmentBorderOpacity: segmentBorderOpacity, segmentBorderWidth: segmentBorderWidth
+            segmentBorderOpacity: segmentBorderOpacity, segmentBorderWidth: segmentBorderWidth,
+            segmentBorderCutout: segmentBorderCutout
         )
     }
 
@@ -139,6 +141,7 @@ final class OrbitSettings: ObservableObject {
         cancelButtonOpacity = preset.cancelButtonOpacity
         segmentBorderOpacity = preset.segmentBorderOpacity
         segmentBorderWidth = preset.segmentBorderWidth
+        segmentBorderCutout = preset.segmentBorderCutout
     }
 
     static let defaultPreset = AppearancePreset(
@@ -152,7 +155,8 @@ final class OrbitSettings: ObservableObject {
         ringOpacity: 0.25, ringFillOpacity: 0.0,
         deepOrbitFillOpacity: 0.25,
         cancelButtonSize: 56, cancelButtonOpacity: 0.7,
-        segmentBorderOpacity: 0.0, segmentBorderWidth: 1.0
+        segmentBorderOpacity: 0.0, segmentBorderWidth: 1.0,
+        segmentBorderCutout: false
     )
 
     func savedPresets() -> [NamedPreset] {
@@ -209,13 +213,15 @@ struct AppearancePreset: Codable {
     var cancelButtonOpacity: Double
     var segmentBorderOpacity: Double
     var segmentBorderWidth: Double
+    var segmentBorderCutout: Bool
 
     init(primaryRadius: Double, iconSize: Double, centerIconSize: Double, centerDeadZone: Double,
          glowColorHex: String, deepGlowColorHex: String, ringColorHex: String, hoverColorHex: String,
          backgroundColorHex: String, ringFillColorHex: String, segmentBorderColorHex: String,
          backgroundOpacity: Double, glowIntensity: Double, ringOpacity: Double, ringFillOpacity: Double,
          deepOrbitFillOpacity: Double, cancelButtonSize: Double, cancelButtonOpacity: Double,
-         segmentBorderOpacity: Double, segmentBorderWidth: Double) {
+         segmentBorderOpacity: Double, segmentBorderWidth: Double,
+         segmentBorderCutout: Bool = false) {
         self.primaryRadius = primaryRadius; self.iconSize = iconSize; self.centerIconSize = centerIconSize
         self.centerDeadZone = centerDeadZone; self.glowColorHex = glowColorHex
         self.deepGlowColorHex = deepGlowColorHex; self.ringColorHex = ringColorHex
@@ -225,7 +231,7 @@ struct AppearancePreset: Codable {
         self.ringOpacity = ringOpacity; self.ringFillOpacity = ringFillOpacity
         self.deepOrbitFillOpacity = deepOrbitFillOpacity; self.cancelButtonSize = cancelButtonSize
         self.cancelButtonOpacity = cancelButtonOpacity; self.segmentBorderOpacity = segmentBorderOpacity
-        self.segmentBorderWidth = segmentBorderWidth
+        self.segmentBorderWidth = segmentBorderWidth; self.segmentBorderCutout = segmentBorderCutout
     }
 
     init(from decoder: Decoder) throws {
@@ -255,6 +261,7 @@ struct AppearancePreset: Codable {
             ?? (try? c.decode(Double.self, forKey: .spokeOpacity)) ?? d.segmentBorderOpacity
         segmentBorderWidth = (try? c.decode(Double.self, forKey: .segmentBorderWidth))
             ?? (try? c.decode(Double.self, forKey: .spokeWidth)) ?? d.segmentBorderWidth
+        segmentBorderCutout = (try? c.decode(Bool.self, forKey: .segmentBorderCutout)) ?? d.segmentBorderCutout
     }
 
     func encode(to encoder: Encoder) throws {
@@ -279,6 +286,7 @@ struct AppearancePreset: Codable {
         try c.encode(cancelButtonOpacity, forKey: .cancelButtonOpacity)
         try c.encode(segmentBorderOpacity, forKey: .segmentBorderOpacity)
         try c.encode(segmentBorderWidth, forKey: .segmentBorderWidth)
+        try c.encode(segmentBorderCutout, forKey: .segmentBorderCutout)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -287,7 +295,7 @@ struct AppearancePreset: Codable {
         case backgroundColorHex, ringFillColorHex, segmentBorderColorHex
         case backgroundOpacity, glowIntensity, ringOpacity, ringFillOpacity
         case deepOrbitFillOpacity, cancelButtonSize, cancelButtonOpacity
-        case segmentBorderOpacity, segmentBorderWidth
+        case segmentBorderOpacity, segmentBorderWidth, segmentBorderCutout
         case spokeColorHex, spokeOpacity, spokeWidth
     }
 }

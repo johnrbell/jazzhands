@@ -129,9 +129,9 @@ struct OrbitView: View {
         }()
 
         return ZStack {
-            orbitTrackRing(radius: viewModel.primaryRadius, color: glowColor, dimmed: dimmed)
+            orbitTrackRing(radius: viewModel.primaryRadius, color: glowColor, dimmed: dimmed, segmentCount: total)
 
-            if s.segmentBorderOpacity > 0, total > 0 {
+            if s.segmentBorderOpacity > 0, total > 0, !s.segmentBorderCutout {
                 segmentBorders(total: total, radius: viewModel.primaryRadius, dimmed: dimmed)
             }
 
@@ -284,30 +284,67 @@ struct OrbitView: View {
 
     // MARK: - Track Ring
 
-    private func orbitTrackRing(radius: CGFloat, color: Color, dimmed: Bool) -> some View {
+    private func orbitTrackRing(radius: CGFloat, color: Color, dimmed: Bool, segmentCount: Int = 0) -> some View {
         let innerR = viewModel.centerDeadZone
         let outerR = radius + viewModel.segmentIconSize / 2 + 10
         let fillOpacity = dimmed ? s.ringFillOpacity * 0.3 : s.ringFillOpacity
+        let useCutout = s.segmentBorderCutout && segmentCount > 0 && s.segmentBorderOpacity > 0
 
         return ZStack {
-            if fillOpacity > 0 {
-                Circle()
-                    .fill(s.ringFillColor.opacity(fillOpacity))
-                    .frame(width: outerR * 2, height: outerR * 2)
-                    .mask(
-                        ZStack {
-                            Circle().frame(width: outerR * 2, height: outerR * 2)
-                            Circle().frame(width: innerR * 2, height: innerR * 2)
-                                .blendMode(.destinationOut)
-                        }
-                        .compositingGroup()
-                    )
-            }
+            if useCutout {
+                Canvas { context, size in
+                    let center = CGPoint(x: size.width / 2, y: size.height / 2)
+                    let segAngle = (2.0 * Double.pi) / Double(segmentCount)
+                    let halfGapOuter = Double(s.segmentBorderWidth) / Double(outerR)
+                    let halfGapInner = Double(s.segmentBorderWidth) / Double(innerR)
 
-            Circle()
-                .stroke(s.ringColor.opacity(dimmed ? 0.1 : s.ringOpacity), lineWidth: 1.5)
-                .frame(width: radius * 2, height: radius * 2)
+                    for i in 0..<segmentCount {
+                        let baseAngle = segAngle * Double(i) - Double.pi / 2.0 - segAngle / 2.0
+                        let nextAngle = baseAngle + segAngle
+
+                        var wedge = Path()
+                        wedge.addArc(center: center, radius: outerR,
+                                     startAngle: .radians(baseAngle + halfGapOuter),
+                                     endAngle: .radians(nextAngle - halfGapOuter),
+                                     clockwise: false)
+                        wedge.addArc(center: center, radius: innerR,
+                                     startAngle: .radians(nextAngle - halfGapInner),
+                                     endAngle: .radians(baseAngle + halfGapInner),
+                                     clockwise: true)
+                        wedge.closeSubpath()
+
+                        if fillOpacity > 0 {
+                            context.fill(wedge, with: .color(s.ringFillColor.opacity(fillOpacity)))
+                        }
+
+                        let strokeOpacity = dimmed ? 0.1 : s.ringOpacity
+                        if strokeOpacity > 0 {
+                            context.stroke(wedge, with: .color(s.ringColor.opacity(strokeOpacity)), lineWidth: 1.5)
+                        }
+                    }
+                }
+                .frame(width: outerR * 2 + 4, height: outerR * 2 + 4)
                 .shadow(color: color.opacity((dimmed ? 0.05 : 0.15) * s.glowIntensity), radius: 20)
+            } else {
+                if fillOpacity > 0 {
+                    Circle()
+                        .fill(s.ringFillColor.opacity(fillOpacity))
+                        .frame(width: outerR * 2, height: outerR * 2)
+                        .mask(
+                            ZStack {
+                                Circle().frame(width: outerR * 2, height: outerR * 2)
+                                Circle().frame(width: innerR * 2, height: innerR * 2)
+                                    .blendMode(.destinationOut)
+                            }
+                            .compositingGroup()
+                        )
+                }
+
+                Circle()
+                    .stroke(s.ringColor.opacity(dimmed ? 0.1 : s.ringOpacity), lineWidth: 1.5)
+                    .frame(width: radius * 2, height: radius * 2)
+                    .shadow(color: color.opacity((dimmed ? 0.05 : 0.15) * s.glowIntensity), radius: 20)
+            }
         }
     }
 }
