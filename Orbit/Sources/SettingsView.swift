@@ -55,6 +55,8 @@ struct SettingsView: View {
 
                 sliderRow("Cursor sensitivity", value: $settings.cursorSensitivity,
                           range: 0.5...3.0, step: 0.1, format: { String(format: "%.1fx", $0) })
+                sliderRow("Center dead zone", value: $settings.centerDeadZone,
+                          range: 10...80, step: 5, format: { "\(Int($0))px" })
             }
 
             Section("Visibility") {

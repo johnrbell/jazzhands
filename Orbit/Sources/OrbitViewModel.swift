@@ -35,7 +35,7 @@ final class OrbitViewModel: ObservableObject {
     var deepOrbitOuterRadius: CGFloat { CGFloat(settings.primaryRadius) + 200 }
     let deepOrbitSpread: Double = 0.7
     var segmentIconSize: CGFloat { CGFloat(settings.iconSize) }
-    let centerDeadZone: CGFloat = 30
+    var centerDeadZone: CGFloat { CGFloat(settings.centerDeadZone) }
     var deepOrbitDeadZone: CGFloat { primaryRadius * 0.65 }
     var hoverDelay: TimeInterval { settings.hoverTimeout }
 

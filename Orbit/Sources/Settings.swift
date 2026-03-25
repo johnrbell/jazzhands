@@ -12,6 +12,7 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("deepOrbitEnabled") var deepOrbitEnabled: Bool = true
     @AppStorage("hoverTimeout") var hoverTimeout: Double = 0.5
     @AppStorage("cursorSensitivity") var cursorSensitivity: Double = 1.0
+    @AppStorage("centerDeadZone") var centerDeadZone: Double = 30
     @AppStorage("maxCursorRadius") var maxCursorRadius: Double = 120
     @AppStorage("showHiddenApps") var showHiddenApps: Bool = false
     @AppStorage("showMinimizedWindows") var showMinimizedWindows: Bool = false
