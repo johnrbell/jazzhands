@@ -246,10 +246,30 @@ struct OrbitView: View {
     // MARK: - Track Ring
 
     private func orbitTrackRing(radius: CGFloat, color: Color, dimmed: Bool) -> some View {
-        Circle()
-            .stroke(s.ringColor.opacity(dimmed ? 0.1 : s.ringOpacity), lineWidth: 1.5)
-            .frame(width: radius * 2, height: radius * 2)
-            .shadow(color: color.opacity((dimmed ? 0.05 : 0.15) * s.glowIntensity), radius: 20)
+        let innerR = viewModel.centerDeadZone
+        let outerR = radius + viewModel.segmentIconSize / 2 + 10
+        let fillOpacity = dimmed ? s.ringFillOpacity * 0.3 : s.ringFillOpacity
+
+        return ZStack {
+            if fillOpacity > 0 {
+                Circle()
+                    .fill(s.ringFillColor.opacity(fillOpacity))
+                    .frame(width: outerR * 2, height: outerR * 2)
+                    .mask(
+                        ZStack {
+                            Circle().frame(width: outerR * 2, height: outerR * 2)
+                            Circle().frame(width: innerR * 2, height: innerR * 2)
+                                .blendMode(.destinationOut)
+                        }
+                        .compositingGroup()
+                    )
+            }
+
+            Circle()
+                .stroke(s.ringColor.opacity(dimmed ? 0.1 : s.ringOpacity), lineWidth: 1.5)
+                .frame(width: radius * 2, height: radius * 2)
+                .shadow(color: color.opacity((dimmed ? 0.05 : 0.15) * s.glowIntensity), radius: 20)
+        }
     }
 }
 

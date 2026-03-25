@@ -34,6 +34,8 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("glowIntensity") var glowIntensity: Double = 1.0
     @AppStorage("ringOpacity") var ringOpacity: Double = 0.25
     @AppStorage("centerFillOpacity") var centerFillOpacity: Double = 0.0
+    @AppStorage("ringFillColorHex") var ringFillColorHex: String = "#FFFFFF"
+    @AppStorage("ringFillOpacity") var ringFillOpacity: Double = 0.0
     @AppStorage("deepOrbitFillOpacity") var deepOrbitFillOpacity: Double = 0.25
 
     // Debug
@@ -46,6 +48,7 @@ final class OrbitSettings: ObservableObject {
     var ringColor: Color { Color(hex: ringColorHex) }
     var hoverColor: Color { Color(hex: hoverColorHex) }
     var backgroundColor: Color { Color(hex: backgroundColorHex) }
+    var ringFillColor: Color { Color(hex: ringFillColorHex) }
 
     var modifierFlag: CGEventFlags {
         switch hotkeyModifier {

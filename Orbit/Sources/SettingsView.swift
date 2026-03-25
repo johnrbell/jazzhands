@@ -96,7 +96,10 @@ struct SettingsView: View {
                     }
 
                     Section("Effects") {
-                        sliderRow("Ring opacity", value: $settings.ringOpacity,
+                        colorRow("Ring fill color", hex: $settings.ringFillColorHex)
+                        sliderRow("Ring fill opacity", value: $settings.ringFillOpacity,
+                                  range: 0...0.5, step: 0.02, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Ring stroke opacity", value: $settings.ringOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                         sliderRow("Background dimming", value: $settings.backgroundOpacity,
                                   range: 0...0.8, step: 0.05, format: { "\(Int($0 * 100))%" })
