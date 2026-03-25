@@ -25,7 +25,7 @@ fi
 cp "$BUILD_DIR/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 
 echo "Signing app bundle..."
-codesign -fs "$SIGNING_IDENTITY" "$APP_BUNDLE" --deep
+codesign -fs "$SIGNING_IDENTITY" --options runtime --entitlements "Orbit/Resources/Orbit.entitlements" "$APP_BUNDLE" --deep
 
 echo "Done! App bundle at: $APP_BUNDLE"
 echo ""
