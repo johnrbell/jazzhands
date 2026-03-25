@@ -64,6 +64,11 @@ final class WindowManager {
             let pid = app.processIdentifier
             var windows = appWindowMap[pid] ?? []
 
+            if settings.hideFinderUnlessWindowed && app.bundleIdentifier == "com.apple.finder" {
+                let axWindows = fetchAXWindows(pid: pid)
+                if axWindows.isEmpty { continue }
+            }
+
             if settings.showHiddenApps && windows.isEmpty && !app.isHidden {
                 continue
             }
@@ -182,7 +187,17 @@ final class WindowManager {
     }
 
     func activateApp(_ app: OrbitApp) {
-        app.runningApp.activate()
+        app.runningApp.activate(options: [])
+
+        if app.bundleIdentifier == "com.apple.finder" {
+            let appRef = AXUIElementCreateApplication(app.id)
+            var windowList: CFTypeRef?
+            AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &windowList)
+            if let axWindows = windowList as? [AXUIElement], let first = axWindows.first {
+                log("activateApp(Finder): raising first AX window")
+                AXUIElementPerformAction(first, kAXRaiseAction as CFString)
+            }
+        }
     }
 
     func activateWindow(_ window: OrbitWindow) {

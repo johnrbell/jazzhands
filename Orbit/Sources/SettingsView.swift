@@ -70,6 +70,10 @@ struct SettingsView: View {
                 Toggle("Show minimized windows", isOn: $settings.showMinimizedWindows)
                 Text("Include minimized (dock) windows in app window lists")
                     .font(.caption).foregroundColor(.secondary)
+
+                Toggle("Hide Finder unless it has a window", isOn: $settings.hideFinderUnlessWindowed)
+                Text("Finder is always running — hide it when no Finder windows are open")
+                    .font(.caption).foregroundColor(.secondary)
             }
         }
         .formStyle(.grouped)
