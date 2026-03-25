@@ -1,8 +1,8 @@
-# Orbit
+# JazzHands
 
 A radial app switcher for macOS. Hold a pre-defined key combo to summon a circular ring of your active apps, move the mouse to highlight, and release to switch.
 
-![Orbit Demo](demo.gif)
+![JazzHands Demo](demo.gif)
 
 ## Requirements
 
@@ -16,26 +16,26 @@ A radial app switcher for macOS. Hold a pre-defined key combo to summon a circul
 
 ```bash
 swift build
-.build/debug/Orbit
+.build/debug/JazzHands
 ```
 
 **With Xcode:**
 
 ```bash
-open Orbit.xcodeproj
+open JazzHands.xcodeproj
 ```
 
-Then build and run the Orbit scheme (⌘R).
+Then build and run the JazzHands scheme (⌘R).
 
 ## How It Works
 
-### Primary Orbit (Tier 1)
+### Primary JazzHands (Tier 1)
 - **Option + Space (hold):** Shows the radial ring of all active apps (apps with at least one visible window)
 - **Mouse movement:** The cursor is hidden and locked to center. Movement direction highlights the corresponding app segment
 - **Release Option:** Switches to the highlighted app and dismisses the UI
 - **Quick tap:** Toggles to the last used app (like a fast Cmd+Tab)
 
-### Deep Orbit (Tier 2)
+### Deep JazzHands (Tier 2)
 - **Hover 500ms** on a multi-window app: A second concentric ring appears with window thumbnails
 - **Move outward** into the outer ring to select a specific window
 - **Release** to bring that exact window to front
@@ -44,17 +44,17 @@ Then build and run the Orbit scheme (⌘R).
 
 | File | Purpose |
 |------|---------|
-| `OrbitApplication.swift` | SwiftUI app entry point (menu bar agent) |
+| `JazzHandsApp.swift` | SwiftUI app entry point (menu bar agent) |
 | `AppDelegate.swift` | Global hotkey listener, lifecycle management |
 | `WindowManager.swift` | CGWindowList + NSRunningApplication queries |
-| `Models.swift` | OrbitApp / OrbitWindow data models |
-| `OrbitViewModel.swift` | Angle → segment mapping, state machine, hover timers |
-| `OrbitView.swift` | SwiftUI radial UI with glow effects |
+| `Models.swift` | JazzHandsApp / JazzHandsWindow data models |
+| `JazzHandsViewModel.swift` | Angle → segment mapping, state machine, hover timers |
+| `JazzHandsView.swift` | SwiftUI radial UI with glow effects |
 | `OverlayWindowController.swift` | Transparent overlay window, mouse locking via CGWarpMouseCursorPosition |
 
 ## Permissions
 
-Orbit requires **Accessibility** permission to:
+JazzHands requires **Accessibility** permission to:
 - Listen for global hotkeys (Option + Space) when other apps are focused
 - Raise specific windows via the Accessibility API
 
