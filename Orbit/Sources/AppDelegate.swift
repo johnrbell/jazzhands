@@ -7,6 +7,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var overlayController: OverlayWindowController?
     private var globalFlagsMonitor: Any?
+    private var backtickMonitor: Any?
 
     private var isOrbitVisible = false
     private var activationTimestamp: Date?
@@ -39,6 +40,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupStatusBar()
         installHotKey()
         installFlagsMonitor()
+        installBacktickMonitor()
         installSpaceChangeObserver()
 
         if !AXIsProcessTrusted() {
@@ -207,6 +209,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = localFlags
 
         AppDelegate.log("Flags monitors installed")
+    }
+
+    private func installBacktickMonitor() {
+        let kVK_ANSI_Grave: UInt16 = 50
+
+        backtickMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self, self.isOrbitVisible, event.keyCode == kVK_ANSI_Grave else { return event }
+            self.didCycle = true
+            self.overlayController?.cycleSelectionReverse()
+            return nil
+        }
+
+        NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self, self.isOrbitVisible, event.keyCode == kVK_ANSI_Grave else { return }
+            Task { @MainActor in
+                self.didCycle = true
+                self.overlayController?.cycleSelectionReverse()
+            }
+        }
     }
 
     // MARK: - Space Change

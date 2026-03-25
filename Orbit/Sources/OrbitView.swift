@@ -75,6 +75,8 @@ struct OrbitView: View {
     @ViewBuilder
     private var cancelButton: some View {
         let hovered = viewModel.isCancelHovered
+        let btnSize = CGFloat(s.cancelButtonSize)
+        let btnOpacity = s.cancelButtonOpacity
         Button(action: {
             viewModel.cancelDeepOrbit()
         }) {
@@ -82,24 +84,24 @@ struct OrbitView: View {
                 Circle()
                     .fill(.ultraThinMaterial)
                     .environment(\.colorScheme, .dark)
-                    .frame(width: CGFloat(s.centerIconSize), height: CGFloat(s.centerIconSize))
+                    .frame(width: btnSize, height: btnSize)
 
                 Circle()
-                    .fill(Color.white.opacity(hovered ? 0.18 : 0.06))
-                    .frame(width: CGFloat(s.centerIconSize), height: CGFloat(s.centerIconSize))
+                    .fill(Color.white.opacity((hovered ? 0.18 : 0.06) * btnOpacity))
+                    .frame(width: btnSize, height: btnSize)
 
                 Circle()
-                    .stroke(Color.white.opacity(hovered ? 0.6 : 0.25), lineWidth: hovered ? 2 : 1.5)
-                    .frame(width: CGFloat(s.centerIconSize), height: CGFloat(s.centerIconSize))
+                    .stroke(Color.white.opacity((hovered ? 0.6 : 0.25) * btnOpacity), lineWidth: hovered ? 2 : 1.5)
+                    .frame(width: btnSize, height: btnSize)
 
                 Image(systemName: "xmark")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white.opacity(hovered ? 1.0 : 0.7))
+                    .font(.system(size: btnSize * 0.32, weight: .semibold))
+                    .foregroundColor(.white.opacity(hovered ? btnOpacity : btnOpacity * 0.7))
             }
             .scaleEffect(hovered ? 1.1 : 1.0)
         }
         .buttonStyle(.plain)
-        .shadow(color: hovered ? .white.opacity(0.15) : .black.opacity(0.4), radius: hovered ? 12 : 8)
+        .shadow(color: hovered ? .white.opacity(0.15 * btnOpacity) : .black.opacity(0.4 * btnOpacity), radius: hovered ? 12 : 8)
         .animation(.easeOut(duration: 0.12), value: hovered)
         .transition(.scale(scale: 0.5).combined(with: .opacity))
     }

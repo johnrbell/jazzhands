@@ -224,6 +224,18 @@ final class OrbitViewModel: ObservableObject {
         cancelHoverTimer()
     }
 
+    func cycleSelectionClockwise() {
+        guard !apps.isEmpty, case .primary = tier else { return }
+        if selectedIndex < 0 {
+            selectedIndex = apps.count - 1
+        } else {
+            selectedIndex = (selectedIndex - 1 + apps.count) % apps.count
+        }
+        centerLabel = apps[selectedIndex].name
+        hoveredIndex = -1
+        cancelHoverTimer()
+    }
+
     // MARK: - Selection
 
     func confirmSelection() {

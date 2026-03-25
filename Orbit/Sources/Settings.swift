@@ -37,6 +37,8 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("ringFillColorHex") var ringFillColorHex: String = "#FFFFFF"
     @AppStorage("ringFillOpacity") var ringFillOpacity: Double = 0.0
     @AppStorage("deepOrbitFillOpacity") var deepOrbitFillOpacity: Double = 0.25
+    @AppStorage("cancelButtonSize") var cancelButtonSize: Double = 56
+    @AppStorage("cancelButtonOpacity") var cancelButtonOpacity: Double = 0.7
 
     // Debug
     @AppStorage("showDebugOverlay") var showDebugOverlay: Bool = false

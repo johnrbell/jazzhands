@@ -110,6 +110,10 @@ final class OverlayWindowController {
         viewModel.cycleSelectionCounterClockwise()
     }
 
+    func cycleSelectionReverse() {
+        viewModel.cycleSelectionClockwise()
+    }
+
     // MARK: - Mouse Lock
 
     private func lockMouse() {
