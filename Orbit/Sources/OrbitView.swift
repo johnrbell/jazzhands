@@ -186,15 +186,15 @@ struct OrbitView: View {
                 let strokeColor = isSelected ? highlight.opacity(min(baseOpacity * 3.6, 1.0)) : Color.white.opacity(baseOpacity * 0.6)
                 context.stroke(wedge, with: .color(strokeColor), lineWidth: isSelected ? 3 : 1)
 
-                let midR = innerR + (outerR - innerR) * 0.62
+                let midR = innerR + (outerR - innerR) * 0.58
                 let thumbPos = CGPoint(
                     x: center.x + midR * CGFloat(cos(angle)),
                     y: center.y + midR * CGFloat(sin(angle))
                 )
 
                 let wedgeWidth = outerR - innerR
-                let thumbW: CGFloat = wedgeWidth * 0.55
-                let thumbH: CGFloat = wedgeWidth * 0.38
+                let thumbW: CGFloat = wedgeWidth * 0.78
+                let thumbH: CGFloat = wedgeWidth * 0.54
 
                 if let thumb = viewModel.windowThumbnails[window.id] {
                     let img = Image(nsImage: thumb)
