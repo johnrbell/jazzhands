@@ -31,6 +31,8 @@ final class WindowManager {
 
         var appWindowMap: [pid_t: [OrbitWindow]] = [:]
 
+        let minWindowDimension: CGFloat = 50
+
         for info in windowInfoList {
             guard let pid = info[kCGWindowOwnerPID as String] as? pid_t,
                   let windowID = info[kCGWindowNumber as String] as? CGWindowID,
@@ -40,6 +42,10 @@ final class WindowManager {
             let title = info[kCGWindowName as String] as? String ?? ""
             let bounds = CGRect(dictionaryRepresentation: info[kCGWindowBounds as String] as! CFDictionary) ?? .zero
             let isOnScreen = info[kCGWindowIsOnscreen as String] as? Bool ?? true
+
+            if bounds.width < minWindowDimension || bounds.height < minWindowDimension {
+                continue
+            }
 
             let window = OrbitWindow(
                 id: windowID,
@@ -84,9 +90,20 @@ final class WindowManager {
             for (i, ax) in axWindows.enumerated() {
                 log("  AX[\(i)] title='\(ax.title)' bounds=\(ax.bounds)")
             }
+
             if !axWindows.isEmpty {
+                let before = windows.count
+                windows = filterToAXWindows(cgWindows: windows, axWindows: axWindows)
+                if windows.count < before {
+                    log("  filtered \(before - windows.count) phantom CG window(s)")
+                }
+                if windows.isEmpty {
+                    log("  all CG windows filtered — skipping app")
+                    continue
+                }
                 windows = enrichWindowTitles(windows: windows, axTitles: axWindows)
             }
+
             for (i, w) in windows.enumerated() {
                 log("  FINAL[\(i)] id=\(w.id) title='\(w.title)'")
             }
@@ -139,6 +156,12 @@ final class WindowManager {
             results.append((title: title, bounds: CGRect(origin: pos, size: size)))
         }
         return results
+    }
+
+    private func filterToAXWindows(cgWindows: [OrbitWindow], axWindows: [(title: String, bounds: CGRect)]) -> [OrbitWindow] {
+        return cgWindows.filter { cg in
+            axWindows.contains { ax in boundsMatch(cg.bounds, ax.bounds) }
+        }
     }
 
     private func enrichWindowTitles(windows: [OrbitWindow], axTitles: [(title: String, bounds: CGRect)]) -> [OrbitWindow] {
