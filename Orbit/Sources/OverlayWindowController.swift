@@ -2,15 +2,35 @@ import AppKit
 import SwiftUI
 import CoreGraphics
 
+private class CursorHidingView: NSView {
+    static let transparentCursor: NSCursor = {
+        let img = NSImage(size: NSSize(width: 16, height: 16))
+        return NSCursor(image: img, hotSpot: NSPoint(x: 8, y: 8))
+    }()
+
+    var hidesCursor = false {
+        didSet { window?.invalidateCursorRects(for: self) }
+    }
+
+    override func resetCursorRects() {
+        super.resetCursorRects()
+        if hidesCursor {
+            addCursorRect(bounds, cursor: Self.transparentCursor)
+        }
+    }
+}
+
 @MainActor
 final class OverlayWindowController {
     private var window: NSWindow?
+    private var cursorView: CursorHidingView?
     private var viewModel = OrbitViewModel()
     private var mouseMonitor: Any?
 
     private var screenCenter: CGPoint = .zero
     private var accumulatedDelta: CGPoint = .zero
     private var ignoreEventsUntil: TimeInterval = 0
+    private var awaitingFirstDelta = true
     private var maxCursorRadius: CGFloat {
         CGFloat(OrbitSettings.shared.primaryRadius) + 220
     }
@@ -23,7 +43,18 @@ final class OverlayWindowController {
 
         if window == nil {
             let hostingView = NSHostingView(rootView: OrbitView(viewModel: viewModel))
-            hostingView.frame = CGRect(origin: .zero, size: frame.size)
+            hostingView.translatesAutoresizingMaskIntoConstraints = false
+
+            let wrapper = CursorHidingView(frame: CGRect(origin: .zero, size: frame.size))
+            wrapper.autoresizingMask = [.width, .height]
+            wrapper.addSubview(hostingView)
+            NSLayoutConstraint.activate([
+                hostingView.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor),
+                hostingView.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor),
+                hostingView.topAnchor.constraint(equalTo: wrapper.topAnchor),
+                hostingView.bottomAnchor.constraint(equalTo: wrapper.bottomAnchor),
+            ])
+            cursorView = wrapper
 
             let w = NSWindow(
                 contentRect: frame,
@@ -36,7 +67,7 @@ final class OverlayWindowController {
             w.backgroundColor = .clear
             w.hasShadow = false
             w.ignoresMouseEvents = false
-            w.contentView = hostingView
+            w.contentView = wrapper
             w.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
             window = w
@@ -51,6 +82,7 @@ final class OverlayWindowController {
         accumulatedDelta = .zero
         viewModel.isVisible = true
 
+        awaitingFirstDelta = true
         lockMouse()
         ignoreEventsUntil = ProcessInfo.processInfo.systemUptime + 0.05
         startMouseTracking()
@@ -81,14 +113,16 @@ final class OverlayWindowController {
     // MARK: - Mouse Lock
 
     private func lockMouse() {
+        cursorView?.hidesCursor = true
         NSCursor.hide()
         CGDisplayHideCursor(CGMainDisplayID())
-        warpMouseToCenter()
         CGAssociateMouseAndMouseCursorPosition(0)
+        warpMouseToCenter()
     }
 
     private func unlockMouse() {
         CGAssociateMouseAndMouseCursorPosition(1)
+        cursorView?.hidesCursor = false
         CGDisplayShowCursor(CGMainDisplayID())
         NSCursor.unhide()
     }
@@ -101,8 +135,16 @@ final class OverlayWindowController {
 
     // MARK: - Mouse Tracking
 
-    private func handleDelta(dx: CGFloat, dy: CGFloat) {
-        if ProcessInfo.processInfo.systemUptime < ignoreEventsUntil { return }
+    private func handleDelta(dx: CGFloat, dy: CGFloat, eventTime: TimeInterval) {
+        if eventTime < ignoreEventsUntil { return }
+        if awaitingFirstDelta {
+            awaitingFirstDelta = false
+            let mag = sqrt(dx * dx + dy * dy)
+            if mag > 50 {
+                accumulatedDelta = .zero
+                return
+            }
+        }
         if viewModel.shouldResetCursor {
             accumulatedDelta = .zero
             viewModel.shouldResetCursor = false
@@ -166,7 +208,7 @@ final class OverlayWindowController {
     private func deduplicatedDelta(dx: CGFloat, dy: CGFloat, timestamp: TimeInterval) {
         guard timestamp != lastEventTimestamp else { return }
         lastEventTimestamp = timestamp
-        handleDelta(dx: dx, dy: dy)
+        handleDelta(dx: dx, dy: dy, eventTime: timestamp)
     }
 
     private func handleClick(_ event: NSEvent) {

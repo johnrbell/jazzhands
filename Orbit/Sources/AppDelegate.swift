@@ -41,11 +41,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         installFlagsMonitor()
 
         if !AXIsProcessTrusted() {
-            let options = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
-            _ = AXIsProcessTrustedWithOptions(options)
+            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
         }
 
-        WindowManager.shared.requestScreenCaptureIfNeeded()
+        if !CGPreflightScreenCaptureAccess() {
+            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
+        }
     }
 
     // MARK: - Hotkey Installation

@@ -152,7 +152,8 @@ final class OrbitViewModel: ObservableObject {
 
     private func startHoverTimer(for index: Int) {
         hoverTimer?.invalidate()
-        guard index >= 0, index < apps.count, apps[index].windows.count > 1 else { return }
+        guard settings.deepOrbitEnabled,
+              index >= 0, index < apps.count, apps[index].windows.count > 1 else { return }
 
         hoverTimer = Timer.scheduledTimer(withTimeInterval: hoverDelay, repeats: false) { [weak self] _ in
             Task { @MainActor in

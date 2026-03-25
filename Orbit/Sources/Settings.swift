@@ -9,6 +9,7 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("hotkeyKey") var hotkeyKey: String = "space"
 
     // Behavior
+    @AppStorage("deepOrbitEnabled") var deepOrbitEnabled: Bool = true
     @AppStorage("hoverTimeout") var hoverTimeout: Double = 0.5
     @AppStorage("cursorSensitivity") var cursorSensitivity: Double = 1.0
     @AppStorage("maxCursorRadius") var maxCursorRadius: Double = 120

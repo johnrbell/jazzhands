@@ -139,7 +139,8 @@ struct OrbitView: View {
                     isSelected: isSelected,
                     glowColor: glowColor,
                     iconSize: viewModel.segmentIconSize,
-                    showBackground: isDeepParent
+                    showBackground: isDeepParent,
+                    windowCount: app.windows.count
                 )
                 .offset(x: pos.x, y: pos.y)
                 .opacity(dimmed && !isDeepParent ? 0.4 : 1.0)
@@ -259,8 +260,14 @@ struct AppSegmentView: View {
     let glowColor: Color
     let iconSize: CGFloat
     var showBackground: Bool = false
+    var windowCount: Int = 1
 
     private var s: OrbitSettings { OrbitSettings.shared }
+
+    private var bumpCount: Int {
+        guard windowCount > 1 else { return 0 }
+        return min(windowCount, 5)
+    }
 
     var body: some View {
         ZStack {
@@ -289,6 +296,31 @@ struct AppSegmentView: View {
                 .frame(width: iconSize, height: iconSize)
                 .scaleEffect(isSelected ? 1.2 : 1.0)
                 .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
+
+            if bumpCount > 0 {
+                multiWindowBumps
+            }
+        }
+    }
+
+    private var multiWindowBumps: some View {
+        let edgeRadius = (iconSize / 2) + 6
+        let bumpSize: CGFloat = 5
+        let spacing = Angle.degrees(14)
+        let baseAngle = Angle.degrees(90)
+
+        return ForEach(0..<bumpCount, id: \.self) { i in
+            let offset = Double(i) - Double(bumpCount - 1) / 2.0
+            let angle = baseAngle + spacing * offset
+            Circle()
+                .fill(Color.white.opacity(isSelected ? 0.95 : 0.55))
+                .frame(width: bumpSize, height: bumpSize)
+                .shadow(color: glowColor.opacity(isSelected ? 0.7 : 0.3), radius: 3)
+                .offset(
+                    x: edgeRadius * CGFloat(cos(angle.radians)),
+                    y: edgeRadius * CGFloat(sin(angle.radians))
+                )
+                .scaleEffect(isSelected ? 1.2 : 1.0)
         }
     }
 }

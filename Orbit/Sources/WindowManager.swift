@@ -234,9 +234,8 @@ final class WindowManager {
     }
 
     func requestScreenCaptureIfNeeded() {
-        if !CGPreflightScreenCaptureAccess() {
-            CGRequestScreenCaptureAccess()
-        }
+        // No-op: permission is checked silently at launch in AppDelegate.
+        // CGRequestScreenCaptureAccess() was triggering repeated OS prompts.
     }
 
     func captureWindowThumbnail(windowID: CGWindowID, maxSize: CGSize = CGSize(width: 200, height: 150)) -> NSImage? {
