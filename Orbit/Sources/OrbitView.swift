@@ -170,13 +170,19 @@ struct OrbitView: View {
                 let isSelected = index == viewModel.selectedWindowIndex
                 let angle = viewModel.deepOrbitAngle(windowIndex: index, appIndex: appIndex)
                 let half = viewModel.deepOrbitSpread / 2.0
-                let gap = 0.015
-                let startA = Angle.radians(angle - half + gap)
-                let endA = Angle.radians(angle + half - gap)
+                let gapPixels: Double = 3.0
+                let gapOuter = gapPixels / Double(outerR)
+                let gapInner = gapPixels / Double(innerR)
 
                 var wedge = Path()
-                wedge.addArc(center: center, radius: outerR, startAngle: startA, endAngle: endA, clockwise: false)
-                wedge.addArc(center: center, radius: innerR, startAngle: endA, endAngle: startA, clockwise: true)
+                wedge.addArc(center: center, radius: outerR,
+                             startAngle: .radians(angle - half + gapOuter),
+                             endAngle: .radians(angle + half - gapOuter),
+                             clockwise: false)
+                wedge.addArc(center: center, radius: innerR,
+                             startAngle: .radians(angle + half - gapInner),
+                             endAngle: .radians(angle - half + gapInner),
+                             clockwise: true)
                 wedge.closeSubpath()
 
                 let baseOpacity = s.deepOrbitFillOpacity
