@@ -5,7 +5,7 @@ APP_NAME="JazzHands"
 BUILD_DIR=".build/debug"
 INSTALL_DIR="$HOME/Applications"
 APP_BUNDLE="$INSTALL_DIR/$APP_NAME.app"
-SIGNING_IDENTITY="Apple Development: johnrbell@gmail.com (95K2SRH6M2)"
+SIGNING_IDENTITY="JazzHands Dev Signing"
 
 echo "Building $APP_NAME..."
 swift build

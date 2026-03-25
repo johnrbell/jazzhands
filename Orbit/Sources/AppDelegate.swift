@@ -44,11 +44,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         installSpaceChangeObserver()
 
         if !AXIsProcessTrusted() {
-            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+            let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
+            AXIsProcessTrustedWithOptions(opts)
         }
 
         if !CGPreflightScreenCaptureAccess() {
-            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
+            CGRequestScreenCaptureAccess()
         }
     }
 

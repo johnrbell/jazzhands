@@ -187,68 +187,80 @@ final class WindowManager {
     }
 
     func activateApp(_ app: OrbitApp) {
-        app.runningApp.activate(options: [])
+        log("activateApp: '\(app.name)' pid=\(app.id) axTrusted=\(AXIsProcessTrusted())")
 
-        if app.bundleIdentifier == "com.apple.finder" {
-            let appRef = AXUIElementCreateApplication(app.id)
-            var windowList: CFTypeRef?
-            AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &windowList)
-            if let axWindows = windowList as? [AXUIElement], let first = axWindows.first {
-                log("activateApp(Finder): raising first AX window")
-                AXUIElementPerformAction(first, kAXRaiseAction as CFString)
-            }
+        let appRef = AXUIElementCreateApplication(app.id)
+        var windowList: CFTypeRef?
+        AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &windowList)
+        if let axWindows = windowList as? [AXUIElement], let first = axWindows.first {
+            AXUIElementPerformAction(first, kAXRaiseAction as CFString)
         }
+
+        app.runningApp.activate(options: [])
     }
 
     func activateWindow(_ window: OrbitWindow) {
-        let app = NSRunningApplication(processIdentifier: window.ownerPID)
-        app?.activate(options: [])
+        log("activateWindow: '\(window.title)' id=\(window.id) pid=\(window.ownerPID) axTrusted=\(AXIsProcessTrusted())")
 
+        let app = NSRunningApplication(processIdentifier: window.ownerPID)
         let appRef = AXUIElementCreateApplication(window.ownerPID)
         var windowList: CFTypeRef?
         AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &windowList)
 
-        guard let axWindows = windowList as? [AXUIElement] else {
-            log("activateWindow: no AX windows for pid=\(window.ownerPID)")
+        guard let axWindows = windowList as? [AXUIElement], !axWindows.isEmpty else {
+            log("activateWindow: no AX windows for pid=\(window.ownerPID) — falling back to app activate")
+            app?.activate(options: [])
             return
         }
+
+        var targetAXWindow: AXUIElement?
 
         if !window.title.isEmpty {
             for axWindow in axWindows {
                 var titleValue: CFTypeRef?
                 AXUIElementCopyAttributeValue(axWindow, kAXTitleAttribute as CFString, &titleValue)
                 if let axTitle = titleValue as? String,
-                   axTitle == window.title || axTitle.hasPrefix(window.title) {
-                    log("activateWindow: raising '\(axTitle)' by title match")
-                    AXUIElementPerformAction(axWindow, kAXRaiseAction as CFString)
-                    return
+                   axTitle == window.title || axTitle.hasPrefix(window.title) || window.title.hasPrefix(axTitle) {
+                    log("activateWindow: matched '\(axTitle)' by title")
+                    targetAXWindow = axWindow
+                    break
                 }
             }
         }
 
-        for axWindow in axWindows {
-            var posValue: CFTypeRef?
-            var sizeValue: CFTypeRef?
-            AXUIElementCopyAttributeValue(axWindow, kAXPositionAttribute as CFString, &posValue)
-            AXUIElementCopyAttributeValue(axWindow, kAXSizeAttribute as CFString, &sizeValue)
+        if targetAXWindow == nil {
+            for axWindow in axWindows {
+                var posValue: CFTypeRef?
+                var sizeValue: CFTypeRef?
+                AXUIElementCopyAttributeValue(axWindow, kAXPositionAttribute as CFString, &posValue)
+                AXUIElementCopyAttributeValue(axWindow, kAXSizeAttribute as CFString, &sizeValue)
 
-            var pos = CGPoint.zero
-            var size = CGSize.zero
-            if let posValue { AXValueGetValue(posValue as! AXValue, .cgPoint, &pos) }
-            if let sizeValue { AXValueGetValue(sizeValue as! AXValue, .cgSize, &size) }
-            let axBounds = CGRect(origin: pos, size: size)
+                var pos = CGPoint.zero
+                var size = CGSize.zero
+                if let posValue { AXValueGetValue(posValue as! AXValue, .cgPoint, &pos) }
+                if let sizeValue { AXValueGetValue(sizeValue as! AXValue, .cgSize, &size) }
+                let axBounds = CGRect(origin: pos, size: size)
 
-            if boundsMatch(window.bounds, axBounds) {
-                log("activateWindow: raising window by bounds match")
-                AXUIElementPerformAction(axWindow, kAXRaiseAction as CFString)
-                return
+                if boundsMatch(window.bounds, axBounds) {
+                    log("activateWindow: matched by bounds")
+                    targetAXWindow = axWindow
+                    break
+                }
             }
         }
 
-        if let first = axWindows.first {
-            log("activateWindow: raising first AX window as fallback")
-            AXUIElementPerformAction(first, kAXRaiseAction as CFString)
+        if targetAXWindow == nil {
+            log("activateWindow: no title/bounds match, using first AX window")
+            targetAXWindow = axWindows.first
         }
+
+        if let target = targetAXWindow {
+            AXUIElementPerformAction(target, kAXRaiseAction as CFString)
+            AXUIElementSetAttributeValue(target, kAXMainAttribute as CFString, kCFBooleanTrue)
+            AXUIElementSetAttributeValue(target, kAXFocusedAttribute as CFString, kCFBooleanTrue)
+        }
+
+        app?.activate(options: [])
     }
 
     var hasScreenCapturePermission: Bool {
@@ -261,7 +273,11 @@ final class WindowManager {
     }
 
     func captureWindowThumbnail(windowID: CGWindowID, maxSize: CGSize = CGSize(width: 200, height: 150)) -> NSImage? {
-        log("capture wid=\(windowID) screenCapPreflight=\(CGPreflightScreenCaptureAccess()) axTrusted=\(AXIsProcessTrusted())")
+        guard CGPreflightScreenCaptureAccess() else {
+            log("capture wid=\(windowID) skipped — no screen capture permission")
+            return nil
+        }
+        log("capture wid=\(windowID)")
         guard let cgImage = CGWindowListCreateImage(
             .null,
             .optionIncludingWindow,
