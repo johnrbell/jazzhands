@@ -5,13 +5,13 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleExecutable</key>
-    <string>Orbit</string>
+    <string>JazzHands</string>
     <key>CFBundleIdentifier</key>
-    <string>com.orbit.app</string>
+    <string>com.jazzhands.app</string>
     <key>CFBundleName</key>
-    <string>Orbit</string>
+    <string>JazzHands</string>
     <key>CFBundleDisplayName</key>
-    <string>Orbit</string>
+    <string>JazzHands</string>
     <key>CFBundleVersion</key>
     <string>1</string>
     <key>CFBundleShortVersionString</key>
@@ -25,6 +25,6 @@
     <key>LSUIElement</key>
     <true/>
     <key>NSAccessibilityUsageDescription</key>
-    <string>Orbit needs accessibility access to monitor global hotkeys and manage windows.</string>
+    <string>JazzHands needs accessibility access to monitor global hotkeys and manage windows.</string>
 </dict>
 </plist>

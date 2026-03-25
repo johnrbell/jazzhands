@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "Orbit",
+    name: "JazzHands",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
-            name: "Orbit",
+            name: "JazzHands",
             path: "Orbit/Sources",
             linkerSettings: [
                 .linkedFramework("AppKit"),

@@ -257,15 +257,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupStatusBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "circle.circle", accessibilityDescription: "Orbit")
+            button.image = NSImage(systemSymbolName: "circle.circle", accessibilityDescription: "JazzHands")
         }
 
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "About Orbit", action: #selector(showAbout), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "About JazzHands", action: #selector(showAbout), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit Orbit", action: #selector(quitApp), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit JazzHands", action: #selector(quitApp), keyEquivalent: "q"))
         statusItem.menu = menu
     }
 
@@ -285,7 +285,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
-        w.title = "Orbit Settings"
+        w.title = "JazzHands Settings"
         w.contentView = hostingView
         w.center()
         w.isReleasedWhenClosed = false

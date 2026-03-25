@@ -346,9 +346,6 @@ struct SettingsView: View {
         Form {
             Section("Debug") {
                 Toggle("Show debug overlay", isOn: $settings.showDebugOverlay)
-
-                sliderRow("Max cursor radius", value: $settings.maxCursorRadius,
-                          range: 60...300, step: 10, format: { "\(Int($0))px" })
             }
 
             Section("Permissions") {

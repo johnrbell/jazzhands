@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-APP_NAME="Orbit"
+APP_NAME="JazzHands"
 BUILD_DIR=".build/debug"
 INSTALL_DIR="$HOME/Applications"
 APP_BUNDLE="$INSTALL_DIR/$APP_NAME.app"
