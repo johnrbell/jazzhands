@@ -99,6 +99,13 @@ final class WindowManager {
             ))
         }
 
+        switch settings.appSortOrder {
+        case "alphabetical":
+            orbitApps.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        default:
+            break
+        }
+
         return orbitApps
     }
 

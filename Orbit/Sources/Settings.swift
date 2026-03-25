@@ -16,6 +16,7 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("maxCursorRadius") var maxCursorRadius: Double = 120
     @AppStorage("showHiddenApps") var showHiddenApps: Bool = false
     @AppStorage("showMinimizedWindows") var showMinimizedWindows: Bool = false
+    @AppStorage("appSortOrder") var appSortOrder: String = "recent"
 
     // Layout
     @AppStorage("primaryRadius") var primaryRadius: Double = 160

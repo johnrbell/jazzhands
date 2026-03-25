@@ -55,6 +55,11 @@ struct SettingsView: View {
 
                 sliderRow("Cursor sensitivity", value: $settings.cursorSensitivity,
                           range: 0.5...3.0, step: 0.1, format: { String(format: "%.1fx", $0) })
+
+                Picker("App sort order", selection: $settings.appSortOrder) {
+                    Text("Recently used").tag("recent")
+                    Text("Alphabetical").tag("alphabetical")
+                }
             }
 
             Section("Visibility") {
