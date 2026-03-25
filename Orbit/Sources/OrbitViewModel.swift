@@ -31,8 +31,8 @@ final class OrbitViewModel: ObservableObject {
 
     var showDebug: Bool { settings.showDebugOverlay }
     var primaryRadius: CGFloat { CGFloat(settings.primaryRadius) }
-    var deepOrbitRadius: CGFloat { CGFloat(settings.primaryRadius) + 70 }
-    var deepOrbitOuterRadius: CGFloat { CGFloat(settings.primaryRadius) + 200 }
+    var deepOrbitRadius: CGFloat { CGFloat(settings.primaryRadius) + segmentIconSize / 2 + 60 }
+    var deepOrbitOuterRadius: CGFloat { deepOrbitRadius + 130 }
     let deepOrbitSpread: Double = 0.7
     var segmentIconSize: CGFloat { CGFloat(settings.iconSize) }
     var centerDeadZone: CGFloat { CGFloat(settings.centerDeadZone) }

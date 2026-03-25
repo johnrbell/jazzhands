@@ -159,7 +159,7 @@ struct OrbitView: View {
 
     private func deepOrbitRing(appIndex: Int) -> some View {
         let windows = viewModel.deepOrbitWindows
-        let innerR = viewModel.primaryRadius + 15
+        let innerR = viewModel.primaryRadius + viewModel.segmentIconSize / 2 + 10
         let outerR = viewModel.deepOrbitOuterRadius
 
         return Canvas { context, size in
