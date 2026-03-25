@@ -265,7 +265,7 @@ struct AppSegmentView: View {
     private var s: OrbitSettings { OrbitSettings.shared }
 
     private var bumpCount: Int {
-        guard windowCount > 1 else { return 0 }
+        guard s.deepOrbitEnabled, windowCount > 1 else { return 0 }
         return min(windowCount, 5)
     }
 
