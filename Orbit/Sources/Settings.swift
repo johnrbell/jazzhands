@@ -39,6 +39,9 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("deepOrbitFillOpacity") var deepOrbitFillOpacity: Double = 0.25
     @AppStorage("cancelButtonSize") var cancelButtonSize: Double = 56
     @AppStorage("cancelButtonOpacity") var cancelButtonOpacity: Double = 0.7
+    @AppStorage("segmentBorderColorHex") var segmentBorderColorHex: String = "#FFFFFF"
+    @AppStorage("segmentBorderOpacity") var segmentBorderOpacity: Double = 0.0
+    @AppStorage("segmentBorderWidth") var segmentBorderWidth: Double = 1.0
 
     // Debug
     @AppStorage("showDebugOverlay") var showDebugOverlay: Bool = false
@@ -51,6 +54,7 @@ final class OrbitSettings: ObservableObject {
     var hoverColor: Color { Color(hex: hoverColorHex) }
     var backgroundColor: Color { Color(hex: backgroundColorHex) }
     var ringFillColor: Color { Color(hex: ringFillColorHex) }
+    var segmentBorderColor: Color { Color(hex: segmentBorderColorHex) }
 
     var modifierFlag: CGEventFlags {
         switch hotkeyModifier {
@@ -92,6 +96,99 @@ final class OrbitSettings: ObservableObject {
         }
         return "\(symbol) + \(key)"
     }
+
+    // MARK: - Appearance Presets
+
+    func capturePreset() -> AppearancePreset {
+        AppearancePreset(
+            primaryRadius: primaryRadius, iconSize: iconSize, centerIconSize: centerIconSize,
+            centerDeadZone: centerDeadZone,
+            glowColorHex: glowColorHex, deepGlowColorHex: deepGlowColorHex,
+            ringColorHex: ringColorHex, hoverColorHex: hoverColorHex,
+            backgroundColorHex: backgroundColorHex, ringFillColorHex: ringFillColorHex,
+            segmentBorderColorHex: segmentBorderColorHex,
+            backgroundOpacity: backgroundOpacity, glowIntensity: glowIntensity,
+            ringOpacity: ringOpacity, ringFillOpacity: ringFillOpacity,
+            deepOrbitFillOpacity: deepOrbitFillOpacity,
+            cancelButtonSize: cancelButtonSize, cancelButtonOpacity: cancelButtonOpacity,
+            segmentBorderOpacity: segmentBorderOpacity, segmentBorderWidth: segmentBorderWidth
+        )
+    }
+
+    func applyPreset(_ preset: AppearancePreset) {
+        primaryRadius = preset.primaryRadius
+        iconSize = preset.iconSize
+        centerIconSize = preset.centerIconSize
+        centerDeadZone = preset.centerDeadZone
+        glowColorHex = preset.glowColorHex
+        deepGlowColorHex = preset.deepGlowColorHex
+        ringColorHex = preset.ringColorHex
+        hoverColorHex = preset.hoverColorHex
+        backgroundColorHex = preset.backgroundColorHex
+        ringFillColorHex = preset.ringFillColorHex
+        segmentBorderColorHex = preset.segmentBorderColorHex
+        backgroundOpacity = preset.backgroundOpacity
+        glowIntensity = preset.glowIntensity
+        ringOpacity = preset.ringOpacity
+        ringFillOpacity = preset.ringFillOpacity
+        deepOrbitFillOpacity = preset.deepOrbitFillOpacity
+        cancelButtonSize = preset.cancelButtonSize
+        cancelButtonOpacity = preset.cancelButtonOpacity
+        segmentBorderOpacity = preset.segmentBorderOpacity
+        segmentBorderWidth = preset.segmentBorderWidth
+    }
+
+    func savedPresets() -> [NamedPreset] {
+        guard let data = UserDefaults.standard.data(forKey: "appearancePresets"),
+              let presets = try? JSONDecoder().decode([NamedPreset].self, from: data) else { return [] }
+        return presets
+    }
+
+    func savePreset(name: String) {
+        var presets = savedPresets()
+        presets.removeAll { $0.name == name }
+        presets.append(NamedPreset(name: name, preset: capturePreset()))
+        if let data = try? JSONEncoder().encode(presets) {
+            UserDefaults.standard.set(data, forKey: "appearancePresets")
+        }
+    }
+
+    func deletePreset(name: String) {
+        var presets = savedPresets()
+        presets.removeAll { $0.name == name }
+        if let data = try? JSONEncoder().encode(presets) {
+            UserDefaults.standard.set(data, forKey: "appearancePresets")
+        }
+    }
+}
+
+struct AppearancePreset: Codable {
+    var primaryRadius: Double
+    var iconSize: Double
+    var centerIconSize: Double
+    var centerDeadZone: Double
+    var glowColorHex: String
+    var deepGlowColorHex: String
+    var ringColorHex: String
+    var hoverColorHex: String
+    var backgroundColorHex: String
+    var ringFillColorHex: String
+    var segmentBorderColorHex: String
+    var backgroundOpacity: Double
+    var glowIntensity: Double
+    var ringOpacity: Double
+    var ringFillOpacity: Double
+    var deepOrbitFillOpacity: Double
+    var cancelButtonSize: Double
+    var cancelButtonOpacity: Double
+    var segmentBorderOpacity: Double
+    var segmentBorderWidth: Double
+}
+
+struct NamedPreset: Codable, Identifiable {
+    var id: String { name }
+    let name: String
+    let preset: AppearancePreset
 }
 
 // MARK: - Color Hex Conversion

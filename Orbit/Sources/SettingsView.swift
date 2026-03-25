@@ -76,6 +76,8 @@ struct SettingsView: View {
         HStack(spacing: 0) {
             ScrollView {
                 Form {
+                    PresetsSection()
+
                     Section("Colors") {
                         colorRow("Center icon glow", hex: $settings.glowColorHex)
                         colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
@@ -114,6 +116,11 @@ struct SettingsView: View {
                                   range: 24...128, step: 4, format: { "\(Int($0))px" })
                         sliderRow("Cancel button opacity", value: $settings.cancelButtonOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        colorRow("Segment border color", hex: $settings.segmentBorderColorHex)
+                        sliderRow("Segment border opacity", value: $settings.segmentBorderOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Segment border width", value: $settings.segmentBorderWidth,
+                                  range: 0.5...5, step: 0.5, format: { String(format: "%.1fpt", $0) })
                     }
 
                     Button("Reset to Defaults") {
@@ -122,13 +129,21 @@ struct SettingsView: View {
                         settings.ringColorHex = "#4D99FF"
                         settings.hoverColorHex = "#4D99FF"
                         settings.backgroundColorHex = "#000000"
+                        settings.ringFillColorHex = "#FFFFFF"
+                        settings.segmentBorderColorHex = "#FFFFFF"
                         settings.ringOpacity = 0.25
+                        settings.ringFillOpacity = 0.0
                         settings.backgroundOpacity = 0.65
                         settings.glowIntensity = 1.0
                         settings.primaryRadius = 160
                         settings.iconSize = 92
                         settings.centerIconSize = 92
+                        settings.centerDeadZone = 80
                         settings.deepOrbitFillOpacity = 0.25
+                        settings.cancelButtonSize = 56
+                        settings.cancelButtonOpacity = 0.7
+                        settings.segmentBorderOpacity = 0.0
+                        settings.segmentBorderWidth = 1.0
                     }
                     .font(.caption)
                 }
@@ -191,6 +206,75 @@ struct SettingsView: View {
             .labelsHidden()
             .frame(width: 44)
         }
+    }
+}
+
+// MARK: - Presets Section
+
+private struct PresetsSection: View {
+    @ObservedObject private var settings = OrbitSettings.shared
+    @State private var presets: [NamedPreset] = []
+    @State private var newPresetName = ""
+    @State private var showingSaveField = false
+
+    var body: some View {
+        Section("Presets") {
+            if presets.isEmpty && !showingSaveField {
+                Text("No saved presets")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            ForEach(presets) { preset in
+                HStack {
+                    Button(preset.name) {
+                        settings.applyPreset(preset.preset)
+                    }
+                    .buttonStyle(.plain)
+                    Spacer()
+                    Button(role: .destructive) {
+                        settings.deletePreset(name: preset.name)
+                        presets = settings.savedPresets()
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.secondary)
+                }
+            }
+
+            if showingSaveField {
+                HStack(spacing: 6) {
+                    TextField("Preset name", text: $newPresetName)
+                        .textFieldStyle(.roundedBorder)
+                        .onSubmit { saveAndDismiss() }
+                    Button("Save") { saveAndDismiss() }
+                        .disabled(newPresetName.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Button("Cancel") {
+                        showingSaveField = false
+                        newPresetName = ""
+                    }
+                }
+            } else {
+                Button {
+                    showingSaveField = true
+                } label: {
+                    Label("Save current as preset", systemImage: "plus")
+                        .font(.caption)
+                }
+            }
+        }
+        .onAppear { presets = settings.savedPresets() }
+    }
+
+    private func saveAndDismiss() {
+        let name = newPresetName.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty else { return }
+        settings.savePreset(name: name)
+        presets = settings.savedPresets()
+        newPresetName = ""
+        showingSaveField = false
     }
 }
 

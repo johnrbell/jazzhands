@@ -131,6 +131,10 @@ struct OrbitView: View {
         return ZStack {
             orbitTrackRing(radius: viewModel.primaryRadius, color: glowColor, dimmed: dimmed)
 
+            if s.segmentBorderOpacity > 0, total > 0 {
+                segmentBorders(total: total, radius: viewModel.primaryRadius, dimmed: dimmed)
+            }
+
             ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
                 let pos = viewModel.positionForSegment(at: index, total: total, radius: viewModel.primaryRadius)
                 let isSelected = index == viewModel.selectedIndex
@@ -243,6 +247,39 @@ struct OrbitView: View {
         .padding(8)
         .background(Color.black.opacity(0.5))
         .cornerRadius(6)
+    }
+
+    // MARK: - Segment Borders
+
+    private func segmentBorders(total: Int, radius: CGFloat, dimmed: Bool) -> some View {
+        let outerR = radius + viewModel.segmentIconSize / 2 + 10
+        let segAngle = (2.0 * CGFloat.pi) / CGFloat(total)
+        let opacity = dimmed ? s.segmentBorderOpacity * 0.3 : s.segmentBorderOpacity
+        let diameter = outerR * 2 + 4
+
+        return Canvas { context, size in
+            let center = CGPoint(x: size.width / 2, y: size.height / 2)
+
+            let innerR = viewModel.centerDeadZone
+
+            for i in 0..<total {
+                let borderAngle = segAngle * CGFloat(i) - CGFloat.pi / 2.0 - segAngle / 2.0
+                var line = Path()
+                line.move(to: CGPoint(
+                    x: center.x + innerR * cos(borderAngle),
+                    y: center.y + innerR * sin(borderAngle)
+                ))
+                line.addLine(to: CGPoint(
+                    x: center.x + outerR * cos(borderAngle),
+                    y: center.y + outerR * sin(borderAngle)
+                ))
+                context.stroke(line,
+                               with: .color(Color(hex: s.segmentBorderColorHex).opacity(opacity)),
+                               lineWidth: CGFloat(s.segmentBorderWidth))
+            }
+        }
+        .frame(width: diameter, height: diameter)
+        .allowsHitTesting(false)
     }
 
     // MARK: - Track Ring
