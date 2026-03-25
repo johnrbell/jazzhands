@@ -136,26 +136,7 @@ struct SettingsView: View {
                     }
 
                     Button("Reset to Defaults") {
-                        settings.glowColorHex = "#DEE9F8"
-                        settings.deepGlowColorHex = "#9966FF"
-                        settings.ringColorHex = "#4D99FF"
-                        settings.hoverColorHex = "#4D99FF"
-                        settings.backgroundColorHex = "#000000"
-                        settings.ringFillColorHex = "#FFFFFF"
-                        settings.segmentBorderColorHex = "#FFFFFF"
-                        settings.ringOpacity = 0.25
-                        settings.ringFillOpacity = 0.0
-                        settings.backgroundOpacity = 0.65
-                        settings.glowIntensity = 1.0
-                        settings.primaryRadius = 160
-                        settings.iconSize = 92
-                        settings.centerIconSize = 92
-                        settings.centerDeadZone = 80
-                        settings.deepOrbitFillOpacity = 0.25
-                        settings.cancelButtonSize = 56
-                        settings.cancelButtonOpacity = 0.7
-                        settings.segmentBorderOpacity = 0.0
-                        settings.segmentBorderWidth = 1.0
+                        settings.applyPreset(OrbitSettings.defaultPreset)
                     }
                     .font(.caption)
                 }

@@ -209,6 +209,87 @@ struct AppearancePreset: Codable {
     var cancelButtonOpacity: Double
     var segmentBorderOpacity: Double
     var segmentBorderWidth: Double
+
+    init(primaryRadius: Double, iconSize: Double, centerIconSize: Double, centerDeadZone: Double,
+         glowColorHex: String, deepGlowColorHex: String, ringColorHex: String, hoverColorHex: String,
+         backgroundColorHex: String, ringFillColorHex: String, segmentBorderColorHex: String,
+         backgroundOpacity: Double, glowIntensity: Double, ringOpacity: Double, ringFillOpacity: Double,
+         deepOrbitFillOpacity: Double, cancelButtonSize: Double, cancelButtonOpacity: Double,
+         segmentBorderOpacity: Double, segmentBorderWidth: Double) {
+        self.primaryRadius = primaryRadius; self.iconSize = iconSize; self.centerIconSize = centerIconSize
+        self.centerDeadZone = centerDeadZone; self.glowColorHex = glowColorHex
+        self.deepGlowColorHex = deepGlowColorHex; self.ringColorHex = ringColorHex
+        self.hoverColorHex = hoverColorHex; self.backgroundColorHex = backgroundColorHex
+        self.ringFillColorHex = ringFillColorHex; self.segmentBorderColorHex = segmentBorderColorHex
+        self.backgroundOpacity = backgroundOpacity; self.glowIntensity = glowIntensity
+        self.ringOpacity = ringOpacity; self.ringFillOpacity = ringFillOpacity
+        self.deepOrbitFillOpacity = deepOrbitFillOpacity; self.cancelButtonSize = cancelButtonSize
+        self.cancelButtonOpacity = cancelButtonOpacity; self.segmentBorderOpacity = segmentBorderOpacity
+        self.segmentBorderWidth = segmentBorderWidth
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = OrbitSettings.defaultPreset
+        primaryRadius = (try? c.decode(Double.self, forKey: .primaryRadius)) ?? d.primaryRadius
+        iconSize = (try? c.decode(Double.self, forKey: .iconSize)) ?? d.iconSize
+        centerIconSize = (try? c.decode(Double.self, forKey: .centerIconSize)) ?? d.centerIconSize
+        centerDeadZone = (try? c.decode(Double.self, forKey: .centerDeadZone)) ?? d.centerDeadZone
+        glowColorHex = (try? c.decode(String.self, forKey: .glowColorHex)) ?? d.glowColorHex
+        deepGlowColorHex = (try? c.decode(String.self, forKey: .deepGlowColorHex)) ?? d.deepGlowColorHex
+        ringColorHex = (try? c.decode(String.self, forKey: .ringColorHex)) ?? d.ringColorHex
+        hoverColorHex = (try? c.decode(String.self, forKey: .hoverColorHex)) ?? d.hoverColorHex
+        backgroundColorHex = (try? c.decode(String.self, forKey: .backgroundColorHex)) ?? d.backgroundColorHex
+        ringFillColorHex = (try? c.decode(String.self, forKey: .ringFillColorHex)) ?? d.ringFillColorHex
+        backgroundOpacity = (try? c.decode(Double.self, forKey: .backgroundOpacity)) ?? d.backgroundOpacity
+        glowIntensity = (try? c.decode(Double.self, forKey: .glowIntensity)) ?? d.glowIntensity
+        ringOpacity = (try? c.decode(Double.self, forKey: .ringOpacity)) ?? d.ringOpacity
+        ringFillOpacity = (try? c.decode(Double.self, forKey: .ringFillOpacity)) ?? d.ringFillOpacity
+        deepOrbitFillOpacity = (try? c.decode(Double.self, forKey: .deepOrbitFillOpacity)) ?? d.deepOrbitFillOpacity
+        cancelButtonSize = (try? c.decode(Double.self, forKey: .cancelButtonSize)) ?? d.cancelButtonSize
+        cancelButtonOpacity = (try? c.decode(Double.self, forKey: .cancelButtonOpacity)) ?? d.cancelButtonOpacity
+        // Handle renamed fields: segment border was previously spoke
+        segmentBorderColorHex = (try? c.decode(String.self, forKey: .segmentBorderColorHex))
+            ?? (try? c.decode(String.self, forKey: .spokeColorHex)) ?? d.segmentBorderColorHex
+        segmentBorderOpacity = (try? c.decode(Double.self, forKey: .segmentBorderOpacity))
+            ?? (try? c.decode(Double.self, forKey: .spokeOpacity)) ?? d.segmentBorderOpacity
+        segmentBorderWidth = (try? c.decode(Double.self, forKey: .segmentBorderWidth))
+            ?? (try? c.decode(Double.self, forKey: .spokeWidth)) ?? d.segmentBorderWidth
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(primaryRadius, forKey: .primaryRadius)
+        try c.encode(iconSize, forKey: .iconSize)
+        try c.encode(centerIconSize, forKey: .centerIconSize)
+        try c.encode(centerDeadZone, forKey: .centerDeadZone)
+        try c.encode(glowColorHex, forKey: .glowColorHex)
+        try c.encode(deepGlowColorHex, forKey: .deepGlowColorHex)
+        try c.encode(ringColorHex, forKey: .ringColorHex)
+        try c.encode(hoverColorHex, forKey: .hoverColorHex)
+        try c.encode(backgroundColorHex, forKey: .backgroundColorHex)
+        try c.encode(ringFillColorHex, forKey: .ringFillColorHex)
+        try c.encode(segmentBorderColorHex, forKey: .segmentBorderColorHex)
+        try c.encode(backgroundOpacity, forKey: .backgroundOpacity)
+        try c.encode(glowIntensity, forKey: .glowIntensity)
+        try c.encode(ringOpacity, forKey: .ringOpacity)
+        try c.encode(ringFillOpacity, forKey: .ringFillOpacity)
+        try c.encode(deepOrbitFillOpacity, forKey: .deepOrbitFillOpacity)
+        try c.encode(cancelButtonSize, forKey: .cancelButtonSize)
+        try c.encode(cancelButtonOpacity, forKey: .cancelButtonOpacity)
+        try c.encode(segmentBorderOpacity, forKey: .segmentBorderOpacity)
+        try c.encode(segmentBorderWidth, forKey: .segmentBorderWidth)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case primaryRadius, iconSize, centerIconSize, centerDeadZone
+        case glowColorHex, deepGlowColorHex, ringColorHex, hoverColorHex
+        case backgroundColorHex, ringFillColorHex, segmentBorderColorHex
+        case backgroundOpacity, glowIntensity, ringOpacity, ringFillOpacity
+        case deepOrbitFillOpacity, cancelButtonSize, cancelButtonOpacity
+        case segmentBorderOpacity, segmentBorderWidth
+        case spokeColorHex, spokeOpacity, spokeWidth
+    }
 }
 
 struct NamedPreset: Codable, Identifiable {
