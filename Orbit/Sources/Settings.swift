@@ -12,28 +12,29 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("deepOrbitEnabled") var deepOrbitEnabled: Bool = true
     @AppStorage("hoverTimeout") var hoverTimeout: Double = 0.5
     @AppStorage("cursorSensitivity") var cursorSensitivity: Double = 1.0
-    @AppStorage("centerDeadZone") var centerDeadZone: Double = 30
+    @AppStorage("centerDeadZone") var centerDeadZone: Double = 80
     @AppStorage("maxCursorRadius") var maxCursorRadius: Double = 120
     @AppStorage("showHiddenApps") var showHiddenApps: Bool = false
     @AppStorage("showMinimizedWindows") var showMinimizedWindows: Bool = false
 
     // Layout
-    @AppStorage("primaryRadius") var primaryRadius: Double = 140
-    @AppStorage("iconSize") var iconSize: Double = 48
-    @AppStorage("centerIconSize") var centerIconSize: Double = 56
+    @AppStorage("primaryRadius") var primaryRadius: Double = 160
+    @AppStorage("iconSize") var iconSize: Double = 92
+    @AppStorage("centerIconSize") var centerIconSize: Double = 92
 
     // Colors (stored as hex strings)
-    @AppStorage("glowColorHex") var glowColorHex: String = "#4D99FF"
+    @AppStorage("glowColorHex") var glowColorHex: String = "#DEE9F8"
     @AppStorage("deepGlowColorHex") var deepGlowColorHex: String = "#9966FF"
     @AppStorage("ringColorHex") var ringColorHex: String = "#4D99FF"
     @AppStorage("hoverColorHex") var hoverColorHex: String = "#4D99FF"
     @AppStorage("backgroundColorHex") var backgroundColorHex: String = "#000000"
 
     // Effects
-    @AppStorage("backgroundOpacity") var backgroundOpacity: Double = 0.4
+    @AppStorage("backgroundOpacity") var backgroundOpacity: Double = 0.65
     @AppStorage("glowIntensity") var glowIntensity: Double = 1.0
     @AppStorage("ringOpacity") var ringOpacity: Double = 0.25
     @AppStorage("centerFillOpacity") var centerFillOpacity: Double = 0.0
+    @AppStorage("deepOrbitFillOpacity") var deepOrbitFillOpacity: Double = 0.25
 
     // Debug
     @AppStorage("showDebugOverlay") var showDebugOverlay: Bool = false

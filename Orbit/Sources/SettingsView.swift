@@ -102,20 +102,23 @@ struct SettingsView: View {
                                   range: 0...0.8, step: 0.05, format: { "\(Int($0 * 100))%" })
                         sliderRow("Glow intensity", value: $settings.glowIntensity,
                                   range: 0...2, step: 0.1, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Deep orbit fill", value: $settings.deepOrbitFillOpacity,
+                                  range: 0...0.6, step: 0.05, format: { "\(Int($0 * 100))%" })
                     }
 
                     Button("Reset to Defaults") {
-                        settings.glowColorHex = "#4D99FF"
+                        settings.glowColorHex = "#DEE9F8"
                         settings.deepGlowColorHex = "#9966FF"
                         settings.ringColorHex = "#4D99FF"
                         settings.hoverColorHex = "#4D99FF"
                         settings.backgroundColorHex = "#000000"
                         settings.ringOpacity = 0.25
-                        settings.backgroundOpacity = 0.4
+                        settings.backgroundOpacity = 0.65
                         settings.glowIntensity = 1.0
-                        settings.primaryRadius = 140
-                        settings.iconSize = 48
-                        settings.centerIconSize = 56
+                        settings.primaryRadius = 160
+                        settings.iconSize = 92
+                        settings.centerIconSize = 92
+                        settings.deepOrbitFillOpacity = 0.25
                     }
                     .font(.caption)
                 }

@@ -173,10 +173,11 @@ struct OrbitView: View {
                 wedge.addArc(center: center, radius: innerR, startAngle: endA, endAngle: startA, clockwise: true)
                 wedge.closeSubpath()
 
-                let fillColor = isSelected ? highlight.opacity(0.25) : Color.white.opacity(0.08)
+                let baseOpacity = s.deepOrbitFillOpacity
+                let fillColor = isSelected ? highlight.opacity(baseOpacity) : Color.white.opacity(baseOpacity * 0.32)
                 context.fill(wedge, with: .color(fillColor))
 
-                let strokeColor = isSelected ? highlight.opacity(0.9) : Color.white.opacity(0.15)
+                let strokeColor = isSelected ? highlight.opacity(min(baseOpacity * 3.6, 1.0)) : Color.white.opacity(baseOpacity * 0.6)
                 context.stroke(wedge, with: .color(strokeColor), lineWidth: isSelected ? 3 : 1)
 
                 let midR = innerR + (outerR - innerR) * 0.62
