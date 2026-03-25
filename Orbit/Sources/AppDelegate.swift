@@ -39,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupStatusBar()
         installHotKey()
         installFlagsMonitor()
+        installSpaceChangeObserver()
 
         if !AXIsProcessTrusted() {
             NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
@@ -206,6 +207,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = localFlags
 
         AppDelegate.log("Flags monitors installed")
+    }
+
+    // MARK: - Space Change
+
+    private func installSpaceChangeObserver() {
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.activeSpaceDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.isOrbitVisible else { return }
+                AppDelegate.log("Space changed while orbit visible — dismissing")
+                self.isOrbitVisible = false
+                self.activationTimestamp = nil
+                self.didCycle = false
+                self.overlayController?.hideOrbit()
+            }
+        }
     }
 
     // MARK: - Orbit control
