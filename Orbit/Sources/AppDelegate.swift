@@ -254,6 +254,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func onHotkeyDown() {
         AppDelegate.log("onHotkeyDown isOrbitVisible=\(isOrbitVisible)")
+
+        if isMissionControlActive() {
+            AppDelegate.log("Mission Control active — ignoring hotkey")
+            return
+        }
+
         if isOrbitVisible {
             didCycle = true
             overlayController?.cycleSelection()
@@ -290,6 +296,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             overlayController?.confirmSelection()
         }
         overlayController?.hideOrbit()
+    }
+
+    // MARK: - Mission Control Detection
+
+    private func isMissionControlActive() -> Bool {
+        guard let windowList = CGWindowListCopyWindowInfo(
+            [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID
+        ) as? [[String: Any]] else { return false }
+
+        for info in windowList {
+            guard let owner = info[kCGWindowOwnerName as String] as? String,
+                  owner == "Dock",
+                  let layer = info[kCGWindowLayer as String] as? Int,
+                  layer > 0 else { continue }
+            return true
+        }
+        return false
     }
 
     // MARK: - Status Bar
