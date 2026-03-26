@@ -322,7 +322,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupStatusBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "circle.circle", accessibilityDescription: "JazzHands")
+            button.image = makeMenuBarIcon()
         }
 
         let menu = NSMenu()
@@ -332,6 +332,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit JazzHands", action: #selector(quitApp), keyEquivalent: "q"))
         statusItem.menu = menu
+    }
+
+    private func makeMenuBarIcon() -> NSImage {
+        let size: CGFloat = 18
+        let image = NSImage(size: NSSize(width: size, height: size), flipped: false) { rect in
+            let center = CGPoint(x: rect.midX, y: rect.midY)
+            let outerR: CGFloat = 7.5
+            let innerR: CGFloat = 4.5
+            let segCount = 3
+            let gapDeg: CGFloat = 30
+            let segDeg = 360.0 / CGFloat(segCount)
+            let arcDeg = segDeg - gapDeg
+
+            NSColor.black.withAlphaComponent(0.6).setFill()
+
+            for i in 0..<segCount {
+                let startDeg = CGFloat(i) * segDeg - 90.0 + gapDeg / 2.0
+                let endDeg = startDeg + arcDeg
+
+                let wedge = NSBezierPath()
+                wedge.appendArc(withCenter: center, radius: outerR,
+                                startAngle: startDeg, endAngle: endDeg, clockwise: false)
+                wedge.appendArc(withCenter: center, radius: innerR,
+                                startAngle: endDeg, endAngle: startDeg, clockwise: true)
+                wedge.close()
+                wedge.fill()
+            }
+            return true
+        }
+        image.isTemplate = true
+        image.accessibilityDescription = "JazzHands"
+        return image
     }
 
     @objc private func openSettings() {
