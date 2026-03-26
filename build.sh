@@ -14,6 +14,13 @@ if [ -z "$SIGNING_IDENTITY" ]; then
 fi
 echo "Signing with: $SIGNING_IDENTITY"
 
+# Kill running instance if any
+if pgrep -x "$APP_NAME" > /dev/null; then
+    echo "Stopping running $APP_NAME..."
+    pkill -x "$APP_NAME" || true
+    sleep 0.5
+fi
+
 echo "Building $APP_NAME..."
 swift build
 
@@ -38,5 +45,5 @@ codesign -fs "$SIGNING_IDENTITY" --options runtime --entitlements "Orbit/Resourc
 
 echo "Done! App bundle at: $APP_BUNDLE"
 echo ""
-echo "To run:"
-echo "  open $APP_BUNDLE"
+echo "Launching $APP_NAME..."
+open "$APP_BUNDLE"
