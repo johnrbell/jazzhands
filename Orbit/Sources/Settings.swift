@@ -46,6 +46,8 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("segmentBorderOpacity") var segmentBorderOpacity: Double = 0.0
     @AppStorage("segmentBorderWidth") var segmentBorderWidth: Double = 1.0
     @AppStorage("segmentBorderCutout") var segmentBorderCutout: Bool = false
+    @AppStorage("animateParentWedge") var animateParentWedge: Bool = true
+    @AppStorage("parentWedgeSlideDistance") var parentWedgeSlideDistance: Double = 30
 
     // Bump indicators ("ring" = half-circles on ring edge, "icon" = dots under icon)
     @AppStorage("bumpStyle") var bumpStyle: String = "ring"
@@ -123,6 +125,7 @@ final class OrbitSettings: ObservableObject {
             cancelButtonSize: cancelButtonSize, cancelButtonOpacity: cancelButtonOpacity,
             segmentBorderOpacity: segmentBorderOpacity, segmentBorderWidth: segmentBorderWidth,
             segmentBorderCutout: segmentBorderCutout,
+            animateParentWedge: animateParentWedge, parentWedgeSlideDistance: parentWedgeSlideDistance,
             bumpStyle: bumpStyle, bumpColorHex: bumpColorHex, bumpOpacity: bumpOpacity
         )
     }
@@ -149,6 +152,8 @@ final class OrbitSettings: ObservableObject {
         segmentBorderOpacity = preset.segmentBorderOpacity
         segmentBorderWidth = preset.segmentBorderWidth
         segmentBorderCutout = preset.segmentBorderCutout
+        animateParentWedge = preset.animateParentWedge
+        parentWedgeSlideDistance = preset.parentWedgeSlideDistance
         bumpStyle = preset.bumpStyle
         bumpColorHex = preset.bumpColorHex
         bumpOpacity = preset.bumpOpacity
@@ -167,6 +172,7 @@ final class OrbitSettings: ObservableObject {
         cancelButtonSize: 56, cancelButtonOpacity: 0.7,
         segmentBorderOpacity: 0.0, segmentBorderWidth: 1.0,
         segmentBorderCutout: false,
+        animateParentWedge: true, parentWedgeSlideDistance: 30,
         bumpStyle: "ring", bumpColorHex: "#FFFFFF", bumpOpacity: 0.55
     )
 
@@ -225,6 +231,8 @@ struct AppearancePreset: Codable {
     var segmentBorderOpacity: Double
     var segmentBorderWidth: Double
     var segmentBorderCutout: Bool
+    var animateParentWedge: Bool
+    var parentWedgeSlideDistance: Double
     var bumpStyle: String
     var bumpColorHex: String
     var bumpOpacity: Double
@@ -236,6 +244,7 @@ struct AppearancePreset: Codable {
          deepOrbitFillOpacity: Double, cancelButtonSize: Double, cancelButtonOpacity: Double,
          segmentBorderOpacity: Double, segmentBorderWidth: Double,
          segmentBorderCutout: Bool = false,
+         animateParentWedge: Bool = true, parentWedgeSlideDistance: Double = 30,
          bumpStyle: String = "ring", bumpColorHex: String = "#FFFFFF", bumpOpacity: Double = 0.55) {
         self.primaryRadius = primaryRadius; self.iconSize = iconSize; self.centerIconSize = centerIconSize
         self.centerDeadZone = centerDeadZone; self.glowColorHex = glowColorHex
@@ -247,6 +256,7 @@ struct AppearancePreset: Codable {
         self.deepOrbitFillOpacity = deepOrbitFillOpacity; self.cancelButtonSize = cancelButtonSize
         self.cancelButtonOpacity = cancelButtonOpacity; self.segmentBorderOpacity = segmentBorderOpacity
         self.segmentBorderWidth = segmentBorderWidth; self.segmentBorderCutout = segmentBorderCutout
+        self.animateParentWedge = animateParentWedge; self.parentWedgeSlideDistance = parentWedgeSlideDistance
         self.bumpStyle = bumpStyle; self.bumpColorHex = bumpColorHex; self.bumpOpacity = bumpOpacity
     }
 
@@ -278,6 +288,8 @@ struct AppearancePreset: Codable {
         segmentBorderWidth = (try? c.decode(Double.self, forKey: .segmentBorderWidth))
             ?? (try? c.decode(Double.self, forKey: .spokeWidth)) ?? d.segmentBorderWidth
         segmentBorderCutout = (try? c.decode(Bool.self, forKey: .segmentBorderCutout)) ?? d.segmentBorderCutout
+        animateParentWedge = (try? c.decode(Bool.self, forKey: .animateParentWedge)) ?? d.animateParentWedge
+        parentWedgeSlideDistance = (try? c.decode(Double.self, forKey: .parentWedgeSlideDistance)) ?? d.parentWedgeSlideDistance
         bumpStyle = (try? c.decode(String.self, forKey: .bumpStyle)) ?? d.bumpStyle
         bumpColorHex = (try? c.decode(String.self, forKey: .bumpColorHex)) ?? d.bumpColorHex
         bumpOpacity = (try? c.decode(Double.self, forKey: .bumpOpacity)) ?? d.bumpOpacity
@@ -306,6 +318,8 @@ struct AppearancePreset: Codable {
         try c.encode(segmentBorderOpacity, forKey: .segmentBorderOpacity)
         try c.encode(segmentBorderWidth, forKey: .segmentBorderWidth)
         try c.encode(segmentBorderCutout, forKey: .segmentBorderCutout)
+        try c.encode(animateParentWedge, forKey: .animateParentWedge)
+        try c.encode(parentWedgeSlideDistance, forKey: .parentWedgeSlideDistance)
         try c.encode(bumpStyle, forKey: .bumpStyle)
         try c.encode(bumpColorHex, forKey: .bumpColorHex)
         try c.encode(bumpOpacity, forKey: .bumpOpacity)
@@ -318,6 +332,7 @@ struct AppearancePreset: Codable {
         case backgroundOpacity, glowIntensity, ringOpacity, ringFillOpacity
         case deepOrbitFillOpacity, cancelButtonSize, cancelButtonOpacity
         case segmentBorderOpacity, segmentBorderWidth, segmentBorderCutout
+        case animateParentWedge, parentWedgeSlideDistance
         case bumpStyle, bumpColorHex, bumpOpacity
         case spokeColorHex, spokeOpacity, spokeWidth
     }

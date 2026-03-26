@@ -23,6 +23,9 @@ struct OrbitView: View {
                         ZStack {
                             if case .deep(let appIndex) = viewModel.tier {
                                 deepOrbitRing(appIndex: appIndex)
+                            } else if viewModel.slideAppIndex >= 0, !viewModel.deepOrbitWindows.isEmpty {
+                                deepOrbitRing(appIndex: viewModel.slideAppIndex)
+                                    .opacity(Double(viewModel.deepOrbitSlideOffset / viewModel.deepOrbitSlideAmount))
                             }
                             primaryRing
                             centerInfo
@@ -123,13 +126,14 @@ struct OrbitView: View {
     private var primaryRing: some View {
         let apps = viewModel.apps
         let total = apps.count
-        let dimmed = {
-            if case .deep = viewModel.tier { return true }
-            return false
+        let deepParentIndex: Int = {
+            if case .deep(let idx) = viewModel.tier { return idx }
+            return -1
         }()
+        let dimmed = deepParentIndex >= 0
 
         return ZStack {
-            orbitTrackRing(radius: viewModel.primaryRadius, color: glowColor, dimmed: dimmed, segmentCount: total)
+            orbitTrackRing(radius: viewModel.primaryRadius, color: glowColor, dimmed: dimmed, segmentCount: total, deepParentIndex: viewModel.slideAppIndex)
 
             if s.segmentBorderOpacity > 0, total > 0, !s.segmentBorderCutout {
                 segmentBorders(total: total, radius: viewModel.primaryRadius, dimmed: dimmed)
@@ -140,9 +144,16 @@ struct OrbitView: View {
             }
 
             ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
-                let pos = viewModel.positionForSegment(at: index, total: total, radius: viewModel.primaryRadius)
+                let basePos = viewModel.positionForSegment(at: index, total: total, radius: viewModel.primaryRadius)
                 let isSelected = index == viewModel.selectedIndex
                 let isDeepParent = dimmed && isSelected
+                let isSliding = index == viewModel.slideAppIndex
+                let isReturning = index == viewModel.returnSlideAppIndex
+                let slideVec: CGPoint = {
+                    if isSliding { return viewModel.deepOrbitSlideVector(appIndex: index) }
+                    if isReturning { return viewModel.returnSlideVector(appIndex: index) }
+                    return .zero
+                }()
 
                 AppSegmentView(
                     app: app,
@@ -152,9 +163,9 @@ struct OrbitView: View {
                     showBackground: isDeepParent,
                     windowCount: app.windows.count
                 )
-                .offset(x: pos.x, y: pos.y)
                 .opacity(dimmed && !isDeepParent ? 0.4 : 1.0)
                 .animation(.easeOut(duration: 0.15), value: isSelected)
+                .offset(x: basePos.x + slideVec.x, y: basePos.y + slideVec.y)
             }
         }
     }
@@ -167,7 +178,8 @@ struct OrbitView: View {
         let outerR = viewModel.deepOrbitOuterRadius
 
         return Canvas { context, size in
-            let center = CGPoint(x: size.width / 2, y: size.height / 2)
+            let slideVec = viewModel.deepOrbitSlideVector(appIndex: appIndex)
+            let center = CGPoint(x: size.width / 2 + slideVec.x, y: size.height / 2 + slideVec.y)
             let highlight = s.deepGlowColor
 
             for (index, window) in windows.enumerated() {
@@ -341,11 +353,12 @@ struct OrbitView: View {
 
     // MARK: - Track Ring
 
-    private func orbitTrackRing(radius: CGFloat, color: Color, dimmed: Bool, segmentCount: Int = 0) -> some View {
+    private func orbitTrackRing(radius: CGFloat, color: Color, dimmed: Bool, segmentCount: Int = 0, deepParentIndex: Int = -1) -> some View {
         let innerR = viewModel.centerDeadZone
         let outerR = radius + viewModel.segmentIconSize / 2 + 10
         let fillOpacity = dimmed ? s.ringFillOpacity * 0.3 : s.ringFillOpacity
         let useCutout = s.segmentBorderCutout && segmentCount > 0 && s.segmentBorderOpacity > 0
+        let slideOffset = viewModel.deepOrbitSlideOffset
 
         return ZStack {
             if useCutout {
@@ -355,9 +368,14 @@ struct OrbitView: View {
                     let halfGapOuter = Double(s.segmentBorderWidth) / Double(outerR)
                     let halfGapInner = Double(s.segmentBorderWidth) / Double(innerR)
 
+                    let returnIndex = viewModel.returnSlideAppIndex
+                    let returnOffset = viewModel.returnSlideOffset
+
                     for i in 0..<segmentCount {
                         let baseAngle = segAngle * Double(i) - Double.pi / 2.0 - segAngle / 2.0
                         let nextAngle = baseAngle + segAngle
+                        let isDeepParent = (i == deepParentIndex)
+                        let isReturning = (i == returnIndex)
 
                         var wedge = Path()
                         wedge.addArc(center: center, radius: outerR,
@@ -370,17 +388,33 @@ struct OrbitView: View {
                                      clockwise: true)
                         wedge.closeSubpath()
 
-                        if fillOpacity > 0 {
-                            context.fill(wedge, with: .color(s.ringFillColor.opacity(fillOpacity)))
+                        let wedgeFillOpacity = (isDeepParent || isReturning) ? s.ringFillOpacity : fillOpacity
+                        let wedgeStrokeOpacity = (isDeepParent || isReturning) ? s.ringOpacity : (dimmed ? 0.1 : s.ringOpacity)
+
+                        var drawCtx = context
+                        if isDeepParent && slideOffset > 0 {
+                            let midAngle = (baseAngle + nextAngle) / 2.0
+                            drawCtx.translateBy(
+                                x: CGFloat(cos(midAngle)) * slideOffset,
+                                y: CGFloat(sin(midAngle)) * slideOffset
+                            )
+                        } else if isReturning && returnOffset > 0 {
+                            let midAngle = (baseAngle + nextAngle) / 2.0
+                            drawCtx.translateBy(
+                                x: CGFloat(cos(midAngle)) * returnOffset,
+                                y: CGFloat(sin(midAngle)) * returnOffset
+                            )
                         }
 
-                        let strokeOpacity = dimmed ? 0.1 : s.ringOpacity
-                        if strokeOpacity > 0 {
-                            context.stroke(wedge, with: .color(s.ringColor.opacity(strokeOpacity)), lineWidth: 1.5)
+                        if wedgeFillOpacity > 0 {
+                            drawCtx.fill(wedge, with: .color(s.ringFillColor.opacity(wedgeFillOpacity)))
+                        }
+                        if wedgeStrokeOpacity > 0 {
+                            drawCtx.stroke(wedge, with: .color(s.ringColor.opacity(wedgeStrokeOpacity)), lineWidth: isDeepParent ? 2 : 1.5)
                         }
                     }
                 }
-                .frame(width: outerR * 2 + 4, height: outerR * 2 + 4)
+                .frame(width: (outerR + slideOffset) * 2 + 4, height: (outerR + slideOffset) * 2 + 4)
                 .shadow(color: color.opacity((dimmed ? 0.05 : 0.15) * s.glowIntensity), radius: 20)
             } else {
                 if fillOpacity > 0 {

@@ -54,6 +54,11 @@ struct SettingsView: View {
                     Toggle("Switch deep orbit on hover", isOn: $settings.deepOrbitSwitchOnHover)
                     Text("Hovering a different app icon while in deep orbit will switch to that app after the delay")
                         .font(.caption).foregroundColor(.secondary)
+                    Toggle("Animate parent wedge", isOn: $settings.animateParentWedge)
+                    if settings.animateParentWedge {
+                        sliderRow("Slide distance", value: $settings.parentWedgeSlideDistance,
+                                  range: 10...60, step: 5, format: { "\(Int($0))px" })
+                    }
                 }
 
                 sliderRow("Cursor sensitivity", value: $settings.cursorSensitivity,
