@@ -176,14 +176,96 @@ final class OrbitSettings: ObservableObject {
         bumpStyle: "ring", bumpColorHex: "#FFFFFF", bumpOpacity: 0.55
     )
 
+    static let overwatchPreset = AppearancePreset(
+        primaryRadius: 200, iconSize: 92, centerIconSize: 92,
+        centerDeadZone: 150,
+        glowColorHex: "#DEE9F8", deepGlowColorHex: "#9966FF",
+        ringColorHex: "#E3F7F4", hoverColorHex: "#F4F7F7",
+        backgroundColorHex: "#000000", ringFillColorHex: "#FFFFFF",
+        segmentBorderColorHex: "#F0F6FF",
+        backgroundOpacity: 0.65, glowIntensity: 1.0,
+        ringOpacity: 0.0, ringFillOpacity: 0.0,
+        deepOrbitFillOpacity: 0.5,
+        cancelButtonSize: 56, cancelButtonOpacity: 0.45,
+        segmentBorderOpacity: 0.45, segmentBorderWidth: 2.5,
+        segmentBorderCutout: false,
+        animateParentWedge: true, parentWedgeSlideDistance: 30,
+        bumpStyle: "icon", bumpColorHex: "#FFFFFF", bumpOpacity: 0.3
+    )
+
+    static let whiteRingSmallPreset = AppearancePreset(
+        primaryRadius: 150, iconSize: 92, centerIconSize: 92,
+        centerDeadZone: 90,
+        glowColorHex: "#DEE9F8", deepGlowColorHex: "#9966FF",
+        ringColorHex: "#E3F7F4", hoverColorHex: "#F4F7F7",
+        backgroundColorHex: "#000000", ringFillColorHex: "#FFFFFF",
+        segmentBorderColorHex: "#F0F6FF",
+        backgroundOpacity: 0.65, glowIntensity: 1.0,
+        ringOpacity: 0.0, ringFillOpacity: 0.3,
+        deepOrbitFillOpacity: 0.5,
+        cancelButtonSize: 56, cancelButtonOpacity: 0.45,
+        segmentBorderOpacity: 0.45, segmentBorderWidth: 2.5,
+        segmentBorderCutout: true,
+        animateParentWedge: true, parentWedgeSlideDistance: 30,
+        bumpStyle: "icon", bumpColorHex: "#FFFFFF", bumpOpacity: 0.3
+    )
+
+    static let whiteRingPreset = AppearancePreset(
+        primaryRadius: 200, iconSize: 92, centerIconSize: 92,
+        centerDeadZone: 150,
+        glowColorHex: "#DEE9F8", deepGlowColorHex: "#FF81FF",
+        ringColorHex: "#E3F7F4", hoverColorHex: "#FF81FE",
+        backgroundColorHex: "#000000", ringFillColorHex: "#FFFFFF",
+        segmentBorderColorHex: "#F0F6FF",
+        backgroundOpacity: 0.65, glowIntensity: 1.0,
+        ringOpacity: 0.0, ringFillOpacity: 0.3,
+        deepOrbitFillOpacity: 0.5,
+        cancelButtonSize: 56, cancelButtonOpacity: 0.45,
+        segmentBorderOpacity: 0.45, segmentBorderWidth: 2.5,
+        segmentBorderCutout: true,
+        animateParentWedge: true, parentWedgeSlideDistance: 30,
+        bumpStyle: "icon", bumpColorHex: "#FFFFFF", bumpOpacity: 0.3
+    )
+
+    static let claudeGeneratedPreset = AppearancePreset(
+        primaryRadius: 175, iconSize: 92, centerIconSize: 92,
+        centerDeadZone: 110,
+        glowColorHex: "#66FFCC", deepGlowColorHex: "#33CCAA",
+        ringColorHex: "#44DDBB", hoverColorHex: "#88FFE0",
+        backgroundColorHex: "#000000", ringFillColorHex: "#66FFCC",
+        segmentBorderColorHex: "#88FFE0",
+        backgroundOpacity: 0.7, glowIntensity: 0.8,
+        ringOpacity: 0.15, ringFillOpacity: 0.12,
+        deepOrbitFillOpacity: 0.4,
+        cancelButtonSize: 56, cancelButtonOpacity: 0.5,
+        segmentBorderOpacity: 0.35, segmentBorderWidth: 2.0,
+        segmentBorderCutout: true,
+        animateParentWedge: true, parentWedgeSlideDistance: 30,
+        bumpStyle: "icon", bumpColorHex: "#66FFCC", bumpOpacity: 0.4
+    )
+
+    static let builtInPresets: [NamedPreset] = [
+        NamedPreset(name: "default 1", preset: defaultPreset),
+        NamedPreset(name: "overwatch", preset: overwatchPreset),
+        NamedPreset(name: "white_ring_small", preset: whiteRingSmallPreset),
+        NamedPreset(name: "white_ring", preset: whiteRingPreset),
+        NamedPreset(name: "Claude-generated", preset: claudeGeneratedPreset),
+    ]
+
     func savedPresets() -> [NamedPreset] {
         var presets: [NamedPreset] = []
         if let data = UserDefaults.standard.data(forKey: "appearancePresets"),
            let decoded = try? JSONDecoder().decode([NamedPreset].self, from: data) {
             presets = decoded
         }
-        if !presets.contains(where: { $0.name == "default 1" }) {
-            presets.insert(NamedPreset(name: "default 1", preset: Self.defaultPreset), at: 0)
+        var changed = false
+        for (i, builtIn) in Self.builtInPresets.enumerated() {
+            if !presets.contains(where: { $0.name == builtIn.name }) {
+                presets.insert(builtIn, at: min(i, presets.count))
+                changed = true
+            }
+        }
+        if changed {
             if let data = try? JSONEncoder().encode(presets) {
                 UserDefaults.standard.set(data, forKey: "appearancePresets")
             }
