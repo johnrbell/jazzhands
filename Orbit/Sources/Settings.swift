@@ -245,10 +245,10 @@ final class OrbitSettings: ObservableObject {
     )
 
     static let builtInPresets: [NamedPreset] = [
-        NamedPreset(name: "default 1", preset: defaultPreset),
+        NamedPreset(name: "basic", preset: defaultPreset),
         NamedPreset(name: "overwatch", preset: overwatchPreset),
         NamedPreset(name: "white_ring_small", preset: whiteRingSmallPreset),
-        NamedPreset(name: "white_ring", preset: whiteRingPreset),
+        NamedPreset(name: "white_ring_lrg", preset: whiteRingPreset),
         NamedPreset(name: "Claude-generated", preset: claudeGeneratedPreset),
     ]
 
