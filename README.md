@@ -1,77 +1,94 @@
 # JazzHands
 
-A radial app switcher for macOS. Hold a pre-defined key combo to summon a circular ring of your active apps, move the mouse to highlight, and release to switch.
+A radial app switcher for macOS. Hold a key combo, move your mouse toward an app, release to switch.
 
 ![JazzHands Demo](demo.gif)
 
-## Requirements
+## How to Run (ELI5)
 
-- macOS 13.0+
-- Xcode 15+ or Swift 5.9+
-- Accessibility permission (prompted on first launch)
-
-## Build & Run
-
-**With Swift Package Manager:**
+You need a Mac running macOS 13 or later with the Xcode command-line tools installed.
 
 ```bash
-swift build
-.build/debug/JazzHands
+# 1. Clone the repo
+git clone <repo-url> && cd jazzhands
+
+# 2. Build and install (puts JazzHands.app in ~/Applications)
+bash build.sh
+
+# That's it. JazzHands is now running in your menu bar (look for the icon).
 ```
 
-**With Xcode:**
+On first launch you'll be asked to grant two permissions:
 
-```bash
-open JazzHands.xcodeproj
-```
+1. **Accessibility** — lets JazzHands listen for your hotkey and raise windows. Go to **System Settings → Privacy & Security → Accessibility** and toggle JazzHands on.
+2. **Screen Recording** — lets JazzHands capture window thumbnails for Deep Orbit. Same path but under **Screen Recording**.
 
-Then build and run the JazzHands scheme (⌘R).
+After granting both, restart JazzHands from the menu bar icon (Quit → relaunch, or just run `bash build.sh` again).
 
-## How It Works
+## Usage
 
-### Primary JazzHands (Tier 1)
-- **Option + Space (hold):** Shows the radial ring of all active apps (apps with at least one visible window)
-- **Mouse movement:** The cursor is hidden and locked to center. Movement direction highlights the corresponding app segment
-- **Release Option:** Switches to the highlighted app and dismisses the UI
-- **Quick tap:** Toggles to the last used app (like a fast Cmd+Tab)
+### Primary Ring
 
-### Deep JazzHands (Tier 2)
-- **Hover 500ms** on a multi-window app: A second concentric ring appears with window thumbnails
-- **Move outward** into the outer ring to select a specific window
-- **Release** to bring that exact window to front
+| Action | What happens |
+|--------|-------------|
+| **Hold Option + Space** | Summons the radial ring of active apps |
+| **Move mouse** | Highlights the app in that direction |
+| **Release Option** | Switches to the highlighted app |
+| **Quick tap** (< 200ms) | Toggles to the last-used app |
+| **Tab** (while held) | Cycles selection clockwise |
+| **Backtick** (while held) | Cycles selection counter-clockwise |
+
+### Deep Orbit (Window Picker)
+
+When you hover over a multi-window app for 500ms (configurable), a second ring fans out showing individual windows with thumbnails. Move outward to pick a specific window, or move to a different app to switch targets. Release to activate.
+
+### Settings
+
+Right-click (or click) the menu bar icon → **Settings** to configure:
+
+- **Shortcut** — change the trigger key combo (default: Option + Space)
+- **Appearance** — ring colors, glow, opacity, icon size, segment borders
+- **Behavior** — hover delay, cursor sensitivity, dead zone, deep orbit toggle
+- **Animation** — parent wedge slide on deep orbit entry
+- **Presets** — save and load full appearance configurations
 
 ## Architecture
 
 | File | Purpose |
 |------|---------|
-| `JazzHandsApp.swift` | SwiftUI app entry point (menu bar agent) |
-| `AppDelegate.swift` | Global hotkey listener, lifecycle management |
-| `WindowManager.swift` | CGWindowList + NSRunningApplication queries |
-| `Models.swift` | JazzHandsApp / JazzHandsWindow data models |
-| `JazzHandsViewModel.swift` | Angle → segment mapping, state machine, hover timers |
-| `JazzHandsView.swift` | SwiftUI radial UI with glow effects |
-| `OverlayWindowController.swift` | Transparent overlay window, mouse locking via CGWarpMouseCursorPosition |
+| `OrbitApp.swift` | SwiftUI app entry (menu bar agent, no dock icon) |
+| `AppDelegate.swift` | Global hotkey listener, status bar, lifecycle |
+| `OrbitViewModel.swift` | State machine — angle→segment mapping, hover timers, slide animations |
+| `OrbitView.swift` | SwiftUI radial UI with Canvas-drawn rings and glow effects |
+| `OverlayWindowController.swift` | Fullscreen transparent overlay, mouse capture via CGWarpMouseCursorPosition |
+| `WindowManager.swift` | CGWindowListCopyWindowInfo + AX API for window enumeration and activation |
+| `Models.swift` | `OrbitApp` / `OrbitWindow` data models |
+| `Settings.swift` | `@AppStorage`-backed settings with preset save/load |
+| `SettingsView.swift` | Settings UI |
+| `OnboardingView.swift` | First-launch permission grant flow |
 
-## Permissions
+## Rebuilding
 
-JazzHands requires **Accessibility** permission to:
-- Listen for global hotkeys (Option + Space) when other apps are focused
-- Raise specific windows via the Accessibility API
+After making changes:
 
-On first launch, macOS will prompt you. You can also enable it manually in **System Settings → Privacy & Security → Accessibility**.
+```bash
+bash build.sh
+```
 
-## Segment Selection Math
+This builds, copies the binary into `~/Applications/JazzHands.app`, re-signs it, and launches. If JazzHands is already running it will be stopped first.
 
-The mouse vector `(dx, dy)` from center is converted to an angle:
+## How It Works
+
+The mouse vector from center is converted to an angle and mapped to a segment:
 
 ```
 θ = atan2(dy, dx)
-```
-
-Normalized to `[0, 2π)`, then mapped to a segment index:
-
-```
 index = floor(θ / (2π / n)) % n
 ```
 
-where `n` is the number of active apps.
+A dead zone around the center prevents accidental selection. Segment borders can be rendered as filled strokes or negative-space cutouts. Deep orbit uses a second concentric arc of wedges with constant-pixel-width gaps.
+
+## Requirements
+
+- macOS 13.0+
+- Swift 5.9+ (Xcode 15+ or standalone toolchain)
