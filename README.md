@@ -1,6 +1,6 @@
 # JazzHands
 
-A radial app switcher for macOS. Hold a key combo, move your mouse toward an app, release to switch.
+A radial app switcher for macOS, inspired by the emote wheel in Overwatch. Hold a key combo to summon a ring of your active apps, flick toward the one you want, and release to switch. No clicking, no dock hunting — just muscle memory.
 
 ![JazzHands Demo](demo.gif)
 
