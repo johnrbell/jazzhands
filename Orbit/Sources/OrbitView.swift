@@ -131,6 +131,9 @@ struct OrbitView: View {
             return -1
         }()
         let dimmed = deepParentIndex >= 0
+        let innerR = viewModel.centerDeadZone
+        let outerR = viewModel.primaryRadius + viewModel.segmentIconSize / 2 + 10
+        let iconRadius = (innerR + outerR) / 2
 
         return ZStack {
             orbitTrackRing(radius: viewModel.primaryRadius, color: glowColor, dimmed: dimmed, segmentCount: total, deepParentIndex: viewModel.slideAppIndex)
@@ -144,7 +147,7 @@ struct OrbitView: View {
             }
 
             ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
-                let basePos = viewModel.positionForSegment(at: index, total: total, radius: viewModel.primaryRadius)
+                let basePos = viewModel.positionForSegment(at: index, total: total, radius: iconRadius)
                 let isSelected = index == viewModel.selectedIndex
                 let isDeepParent = dimmed && isSelected
                 let isSliding = index == viewModel.slideAppIndex
@@ -274,10 +277,14 @@ struct OrbitView: View {
     // MARK: - Multi-Window Ring Bumps
 
     private func multiWindowRingBumps(apps: [OrbitApp], total: Int, radius: CGFloat, dimmed: Bool) -> some View {
-        let canvasSize = (radius + viewModel.segmentIconSize / 2 + 20) * 2
+        let slideOffset = viewModel.deepOrbitSlideOffset
+        let canvasSize = (radius + viewModel.segmentIconSize / 2 + 20 + slideOffset) * 2
         let outerR = radius + viewModel.segmentIconSize / 2 + 10
         let bumpR: CGFloat = 5
         let spread = viewModel.deepOrbitSpread
+        let slideIdx = viewModel.slideAppIndex
+        let returnIdx = viewModel.returnSlideAppIndex
+        let returnOff = viewModel.returnSlideOffset
 
         return Canvas { context, size in
             let c = CGPoint(x: size.width / 2, y: size.height / 2)
@@ -293,11 +300,21 @@ struct OrbitView: View {
                 let totalSpread = spread * Double(count - 1)
                 let startAngle = parentAngle - totalSpread / 2.0
 
+                var ox: CGFloat = 0
+                var oy: CGFloat = 0
+                if index == slideIdx && slideOffset > 0 {
+                    ox = slideOffset * CGFloat(cos(parentAngle))
+                    oy = slideOffset * CGFloat(sin(parentAngle))
+                } else if index == returnIdx && returnOff > 0 {
+                    ox = returnOff * CGFloat(cos(parentAngle))
+                    oy = returnOff * CGFloat(sin(parentAngle))
+                }
+
                 for wi in 0..<count {
                     let bumpAngle = startAngle + spread * Double(wi)
 
-                    let bx = c.x + outerR * CGFloat(cos(bumpAngle))
-                    let by = c.y + outerR * CGFloat(sin(bumpAngle))
+                    let bx = c.x + outerR * CGFloat(cos(bumpAngle)) + ox
+                    let by = c.y + outerR * CGFloat(sin(bumpAngle)) + oy
 
                     var path = Path()
                     let steps = 24
