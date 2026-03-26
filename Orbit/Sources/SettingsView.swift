@@ -12,7 +12,7 @@ struct SettingsView: View {
             advancedTab
                 .tabItem { Label("Advanced", systemImage: "wrench") }
         }
-        .frame(width: 680, height: 520)
+        .frame(width: 480, height: 520)
         .padding()
     }
 
@@ -82,76 +82,81 @@ struct SettingsView: View {
         .formStyle(.grouped)
     }
 
-    // MARK: - Appearance (with live preview)
+    // MARK: - Appearance
 
     private var appearanceTab: some View {
-        HStack(spacing: 0) {
-            ScrollView {
-                Form {
-                    PresetsSection()
-
-                    Section("Colors") {
-                        colorRow("Center icon glow", hex: $settings.glowColorHex)
-                        colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
-                        colorRow("Hover highlight", hex: $settings.hoverColorHex)
-                        colorRow("Ring color", hex: $settings.ringColorHex)
-                        colorRow("Background", hex: $settings.backgroundColorHex)
+        Form {
+            Section {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 4) {
+                        Text("Use your shortcut (\(settings.shortcutDisplayName)) to preview changes live.")
+                            .font(.callout)
+                        Text("No in-app preview yet. It sucks, we know. 🤷")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
-
-                    Section("Layout") {
-                        sliderRow("Ring radius", value: $settings.primaryRadius,
-                                  range: 80...250, step: 10, format: { "\(Int($0))px" })
-                        sliderRow("Icon size", value: $settings.iconSize,
-                                  range: 32...192, step: 4, format: { "\(Int($0))px" })
-                        sliderRow("Center icon size", value: $settings.centerIconSize,
-                                  range: 24...128, step: 4, format: { "\(Int($0))px" })
-                        sliderRow("Center dead zone", value: $settings.centerDeadZone,
-                                  range: 10...(settings.primaryRadius - settings.iconSize / 2),
-                                  step: 5, format: { "\(Int($0))px" })
-                        Text("Also adjusts behavior — this value is shared with the General tab.")
-                            .font(.caption).foregroundColor(.secondary)
-                    }
-
-                    Section("Effects") {
-                        colorRow("Ring fill color", hex: $settings.ringFillColorHex)
-                        sliderRow("Ring fill opacity", value: $settings.ringFillOpacity,
-                                  range: 0...0.5, step: 0.02, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Ring stroke opacity", value: $settings.ringOpacity,
-                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Background dimming", value: $settings.backgroundOpacity,
-                                  range: 0...0.8, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Glow intensity", value: $settings.glowIntensity,
-                                  range: 0...2, step: 0.1, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Deep orbit fill", value: $settings.deepOrbitFillOpacity,
-                                  range: 0...0.6, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Cancel button size", value: $settings.cancelButtonSize,
-                                  range: 24...128, step: 4, format: { "\(Int($0))px" })
-                        sliderRow("Cancel button opacity", value: $settings.cancelButtonOpacity,
-                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        colorRow("Segment border color", hex: $settings.segmentBorderColorHex)
-                        sliderRow("Segment border opacity", value: $settings.segmentBorderOpacity,
-                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Segment border width", value: $settings.segmentBorderWidth,
-                                  range: 0.5...5, step: 0.5, format: { String(format: "%.1fpt", $0) })
-                        Toggle("Segment border cutout", isOn: $settings.segmentBorderCutout)
-                        Text("Cut borders as negative space instead of drawing colored lines")
-                            .font(.caption).foregroundColor(.secondary)
-                    }
-
-                    Button("Reset to Defaults") {
-                        settings.applyPreset(OrbitSettings.defaultPreset)
-                    }
-                    .font(.caption)
+                    Spacer()
                 }
-                .formStyle(.grouped)
+                .padding(.vertical, 4)
             }
-            .frame(width: 320)
 
-            Divider()
+            PresetsSection()
 
-            LivePreviewView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Section("Colors") {
+                colorRow("Center icon glow", hex: $settings.glowColorHex)
+                colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
+                colorRow("Hover highlight", hex: $settings.hoverColorHex)
+                colorRow("Ring color", hex: $settings.ringColorHex)
+                colorRow("Background", hex: $settings.backgroundColorHex)
+            }
+
+            Section("Layout") {
+                sliderRow("Ring radius", value: $settings.primaryRadius,
+                          range: 80...250, step: 10, format: { "\(Int($0))px" })
+                sliderRow("Icon size", value: $settings.iconSize,
+                          range: 32...192, step: 4, format: { "\(Int($0))px" })
+                sliderRow("Center icon size", value: $settings.centerIconSize,
+                          range: 24...128, step: 4, format: { "\(Int($0))px" })
+                sliderRow("Center dead zone", value: $settings.centerDeadZone,
+                          range: 10...(settings.primaryRadius - settings.iconSize / 2),
+                          step: 5, format: { "\(Int($0))px" })
+                Text("Also adjusts behavior — this value is shared with the General tab.")
+                    .font(.caption).foregroundColor(.secondary)
+            }
+
+            Section("Effects") {
+                colorRow("Ring fill color", hex: $settings.ringFillColorHex)
+                sliderRow("Ring fill opacity", value: $settings.ringFillOpacity,
+                          range: 0...0.5, step: 0.02, format: { "\(Int($0 * 100))%" })
+                sliderRow("Ring stroke opacity", value: $settings.ringOpacity,
+                          range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                sliderRow("Background dimming", value: $settings.backgroundOpacity,
+                          range: 0...0.8, step: 0.05, format: { "\(Int($0 * 100))%" })
+                sliderRow("Glow intensity", value: $settings.glowIntensity,
+                          range: 0...2, step: 0.1, format: { "\(Int($0 * 100))%" })
+                sliderRow("Deep orbit fill", value: $settings.deepOrbitFillOpacity,
+                          range: 0...0.6, step: 0.05, format: { "\(Int($0 * 100))%" })
+                sliderRow("Cancel button size", value: $settings.cancelButtonSize,
+                          range: 24...128, step: 4, format: { "\(Int($0))px" })
+                sliderRow("Cancel button opacity", value: $settings.cancelButtonOpacity,
+                          range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                colorRow("Segment border color", hex: $settings.segmentBorderColorHex)
+                sliderRow("Segment border opacity", value: $settings.segmentBorderOpacity,
+                          range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                sliderRow("Segment border width", value: $settings.segmentBorderWidth,
+                          range: 0.5...5, step: 0.5, format: { String(format: "%.1fpt", $0) })
+                Toggle("Segment border cutout", isOn: $settings.segmentBorderCutout)
+                Text("Cut borders as negative space instead of drawing colored lines")
+                    .font(.caption).foregroundColor(.secondary)
+            }
+
+            Button("Reset to Defaults") {
+                settings.applyPreset(OrbitSettings.defaultPreset)
+            }
+            .font(.caption)
         }
+        .formStyle(.grouped)
     }
 
     // MARK: - Advanced
@@ -274,78 +279,3 @@ private struct PresetsSection: View {
     }
 }
 
-// MARK: - Live Preview
-
-private struct LivePreviewView: View {
-    @StateObject private var viewModel = LivePreviewView.makePreviewViewModel()
-    @ObservedObject private var settings = OrbitSettings.shared
-
-    private static let sfSymbols = [
-        "globe", "safari", "doc.text", "terminal", "music.note",
-    ]
-
-    static func makePreviewViewModel() -> OrbitViewModel {
-        let vm = OrbitViewModel()
-        vm.isVisible = true
-        populateApps(vm)
-        return vm
-    }
-
-    static func populateApps(_ vm: OrbitViewModel) {
-        let currentApp = NSRunningApplication.current
-        var fakeApps: [OrbitApp] = []
-
-        for (i, symbol) in sfSymbols.enumerated() {
-            let icon = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
-                ?? NSImage(systemSymbolName: "app", accessibilityDescription: nil)!
-            icon.size = NSSize(width: 48, height: 48)
-
-            let windowCount = (i == 1) ? 3 : 1
-            let windows = (0..<windowCount).map { wi in
-                OrbitWindow(
-                    id: CGWindowID(1000 + i * 10 + wi),
-                    title: "Window \(wi + 1)",
-                    bounds: .zero,
-                    ownerPID: pid_t(9000 + i),
-                    isOnScreen: true
-                )
-            }
-
-            fakeApps.append(OrbitApp(
-                id: pid_t(9000 + i),
-                name: symbol.capitalized,
-                bundleIdentifier: "com.preview.\(symbol)",
-                icon: icon,
-                runningApp: currentApp,
-                windows: windows
-            ))
-        }
-
-        vm.apps = fakeApps
-        vm.selectedIndex = 0
-        vm.centerLabel = fakeApps[0].name
-    }
-
-    var body: some View {
-        GeometryReader { geo in
-            let neededSize = (CGFloat(settings.primaryRadius) + CGFloat(settings.iconSize)) * 2 + 40
-            let scale = min(geo.size.width / neededSize, geo.size.height / neededSize, 1.0)
-
-            OrbitView(viewModel: viewModel)
-                .frame(width: neededSize, height: neededSize)
-                .scaleEffect(scale)
-                .frame(width: geo.size.width, height: geo.size.height)
-                .background(settings.backgroundColor.opacity(settings.backgroundOpacity))
-        }
-        .clipped()
-        .onChange(of: settings.primaryRadius) { _ in refreshPreview() }
-        .onChange(of: settings.iconSize) { _ in refreshPreview() }
-        .onChange(of: settings.centerIconSize) { _ in refreshPreview() }
-        .onChange(of: settings.centerDeadZone) { _ in refreshPreview() }
-        .onChange(of: settings.deepOrbitEnabled) { _ in refreshPreview() }
-    }
-
-    private func refreshPreview() {
-        Self.populateApps(viewModel)
-    }
-}
