@@ -244,12 +244,30 @@ final class OrbitSettings: ObservableObject {
         bumpStyle: "icon", bumpColorHex: "#66FFCC", bumpOpacity: 0.4
     )
 
+    static let whiteoutPreset = AppearancePreset(
+        primaryRadius: 175, iconSize: 92, centerIconSize: 92,
+        centerDeadZone: 110,
+        glowColorHex: "#AAAAAA", deepGlowColorHex: "#999999",
+        ringColorHex: "#CCCCCC", hoverColorHex: "#888888",
+        backgroundColorHex: "#FFFFFF", ringFillColorHex: "#000000",
+        segmentBorderColorHex: "#AAAAAA",
+        backgroundOpacity: 0.75, glowIntensity: 0.6,
+        ringOpacity: 0.2, ringFillOpacity: 0.08,
+        deepOrbitFillOpacity: 0.3,
+        cancelButtonSize: 56, cancelButtonOpacity: 0.5,
+        segmentBorderOpacity: 0.3, segmentBorderWidth: 2.0,
+        segmentBorderCutout: true,
+        animateParentWedge: true, parentWedgeSlideDistance: 30,
+        bumpStyle: "icon", bumpColorHex: "#777777", bumpOpacity: 0.5
+    )
+
     static let builtInPresets: [NamedPreset] = [
         NamedPreset(name: "basic", preset: defaultPreset),
         NamedPreset(name: "overwatch", preset: overwatchPreset),
         NamedPreset(name: "white_ring_small", preset: whiteRingSmallPreset),
         NamedPreset(name: "white_ring_lrg", preset: whiteRingPreset),
         NamedPreset(name: "Claude-generated", preset: claudeGeneratedPreset),
+        NamedPreset(name: "whiteout", preset: whiteoutPreset),
     ]
 
     func savedPresets() -> [NamedPreset] {
