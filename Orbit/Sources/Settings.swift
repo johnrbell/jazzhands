@@ -47,6 +47,11 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("segmentBorderWidth") var segmentBorderWidth: Double = 1.0
     @AppStorage("segmentBorderCutout") var segmentBorderCutout: Bool = false
 
+    // Bump indicators ("ring" = half-circles on ring edge, "icon" = dots under icon)
+    @AppStorage("bumpStyle") var bumpStyle: String = "ring"
+    @AppStorage("bumpColorHex") var bumpColorHex: String = "#FFFFFF"
+    @AppStorage("bumpOpacity") var bumpOpacity: Double = 0.55
+
     // Debug
     @AppStorage("showDebugOverlay") var showDebugOverlay: Bool = false
 
@@ -59,6 +64,7 @@ final class OrbitSettings: ObservableObject {
     var backgroundColor: Color { Color(hex: backgroundColorHex) }
     var ringFillColor: Color { Color(hex: ringFillColorHex) }
     var segmentBorderColor: Color { Color(hex: segmentBorderColorHex) }
+    var bumpColor: Color { Color(hex: bumpColorHex) }
 
     var modifierFlag: CGEventFlags {
         switch hotkeyModifier {
@@ -116,7 +122,8 @@ final class OrbitSettings: ObservableObject {
             deepOrbitFillOpacity: deepOrbitFillOpacity,
             cancelButtonSize: cancelButtonSize, cancelButtonOpacity: cancelButtonOpacity,
             segmentBorderOpacity: segmentBorderOpacity, segmentBorderWidth: segmentBorderWidth,
-            segmentBorderCutout: segmentBorderCutout
+            segmentBorderCutout: segmentBorderCutout,
+            bumpStyle: bumpStyle, bumpColorHex: bumpColorHex, bumpOpacity: bumpOpacity
         )
     }
 
@@ -142,6 +149,9 @@ final class OrbitSettings: ObservableObject {
         segmentBorderOpacity = preset.segmentBorderOpacity
         segmentBorderWidth = preset.segmentBorderWidth
         segmentBorderCutout = preset.segmentBorderCutout
+        bumpStyle = preset.bumpStyle
+        bumpColorHex = preset.bumpColorHex
+        bumpOpacity = preset.bumpOpacity
     }
 
     static let defaultPreset = AppearancePreset(
@@ -156,7 +166,8 @@ final class OrbitSettings: ObservableObject {
         deepOrbitFillOpacity: 0.25,
         cancelButtonSize: 56, cancelButtonOpacity: 0.7,
         segmentBorderOpacity: 0.0, segmentBorderWidth: 1.0,
-        segmentBorderCutout: false
+        segmentBorderCutout: false,
+        bumpStyle: "ring", bumpColorHex: "#FFFFFF", bumpOpacity: 0.55
     )
 
     func savedPresets() -> [NamedPreset] {
@@ -214,6 +225,9 @@ struct AppearancePreset: Codable {
     var segmentBorderOpacity: Double
     var segmentBorderWidth: Double
     var segmentBorderCutout: Bool
+    var bumpStyle: String
+    var bumpColorHex: String
+    var bumpOpacity: Double
 
     init(primaryRadius: Double, iconSize: Double, centerIconSize: Double, centerDeadZone: Double,
          glowColorHex: String, deepGlowColorHex: String, ringColorHex: String, hoverColorHex: String,
@@ -221,7 +235,8 @@ struct AppearancePreset: Codable {
          backgroundOpacity: Double, glowIntensity: Double, ringOpacity: Double, ringFillOpacity: Double,
          deepOrbitFillOpacity: Double, cancelButtonSize: Double, cancelButtonOpacity: Double,
          segmentBorderOpacity: Double, segmentBorderWidth: Double,
-         segmentBorderCutout: Bool = false) {
+         segmentBorderCutout: Bool = false,
+         bumpStyle: String = "ring", bumpColorHex: String = "#FFFFFF", bumpOpacity: Double = 0.55) {
         self.primaryRadius = primaryRadius; self.iconSize = iconSize; self.centerIconSize = centerIconSize
         self.centerDeadZone = centerDeadZone; self.glowColorHex = glowColorHex
         self.deepGlowColorHex = deepGlowColorHex; self.ringColorHex = ringColorHex
@@ -232,6 +247,7 @@ struct AppearancePreset: Codable {
         self.deepOrbitFillOpacity = deepOrbitFillOpacity; self.cancelButtonSize = cancelButtonSize
         self.cancelButtonOpacity = cancelButtonOpacity; self.segmentBorderOpacity = segmentBorderOpacity
         self.segmentBorderWidth = segmentBorderWidth; self.segmentBorderCutout = segmentBorderCutout
+        self.bumpStyle = bumpStyle; self.bumpColorHex = bumpColorHex; self.bumpOpacity = bumpOpacity
     }
 
     init(from decoder: Decoder) throws {
@@ -262,6 +278,9 @@ struct AppearancePreset: Codable {
         segmentBorderWidth = (try? c.decode(Double.self, forKey: .segmentBorderWidth))
             ?? (try? c.decode(Double.self, forKey: .spokeWidth)) ?? d.segmentBorderWidth
         segmentBorderCutout = (try? c.decode(Bool.self, forKey: .segmentBorderCutout)) ?? d.segmentBorderCutout
+        bumpStyle = (try? c.decode(String.self, forKey: .bumpStyle)) ?? d.bumpStyle
+        bumpColorHex = (try? c.decode(String.self, forKey: .bumpColorHex)) ?? d.bumpColorHex
+        bumpOpacity = (try? c.decode(Double.self, forKey: .bumpOpacity)) ?? d.bumpOpacity
     }
 
     func encode(to encoder: Encoder) throws {
@@ -287,6 +306,9 @@ struct AppearancePreset: Codable {
         try c.encode(segmentBorderOpacity, forKey: .segmentBorderOpacity)
         try c.encode(segmentBorderWidth, forKey: .segmentBorderWidth)
         try c.encode(segmentBorderCutout, forKey: .segmentBorderCutout)
+        try c.encode(bumpStyle, forKey: .bumpStyle)
+        try c.encode(bumpColorHex, forKey: .bumpColorHex)
+        try c.encode(bumpOpacity, forKey: .bumpOpacity)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -296,6 +318,7 @@ struct AppearancePreset: Codable {
         case backgroundOpacity, glowIntensity, ringOpacity, ringFillOpacity
         case deepOrbitFillOpacity, cancelButtonSize, cancelButtonOpacity
         case segmentBorderOpacity, segmentBorderWidth, segmentBorderCutout
+        case bumpStyle, bumpColorHex, bumpOpacity
         case spokeColorHex, spokeOpacity, spokeWidth
     }
 }

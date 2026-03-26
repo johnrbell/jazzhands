@@ -149,6 +149,15 @@ struct SettingsView: View {
                 Toggle("Segment border cutout", isOn: $settings.segmentBorderCutout)
                 Text("Cut borders as negative space instead of drawing colored lines")
                     .font(.caption).foregroundColor(.secondary)
+
+                Picker("Window bump style", selection: $settings.bumpStyle) {
+                    Text("Ring edge").tag("ring")
+                    Text("Under icon").tag("icon")
+                }
+                .pickerStyle(.segmented)
+                colorRow("Bump color", hex: $settings.bumpColorHex)
+                sliderRow("Bump opacity", value: $settings.bumpOpacity,
+                          range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
             }
 
             Button("Reset to Defaults") {
