@@ -4,6 +4,15 @@ A radial app switcher for macOS, inspired by the emote wheel in Overwatch. Hold 
 
 ![JazzHands Demo](demo.gif)
 
+### Themes
+
+Fully customizable — ships with several built-in presets:
+
+| | |
+|:---:|:---:|
+| ![white_ring_small](ss/1.png) | ![overwatch](ss/2.png) |
+| ![Claude-generated](ss/3.png) | ![whiteout](ss/4.png) |
+
 ## How to Run (ELI5)
 
 You need a Mac running macOS 13 or later with the Xcode command-line tools installed.
