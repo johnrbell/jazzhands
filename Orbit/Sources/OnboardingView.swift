@@ -58,7 +58,10 @@ struct OnboardingView: View {
                 description: "Required to capture window thumbnails for the switcher.",
                 granted: screenCaptureGranted,
                 action: {
-                    NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
+                    CGRequestScreenCaptureAccess()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
+                    }
                 }
             )
         }
