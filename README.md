@@ -67,27 +67,6 @@ Right-click (or click) the menu bar icon → **Settings** to configure:
 | `SettingsView.swift` | Settings UI |
 | `OnboardingView.swift` | First-launch permission grant flow |
 
-## Rebuilding
-
-After making changes:
-
-```bash
-bash build.sh
-```
-
-This builds, copies the binary into `~/Applications/JazzHands.app`, re-signs it, and launches. If JazzHands is already running it will be stopped first.
-
-## How It Works
-
-The mouse vector from center is converted to an angle and mapped to a segment:
-
-```
-θ = atan2(dy, dx)
-index = floor(θ / (2π / n)) % n
-```
-
-A dead zone around the center prevents accidental selection. Segment borders can be rendered as filled strokes or negative-space cutouts. Deep orbit uses a second concentric arc of wedges with constant-pixel-width gaps.
-
 ## Requirements
 
 - macOS 13.0+
