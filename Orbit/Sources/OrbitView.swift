@@ -23,9 +23,10 @@ struct OrbitView: View {
                         ZStack {
                             if case .deep(let appIndex) = viewModel.tier {
                                 deepOrbitRing(appIndex: appIndex)
+                                    .opacity(Double(viewModel.deepOrbitOpacity))
                             } else if viewModel.slideAppIndex >= 0, !viewModel.deepOrbitWindows.isEmpty {
                                 deepOrbitRing(appIndex: viewModel.slideAppIndex)
-                                    .opacity(Double(viewModel.deepOrbitSlideOffset / viewModel.deepOrbitSlideAmount))
+                                    .opacity(Double(viewModel.deepOrbitOpacity))
                             }
                             primaryRing
                             centerInfo
@@ -252,8 +253,6 @@ struct OrbitView: View {
             }
         }
         .allowsHitTesting(false)
-        .transition(.opacity)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: viewModel.tier == .primary)
     }
 
     // MARK: - Debug Info

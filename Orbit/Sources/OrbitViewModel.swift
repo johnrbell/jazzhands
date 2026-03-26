@@ -24,6 +24,7 @@ final class OrbitViewModel: ObservableObject {
     @Published var slideAppIndex: Int = -1
     @Published var returnSlideAppIndex: Int = -1
     @Published var returnSlideOffset: CGFloat = 0
+    @Published var deepOrbitOpacity: CGFloat = 0
 
     var deepOrbitSlideAmount: CGFloat { CGFloat(settings.parentWedgeSlideDistance) }
 
@@ -36,6 +37,13 @@ final class OrbitViewModel: ObservableObject {
     private var returnAnimationTimer: Timer?
     private var returnStartValue: CGFloat = 0
     private var returnStartTime: CFTimeInterval = 0
+
+    private var opacityTimer: Timer?
+    private var opacityStartValue: CGFloat = 0
+    private var opacityTargetValue: CGFloat = 0
+    private var opacityStartTime: CFTimeInterval = 0
+    private let opacityDuration: CFTimeInterval = 0.22
+    private var opacityCompletion: (() -> Void)?
 
     private var hoverTimer: Timer?
     private var hoveredIndex: Int = -1
@@ -80,6 +88,10 @@ final class OrbitViewModel: ObservableObject {
         returnSlideOffset = 0
         returnAnimationTimer?.invalidate()
         returnAnimationTimer = nil
+        deepOrbitOpacity = 0
+        opacityTimer?.invalidate()
+        opacityTimer = nil
+        opacityCompletion = nil
         hoveredIndex = -1
         hoverTimer?.invalidate()
         stopCancelZoneTimer()
@@ -249,6 +261,7 @@ final class OrbitViewModel: ObservableObject {
         let app = apps[appIndex]
         guard app.windows.count > 1 else { return }
 
+        deepOrbitOpacity = 0
         tier = .deep(appIndex: appIndex)
         deepOrbitWindows = app.windows
         selectedWindowIndex = -1
@@ -257,6 +270,7 @@ final class OrbitViewModel: ObservableObject {
                 windowThumbnails[window.id] = WindowManager.shared.captureWindowThumbnail(windowID: window.id)
             }
         }
+        animateDeepOrbitOpacity(to: 1)
         if settings.animateParentWedge {
             if slideAppIndex >= 0 && slideAppIndex != appIndex && deepOrbitSlideOffset > 0 {
                 returnSlideAppIndex = slideAppIndex
@@ -277,9 +291,17 @@ final class OrbitViewModel: ObservableObject {
         centerLabel = apps[appIndex].name
         tier = .primary
         if settings.animateParentWedge {
+            slideAppIndex = appIndex
             animateSlideOffset(to: 0)
         } else {
-            deepOrbitWindows = []
+            slideAppIndex = appIndex
+        }
+        animateDeepOrbitOpacity(to: 0) { [weak self] in
+            guard let self else { return }
+            if !self.settings.animateParentWedge {
+                self.deepOrbitWindows = []
+                self.slideAppIndex = -1
+            }
         }
         selectedWindowIndex = -1
         hoveredIndex = -1
@@ -297,6 +319,7 @@ final class OrbitViewModel: ObservableObject {
                 guard let self else { timer.invalidate(); return }
                 if self.slideStartTime == 0 {
                     self.slideStartTime = CACurrentMediaTime()
+                    return
                 }
                 let elapsed = CACurrentMediaTime() - self.slideStartTime
                 let t = min(elapsed / self.slideAnimationDuration, 1.0)
@@ -323,6 +346,7 @@ final class OrbitViewModel: ObservableObject {
                 guard let self else { timer.invalidate(); return }
                 if self.returnStartTime == 0 {
                     self.returnStartTime = CACurrentMediaTime()
+                    return
                 }
                 let elapsed = CACurrentMediaTime() - self.returnStartTime
                 let t = min(elapsed / self.slideAnimationDuration, 1.0)
@@ -333,6 +357,33 @@ final class OrbitViewModel: ObservableObject {
                     self.returnAnimationTimer = nil
                     self.returnSlideAppIndex = -1
                     self.returnSlideOffset = 0
+                }
+            }
+        }
+    }
+
+    private func animateDeepOrbitOpacity(to target: CGFloat, completion: (() -> Void)? = nil) {
+        opacityStartValue = deepOrbitOpacity
+        opacityTargetValue = target
+        opacityStartTime = 0
+        opacityCompletion = completion
+        opacityTimer?.invalidate()
+        opacityTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 120.0, repeats: true) { [weak self] timer in
+            Task { @MainActor in
+                guard let self else { timer.invalidate(); return }
+                if self.opacityStartTime == 0 {
+                    self.opacityStartTime = CACurrentMediaTime()
+                    return
+                }
+                let elapsed = CACurrentMediaTime() - self.opacityStartTime
+                let t = min(elapsed / self.opacityDuration, 1.0)
+                let eased = 1.0 - pow(1.0 - t, 3.0)
+                self.deepOrbitOpacity = self.opacityStartValue + CGFloat(eased) * (self.opacityTargetValue - self.opacityStartValue)
+                if t >= 1.0 {
+                    timer.invalidate()
+                    self.opacityTimer = nil
+                    self.opacityCompletion?()
+                    self.opacityCompletion = nil
                 }
             }
         }
