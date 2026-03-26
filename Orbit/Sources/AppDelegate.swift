@@ -43,13 +43,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         installBacktickMonitor()
         installSpaceChangeObserver()
 
-        if !AXIsProcessTrusted() {
-            let opts = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
-            AXIsProcessTrustedWithOptions(opts)
-        }
-
-        if !CGPreflightScreenCaptureAccess() {
-            CGRequestScreenCaptureAccess()
+        if !AXIsProcessTrusted() || !CGPreflightScreenCaptureAccess() {
+            showOnboarding()
         }
     }
 
@@ -318,6 +313,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Status Bar
 
     private var settingsWindow: NSWindow?
+    private var onboardingWindow: NSWindow?
+
+    private func showOnboarding() {
+        if let w = onboardingWindow {
+            w.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let hostingView = NSHostingView(rootView: OnboardingView())
+        let w = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 480, height: 340),
+            styleMask: [.titled, .closable],
+            backing: .buffered, defer: false
+        )
+        w.title = "JazzHands Setup"
+        w.contentView = hostingView
+        w.center()
+        w.isReleasedWhenClosed = false
+        w.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        onboardingWindow = w
+    }
 
     private func setupStatusBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
