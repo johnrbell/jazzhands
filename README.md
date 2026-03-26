@@ -8,10 +8,12 @@ A radial app switcher for macOS, inspired by the emote wheel in Overwatch. Hold 
 
 Fully customizable — ships with several built-in presets:
 
-| | |
-|:---:|:---:|
-| ![white_ring_small](ss/1.png) | ![overwatch](ss/2.png) |
-| ![Claude-generated](ss/3.png) | ![whiteout](ss/4.png) |
+<p>
+<img src="ss/1.png" width="49%" /> <img src="ss/2.png" width="49%" />
+</p>
+<p>
+<img src="ss/3.png" width="49%" /> <img src="ss/4.png" width="49%" />
+</p>
 
 ## How to Run (ELI5)
 
@@ -60,21 +62,6 @@ Right-click (or click) the menu bar icon → **Settings** to configure:
 - **Behavior** — hover delay, cursor sensitivity, dead zone, deep orbit toggle
 - **Animation** — parent wedge slide on deep orbit entry
 - **Presets** — save and load full appearance configurations
-
-## Architecture
-
-| File | Purpose |
-|------|---------|
-| `OrbitApp.swift` | SwiftUI app entry (menu bar agent, no dock icon) |
-| `AppDelegate.swift` | Global hotkey listener, status bar, lifecycle |
-| `OrbitViewModel.swift` | State machine — angle→segment mapping, hover timers, slide animations |
-| `OrbitView.swift` | SwiftUI radial UI with Canvas-drawn rings and glow effects |
-| `OverlayWindowController.swift` | Fullscreen transparent overlay, mouse capture via CGWarpMouseCursorPosition |
-| `WindowManager.swift` | CGWindowListCopyWindowInfo + AX API for window enumeration and activation |
-| `Models.swift` | `OrbitApp` / `OrbitWindow` data models |
-| `Settings.swift` | `@AppStorage`-backed settings with preset save/load |
-| `SettingsView.swift` | Settings UI |
-| `OnboardingView.swift` | First-launch permission grant flow |
 
 ## Requirements
 
