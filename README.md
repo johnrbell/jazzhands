@@ -42,7 +42,7 @@ After granting both, restart JazzHands from the menu bar icon (Quit → relaunch
 
 | Action | What happens |
 |--------|-------------|
-| **Hold Option + Space** | Summons the radial ring of active apps |
+| **Hold Set Key Combination** | Summons the radial ring of active apps |
 | **Move mouse** | Highlights the app in that direction |
 | **Release Option** | Switches to the highlighted app |
 | **Quick tap** (< 200ms) | Toggles to the last-used app |
