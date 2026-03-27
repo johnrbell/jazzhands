@@ -229,9 +229,10 @@ struct OrbitView: View {
                             drawW = thumbH * imgAspect
                         }
                     }
+                    let flipThumb: Double = sin(angle) > 0 ? .pi : 0
                     var thumbCtx = context
                     thumbCtx.translateBy(x: thumbPos.x, y: thumbPos.y)
-                    thumbCtx.rotate(by: .radians(angle + .pi / 2))
+                    thumbCtx.rotate(by: .radians(angle + .pi / 2 + flipThumb))
                     thumbCtx.clip(to: RoundedRectangle(cornerRadius: 6).path(in: CGRect(x: -drawW/2, y: -drawH/2, width: drawW, height: drawH)))
                     thumbCtx.draw(img, in: CGRect(x: -drawW/2, y: -drawH/2, width: drawW, height: drawH))
                 } else if let icon = (appIndex < viewModel.apps.count ? viewModel.apps[appIndex].icon : nil) {
@@ -246,9 +247,10 @@ struct OrbitView: View {
                 )
                 let title = window.title.isEmpty ? "Window" : String(window.title.prefix(20))
                 let labelColor: Color = isSelected ? .white : .white.opacity(0.7)
+                let flipLabel: Double = sin(angle) > 0 ? .pi : 0
                 var labelCtx = context
                 labelCtx.translateBy(x: labelPos.x, y: labelPos.y)
-                labelCtx.rotate(by: .radians(angle + .pi / 2))
+                labelCtx.rotate(by: .radians(angle + .pi / 2 + flipLabel))
                 labelCtx.draw(
                     Text(title)
                         .font(.system(size: 10, weight: .semibold))
@@ -527,7 +529,8 @@ struct WindowArcSegment: View {
     }
 
     private var rotationDegrees: Double {
-        centerAngle * 180.0 / .pi + 90
+        let base = centerAngle * 180.0 / .pi + 90
+        return sin(centerAngle) > 0 ? base + 180 : base
     }
 
     var body: some View {
