@@ -138,8 +138,6 @@ struct OrbitView: View {
                 segmentBorders(total: total, radius: viewModel.primaryRadius, dimmed: dimmed)
             }
 
-
-
             ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
                 let basePos = viewModel.positionForSegment(at: index, total: total, radius: iconRadius)
                 let isSelected = index == viewModel.selectedIndex
@@ -158,7 +156,8 @@ struct OrbitView: View {
                     glowColor: glowColor,
                     iconSize: viewModel.segmentIconSize,
                     showBackground: isDeepParent,
-                    windowCount: app.windows.count
+                    windowCount: app.windows.count,
+                    segmentAngle: Angle(radians: viewModel.angleForSegment(at: index, total: total))
                 )
                 .opacity(dimmed && !isDeepParent ? 0.4 : 1.0)
                 .animation(.easeOut(duration: 0.15), value: isSelected)
@@ -398,8 +397,14 @@ struct AppSegmentView: View {
     let iconSize: CGFloat
     var showBackground: Bool = false
     var windowCount: Int = 1
+    var segmentAngle: Angle = .degrees(90)
 
     private var s: OrbitSettings { OrbitSettings.shared }
+
+    private var indicatorCount: Int {
+        guard s.deepOrbitEnabled, s.bumpOpacity > 0, windowCount > 1 else { return 0 }
+        return min(windowCount, 5)
+    }
 
     var body: some View {
         ZStack {
@@ -428,6 +433,32 @@ struct AppSegmentView: View {
                 .frame(width: iconSize, height: iconSize)
                 .scaleEffect(isSelected ? 1.2 : 1.0)
                 .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
+
+            if indicatorCount > 0 {
+                windowIndicatorDots
+            }
+        }
+    }
+
+    private var windowIndicatorDots: some View {
+        let edgeRadius = (iconSize / 2) + 6
+        let dotSize: CGFloat = 5
+        let spacing = Angle.degrees(14)
+        let baseOpacity = s.bumpOpacity
+        let opacity = isSelected ? min(baseOpacity * 1.6, 1.0) : baseOpacity
+
+        return ForEach(0..<indicatorCount, id: \.self) { i in
+            let offset = Double(i) - Double(indicatorCount - 1) / 2.0
+            let angle = segmentAngle + spacing * offset
+            Circle()
+                .fill(s.bumpColor.opacity(opacity))
+                .frame(width: dotSize, height: dotSize)
+                .shadow(color: s.bumpColor.opacity(isSelected ? 0.5 : 0.2), radius: 3)
+                .offset(
+                    x: edgeRadius * CGFloat(cos(angle.radians)),
+                    y: edgeRadius * CGFloat(sin(angle.radians))
+                )
+                .scaleEffect(isSelected ? 1.2 : 1.0)
         }
     }
 }
