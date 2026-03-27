@@ -88,6 +88,7 @@ struct SettingsView: View {
                 Picker("Menu bar icon", selection: $settings.menuBarStyle) {
                     Text("Jazz Hand").tag("hand")
                     Text("Orbit Ring").tag("orbit")
+                    Text("App Icon").tag("icon")
                     Text("Hidden").tag("hidden")
                 }
                 .onChange(of: settings.menuBarStyle) { _ in

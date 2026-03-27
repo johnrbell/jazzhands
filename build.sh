@@ -41,6 +41,8 @@ cp "Orbit/Resources/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
 cp "Orbit/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
 cp "Orbit/Resources/MenuBarIcon.png" "$APP_BUNDLE/Contents/Resources/MenuBarIcon.png"
 cp "Orbit/Resources/MenuBarIcon@2x.png" "$APP_BUNDLE/Contents/Resources/MenuBarIcon@2x.png"
+cp "Orbit/Resources/MenuBarAppIcon.png" "$APP_BUNDLE/Contents/Resources/MenuBarAppIcon.png"
+cp "Orbit/Resources/MenuBarAppIcon@2x.png" "$APP_BUNDLE/Contents/Resources/MenuBarAppIcon@2x.png"
 
 echo "Signing app bundle..."
 codesign -fs "$SIGNING_IDENTITY" --options runtime --entitlements "Orbit/Resources/Orbit.entitlements" "$APP_BUNDLE" --deep

@@ -346,7 +346,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = item.button {
-            button.image = (style == "orbit") ? makeOrbitRingIcon() : makeHandIcon()
+            switch style {
+            case "orbit": button.image = makeOrbitRingIcon()
+            case "icon": button.image = makeAppIcon()
+            default: button.image = makeHandIcon()
+            }
         }
 
         let menu = NSMenu()
@@ -414,6 +418,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         image.isTemplate = true
         image.accessibilityDescription = "JazzHands"
         return image
+    }
+
+    private func makeAppIcon() -> NSImage {
+        let bundle = Bundle.main
+        if let url = bundle.url(forResource: "MenuBarAppIcon", withExtension: "png"),
+           let image = NSImage(contentsOf: url) {
+            image.size = NSSize(width: 18, height: 18)
+            image.isTemplate = true
+            image.accessibilityDescription = "JazzHands"
+            return image
+        }
+        let fallback = NSImage(size: NSSize(width: 18, height: 18))
+        fallback.isTemplate = true
+        return fallback
     }
 
     @objc private func openSettings() {
