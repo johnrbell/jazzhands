@@ -379,11 +379,12 @@ struct OrbitView: View {
                         )
                 }
 
-                Circle()
-                    .stroke(s.ringColor.opacity(dimmed ? 0.1 : s.ringOpacity), lineWidth: 1.5)
-                    .frame(width: radius * 2, height: radius * 2)
-                    .shadow(color: color.opacity((dimmed ? 0.05 : 0.15) * s.glowIntensity), radius: 20)
             }
+
+            Circle()
+                .stroke(s.ringColor.opacity(dimmed ? 0.1 : s.centerRingOpacity), lineWidth: 1.5)
+                .frame(width: radius * 2, height: radius * 2)
+                .shadow(color: color.opacity((dimmed ? 0.05 : 0.15) * s.glowIntensity), radius: 20)
         }
     }
 }
@@ -417,13 +418,14 @@ struct AppSegmentView: View {
                     .stroke(s.hoverColor.opacity(0.8), lineWidth: 2)
                     .frame(width: iconSize + 24, height: iconSize + 24)
             } else if isSelected {
+                let ho = s.hoverHighlightOpacity
                 Circle()
-                    .fill(s.hoverColor.opacity(0.2))
+                    .fill(s.hoverColor.opacity(0.2 * ho))
                     .frame(width: iconSize + 20, height: iconSize + 20)
-                    .shadow(color: s.hoverColor.opacity(0.5 * s.glowIntensity), radius: 15)
+                    .shadow(color: s.hoverColor.opacity(0.5 * s.glowIntensity * ho), radius: 15)
 
                 Circle()
-                    .stroke(s.hoverColor.opacity(0.6), lineWidth: 2)
+                    .stroke(s.hoverColor.opacity(0.6 * ho), lineWidth: 2)
                     .frame(width: iconSize + 20, height: iconSize + 20)
             }
 
@@ -444,12 +446,13 @@ struct AppSegmentView: View {
         let edgeRadius = (iconSize / 2) + 6
         let dotSize: CGFloat = 5
         let spacing = Angle.degrees(14)
+        let anchor: Angle = s.bumpStyle == "icon" ? .degrees(90) : segmentAngle
         let baseOpacity = s.bumpOpacity
         let opacity = isSelected ? min(baseOpacity * 1.6, 1.0) : baseOpacity
 
         return ForEach(0..<indicatorCount, id: \.self) { i in
             let offset = Double(i) - Double(indicatorCount - 1) / 2.0
-            let angle = segmentAngle + spacing * offset
+            let angle = anchor + spacing * offset
             Circle()
                 .fill(s.bumpColor.opacity(opacity))
                 .frame(width: dotSize, height: dotSize)

@@ -36,6 +36,8 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("backgroundOpacity") var backgroundOpacity: Double = 0.65
     @AppStorage("glowIntensity") var glowIntensity: Double = 1.0
     @AppStorage("ringOpacity") var ringOpacity: Double = 0.25
+    @AppStorage("centerRingOpacity") var centerRingOpacity: Double = 0.25
+    @AppStorage("hoverHighlightOpacity") var hoverHighlightOpacity: Double = 1.0
     @AppStorage("centerFillOpacity") var centerFillOpacity: Double = 0.0
     @AppStorage("ringFillColorHex") var ringFillColorHex: String = "#FFFFFF"
     @AppStorage("ringFillOpacity") var ringFillOpacity: Double = 0.0

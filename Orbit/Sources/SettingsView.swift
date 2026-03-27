@@ -127,6 +127,8 @@ struct SettingsView: View {
                 colorRow("Center icon glow", hex: $settings.glowColorHex)
                 colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
                 colorRow("Hover highlight", hex: $settings.hoverColorHex)
+                sliderRow("Hover highlight opacity", value: $settings.hoverHighlightOpacity,
+                          range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
                 colorRow("Ring color", hex: $settings.ringColorHex)
                 colorRow("Background", hex: $settings.backgroundColorHex)
             }
@@ -150,6 +152,8 @@ struct SettingsView: View {
                 sliderRow("Ring fill opacity", value: $settings.ringFillOpacity,
                           range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
                 sliderRow("Ring stroke opacity", value: $settings.ringOpacity,
+                          range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                sliderRow("Center ring opacity", value: $settings.centerRingOpacity,
                           range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                 sliderRow("Background dimming", value: $settings.backgroundOpacity,
                           range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
@@ -176,6 +180,11 @@ struct SettingsView: View {
                     .disabled(settings.segmentBorderCutout)
                     .opacity(settings.segmentBorderCutout ? 0.4 : 1)
 
+                Picker("Window indicator position", selection: $settings.bumpStyle) {
+                    Text("Outer edge").tag("ring")
+                    Text("Below icon").tag("icon")
+                }
+                .pickerStyle(.segmented)
                 colorRow("Window indicator color", hex: $settings.bumpColorHex)
                 sliderRow("Window indicator opacity", value: $settings.bumpOpacity,
                           range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
