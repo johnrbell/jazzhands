@@ -12,7 +12,7 @@ struct SettingsView: View {
             advancedTab
                 .tabItem { Label("Advanced", systemImage: "wrench") }
         }
-        .frame(width: 480, height: 520)
+        .frame(minWidth: 480, maxWidth: .infinity, minHeight: 520, maxHeight: .infinity)
         .padding()
     }
 
@@ -105,97 +105,107 @@ struct SettingsView: View {
     // MARK: - Appearance
 
     private var appearanceTab: some View {
-        Form {
-            Section {
-                HStack {
-                    Spacer()
-                    VStack(spacing: 4) {
-                        Text("Use your shortcut (\(settings.shortcutDisplayName)) to preview changes live.")
-                            .font(.callout)
-                        Text("No in-app preview yet. It sucks, we know. 🤷")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+        VStack(spacing: 0) {
+            HStack {
+                Spacer()
+                VStack(spacing: 4) {
+                    Text("Use your shortcut (\(settings.shortcutDisplayName)) to preview changes live.")
+                        .font(.callout)
+                    Text("No in-app preview yet. It sucks, we know. 🤷")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 8)
+
+            HStack(alignment: .top, spacing: 0) {
+                Form {
+                    PresetsSection()
+
+                    Section("Colors") {
+                        colorRow("Center icon glow", hex: $settings.glowColorHex)
+                        colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
+                        colorRow("Hover highlight", hex: $settings.hoverColorHex)
+                        sliderRow("Hover highlight opacity", value: $settings.hoverHighlightOpacity,
+                                  range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
+                        colorRow("Ring color", hex: $settings.ringColorHex)
+                        colorRow("Background", hex: $settings.backgroundColorHex)
                     }
-                    Spacer()
+
+                    Section("Layout") {
+                        sliderRow("Ring radius", value: $settings.primaryRadius,
+                                  range: 80...250, step: 10, format: { "\(Int($0))px" })
+                        sliderRow("Icon size", value: $settings.iconSize,
+                                  range: 32...192, step: 4, format: { "\(Int($0))px" })
+                        sliderRow("Center icon size", value: $settings.centerIconSize,
+                                  range: 24...128, step: 4, format: { "\(Int($0))px" })
+                        sliderRow("Center dead zone", value: $settings.centerDeadZone,
+                                  range: 10...(settings.primaryRadius - settings.iconSize / 2),
+                                  step: 5, format: { "\(Int($0))px" })
+                        Text("Also adjusts behavior — this value is shared with the General tab.")
+                            .font(.caption).foregroundColor(.secondary)
+                    }
+
+                    Button("Reset to Defaults") {
+                        settings.applyPreset(OrbitSettings.defaultPreset)
+                    }
+                    .font(.caption)
                 }
-                .padding(.vertical, 4)
-            }
+                .formStyle(.grouped)
 
-            PresetsSection()
+                Form {
+                    Section("Effects") {
+                        colorRow("Ring fill color", hex: $settings.ringFillColorHex)
+                        sliderRow("Ring fill opacity", value: $settings.ringFillOpacity,
+                                  range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Ring stroke opacity", value: $settings.ringOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Center ring opacity", value: $settings.centerRingOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Background dimming", value: $settings.backgroundOpacity,
+                                  range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Glow intensity", value: $settings.glowIntensity,
+                                  range: 0...2, step: 0.1, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Deep orbit fill", value: $settings.deepOrbitFillOpacity,
+                                  range: 0...0.6, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Cancel button size", value: $settings.cancelButtonSize,
+                                  range: 24...128, step: 4, format: { "\(Int($0))px" })
+                        sliderRow("Cancel button opacity", value: $settings.cancelButtonOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                    }
 
-            Section("Colors") {
-                colorRow("Center icon glow", hex: $settings.glowColorHex)
-                colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
-                colorRow("Hover highlight", hex: $settings.hoverColorHex)
-                sliderRow("Hover highlight opacity", value: $settings.hoverHighlightOpacity,
-                          range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
-                colorRow("Ring color", hex: $settings.ringColorHex)
-                colorRow("Background", hex: $settings.backgroundColorHex)
-            }
+                    Section("Segment Borders") {
+                        Toggle("Cutout style", isOn: $settings.segmentBorderCutout)
+                        Text("Cut borders as negative space instead of drawing colored lines")
+                            .font(.caption).foregroundColor(.secondary)
+                        colorRow("Color", hex: $settings.segmentBorderColorHex)
+                            .disabled(settings.segmentBorderCutout)
+                            .opacity(settings.segmentBorderCutout ? 0.4 : 1)
+                        sliderRow("Opacity", value: $settings.segmentBorderOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                            .disabled(settings.segmentBorderCutout)
+                            .opacity(settings.segmentBorderCutout ? 0.4 : 1)
+                        sliderRow("Width", value: $settings.segmentBorderWidth,
+                                  range: 0.5...5, step: 0.5, format: { String(format: "%.1fpt", $0) })
+                            .disabled(settings.segmentBorderCutout)
+                            .opacity(settings.segmentBorderCutout ? 0.4 : 1)
+                    }
 
-            Section("Layout") {
-                sliderRow("Ring radius", value: $settings.primaryRadius,
-                          range: 80...250, step: 10, format: { "\(Int($0))px" })
-                sliderRow("Icon size", value: $settings.iconSize,
-                          range: 32...192, step: 4, format: { "\(Int($0))px" })
-                sliderRow("Center icon size", value: $settings.centerIconSize,
-                          range: 24...128, step: 4, format: { "\(Int($0))px" })
-                sliderRow("Center dead zone", value: $settings.centerDeadZone,
-                          range: 10...(settings.primaryRadius - settings.iconSize / 2),
-                          step: 5, format: { "\(Int($0))px" })
-                Text("Also adjusts behavior — this value is shared with the General tab.")
-                    .font(.caption).foregroundColor(.secondary)
-            }
-
-            Section("Effects") {
-                colorRow("Ring fill color", hex: $settings.ringFillColorHex)
-                sliderRow("Ring fill opacity", value: $settings.ringFillOpacity,
-                          range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
-                sliderRow("Ring stroke opacity", value: $settings.ringOpacity,
-                          range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                sliderRow("Center ring opacity", value: $settings.centerRingOpacity,
-                          range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                sliderRow("Background dimming", value: $settings.backgroundOpacity,
-                          range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
-                sliderRow("Glow intensity", value: $settings.glowIntensity,
-                          range: 0...2, step: 0.1, format: { "\(Int($0 * 100))%" })
-                sliderRow("Deep orbit fill", value: $settings.deepOrbitFillOpacity,
-                          range: 0...0.6, step: 0.05, format: { "\(Int($0 * 100))%" })
-                sliderRow("Cancel button size", value: $settings.cancelButtonSize,
-                          range: 24...128, step: 4, format: { "\(Int($0))px" })
-                sliderRow("Cancel button opacity", value: $settings.cancelButtonOpacity,
-                          range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                Toggle("Segment border cutout", isOn: $settings.segmentBorderCutout)
-                Text("Cut borders as negative space instead of drawing colored lines")
-                    .font(.caption).foregroundColor(.secondary)
-                colorRow("Segment border color", hex: $settings.segmentBorderColorHex)
-                    .disabled(settings.segmentBorderCutout)
-                    .opacity(settings.segmentBorderCutout ? 0.4 : 1)
-                sliderRow("Segment border opacity", value: $settings.segmentBorderOpacity,
-                          range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                    .disabled(settings.segmentBorderCutout)
-                    .opacity(settings.segmentBorderCutout ? 0.4 : 1)
-                sliderRow("Segment border width", value: $settings.segmentBorderWidth,
-                          range: 0.5...5, step: 0.5, format: { String(format: "%.1fpt", $0) })
-                    .disabled(settings.segmentBorderCutout)
-                    .opacity(settings.segmentBorderCutout ? 0.4 : 1)
-
-                Picker("Window indicator position", selection: $settings.bumpStyle) {
-                    Text("Outer edge").tag("ring")
-                    Text("Below icon").tag("icon")
+                    Section("Window Indicators") {
+                        Picker("Position", selection: $settings.bumpStyle) {
+                            Text("Outer edge").tag("ring")
+                            Text("Below icon").tag("icon")
+                        }
+                        .pickerStyle(.segmented)
+                        colorRow("Color", hex: $settings.bumpColorHex)
+                        sliderRow("Opacity", value: $settings.bumpOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                    }
                 }
-                .pickerStyle(.segmented)
-                colorRow("Window indicator color", hex: $settings.bumpColorHex)
-                sliderRow("Window indicator opacity", value: $settings.bumpOpacity,
-                          range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                .formStyle(.grouped)
             }
-
-            Button("Reset to Defaults") {
-                settings.applyPreset(OrbitSettings.defaultPreset)
-            }
-            .font(.caption)
         }
-        .formStyle(.grouped)
     }
 
     // MARK: - Advanced
