@@ -49,10 +49,13 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("animateParentWedge") var animateParentWedge: Bool = true
     @AppStorage("parentWedgeSlideDistance") var parentWedgeSlideDistance: Double = 30
 
-    // Bump indicators ("ring" = half-circles on ring edge, "icon" = dots under icon)
+    // Window indicators
     @AppStorage("bumpStyle") var bumpStyle: String = "ring"
     @AppStorage("bumpColorHex") var bumpColorHex: String = "#FFFFFF"
     @AppStorage("bumpOpacity") var bumpOpacity: Double = 0.55
+
+    // Menu Bar
+    @AppStorage("menuBarStyle") var menuBarStyle: String = "hand"
 
     // Debug
     @AppStorage("showDebugOverlay") var showDebugOverlay: Bool = false

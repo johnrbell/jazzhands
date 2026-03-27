@@ -138,9 +138,7 @@ struct OrbitView: View {
                 segmentBorders(total: total, radius: viewModel.primaryRadius, dimmed: dimmed)
             }
 
-            if s.deepOrbitEnabled, s.bumpStyle == "ring", s.bumpOpacity > 0 {
-                multiWindowRingBumps(apps: apps, total: total, radius: viewModel.primaryRadius, dimmed: dimmed)
-            }
+
 
             ForEach(Array(apps.enumerated()), id: \.element.id) { index, app in
                 let basePos = viewModel.positionForSegment(at: index, total: total, radius: iconRadius)
@@ -268,66 +266,6 @@ struct OrbitView: View {
         .cornerRadius(6)
     }
 
-    // MARK: - Multi-Window Ring Bumps
-
-    private func multiWindowRingBumps(apps: [OrbitApp], total: Int, radius: CGFloat, dimmed: Bool) -> some View {
-        let slideOffset = viewModel.deepOrbitSlideOffset
-        let canvasSize = (radius + viewModel.segmentIconSize / 2 + 20 + slideOffset) * 2
-        let outerR = radius + viewModel.segmentIconSize / 2 + 10
-        let bumpR: CGFloat = 5
-        let spread = viewModel.deepOrbitSpread
-        let slideIdx = viewModel.slideAppIndex
-        let returnIdx = viewModel.returnSlideAppIndex
-        let returnOff = viewModel.returnSlideOffset
-
-        return Canvas { context, size in
-            let c = CGPoint(x: size.width / 2, y: size.height / 2)
-
-            for index in 0..<total {
-                let winCount = apps[index].windows.count
-                guard winCount > 1 else { continue }
-                let isSelected = index == viewModel.selectedIndex
-                let baseOpacity = s.bumpOpacity
-                let opacity = dimmed ? baseOpacity * 0.3 : (isSelected ? min(baseOpacity * 1.6, 1.0) : baseOpacity)
-                let parentAngle = viewModel.angleForSegment(at: index, total: total)
-                let count = min(winCount, 5)
-                let totalSpread = spread * Double(count - 1)
-                let startAngle = parentAngle - totalSpread / 2.0
-
-                var ox: CGFloat = 0
-                var oy: CGFloat = 0
-                if index == slideIdx && slideOffset > 0 {
-                    ox = slideOffset * CGFloat(cos(parentAngle))
-                    oy = slideOffset * CGFloat(sin(parentAngle))
-                } else if index == returnIdx && returnOff > 0 {
-                    ox = returnOff * CGFloat(cos(parentAngle))
-                    oy = returnOff * CGFloat(sin(parentAngle))
-                }
-
-                for wi in 0..<count {
-                    let bumpAngle = startAngle + spread * Double(wi)
-
-                    let bx = c.x + outerR * CGFloat(cos(bumpAngle)) + ox
-                    let by = c.y + outerR * CGFloat(sin(bumpAngle)) + oy
-
-                    var path = Path()
-                    let steps = 24
-                    for s in 0...steps {
-                        let t = Double(s) / Double(steps)
-                        let a = bumpAngle - .pi / 2.0 + .pi * t
-                        let px = bx + bumpR * CGFloat(cos(a))
-                        let py = by + bumpR * CGFloat(sin(a))
-                        if s == 0 { path.move(to: CGPoint(x: px, y: py)) }
-                        else { path.addLine(to: CGPoint(x: px, y: py)) }
-                    }
-                    path.closeSubpath()
-                    context.fill(path, with: .color(s.bumpColor.opacity(opacity)))
-                }
-            }
-        }
-        .frame(width: canvasSize, height: canvasSize)
-        .allowsHitTesting(false)
-    }
 
     // MARK: - Segment Borders
 
@@ -463,11 +401,6 @@ struct AppSegmentView: View {
 
     private var s: OrbitSettings { OrbitSettings.shared }
 
-    private var bumpCount: Int {
-        guard s.deepOrbitEnabled, s.bumpStyle == "icon", s.bumpOpacity > 0, windowCount > 1 else { return 0 }
-        return min(windowCount, 5)
-    }
-
     var body: some View {
         ZStack {
             if showBackground {
@@ -495,33 +428,6 @@ struct AppSegmentView: View {
                 .frame(width: iconSize, height: iconSize)
                 .scaleEffect(isSelected ? 1.2 : 1.0)
                 .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
-
-            if bumpCount > 0 {
-                iconBumps
-            }
-        }
-    }
-
-    private var iconBumps: some View {
-        let edgeRadius = (iconSize / 2) + 6
-        let bumpSize: CGFloat = 5
-        let spacing = Angle.degrees(14)
-        let baseAngle = Angle.degrees(90)
-        let baseOpacity = s.bumpOpacity
-        let opacity = isSelected ? min(baseOpacity * 1.6, 1.0) : baseOpacity
-
-        return ForEach(0..<bumpCount, id: \.self) { i in
-            let offset = Double(i) - Double(bumpCount - 1) / 2.0
-            let angle = baseAngle + spacing * offset
-            Circle()
-                .fill(s.bumpColor.opacity(opacity))
-                .frame(width: bumpSize, height: bumpSize)
-                .shadow(color: s.bumpColor.opacity(isSelected ? 0.5 : 0.2), radius: 3)
-                .offset(
-                    x: edgeRadius * CGFloat(cos(angle.radians)),
-                    y: edgeRadius * CGFloat(sin(angle.radians))
-                )
-                .scaleEffect(isSelected ? 1.2 : 1.0)
         }
     }
 }

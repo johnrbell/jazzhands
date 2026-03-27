@@ -4,7 +4,7 @@ import Carbon.HIToolbox
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var statusItem: NSStatusItem!
+    private var statusItem: NSStatusItem?
     private var overlayController: OverlayWindowController?
     private var globalFlagsMonitor: Any?
     private var backtickMonitor: Any?
@@ -338,9 +338,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupStatusBar() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        if let button = statusItem.button {
-            button.image = makeMenuBarIcon()
+        let style = OrbitSettings.shared.menuBarStyle
+        if style == "hidden" {
+            statusItem = nil
+            return
+        }
+
+        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        if let button = item.button {
+            button.image = (style == "orbit") ? makeOrbitRingIcon() : makeHandIcon()
         }
 
         let menu = NSMenu()
@@ -349,33 +355,59 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "About JazzHands", action: #selector(showAbout), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit JazzHands", action: #selector(quitApp), keyEquivalent: "q"))
-        statusItem.menu = menu
+        item.menu = menu
+        statusItem = item
     }
 
-    private func makeMenuBarIcon() -> NSImage {
-        let size: CGFloat = 18
-        let image = NSImage(size: NSSize(width: size, height: size), flipped: false) { rect in
-            let center = CGPoint(x: rect.midX, y: rect.midY)
-            let outerR: CGFloat = 7.5
-            let innerR: CGFloat = 4.5
-            let segCount = 3
-            let gapDeg: CGFloat = 30
-            let segDeg = 360.0 / CGFloat(segCount)
-            let arcDeg = segDeg - gapDeg
+    func updateStatusBar() {
+        if let existing = statusItem {
+            NSStatusBar.system.removeStatusItem(existing)
+            statusItem = nil
+        }
+        setupStatusBar()
+    }
 
-            NSColor.black.withAlphaComponent(0.6).setFill()
+    private func makeHandIcon() -> NSImage {
+        let bundle = Bundle.main
+        if let url = bundle.url(forResource: "MenuBarIcon", withExtension: "png"),
+           let image = NSImage(contentsOf: url) {
+            image.size = NSSize(width: 18, height: 18)
+            image.isTemplate = true
+            image.accessibilityDescription = "JazzHands"
+            return image
+        }
+        let fallback = NSImage(size: NSSize(width: 18, height: 18))
+        fallback.isTemplate = true
+        return fallback
+    }
 
-            for i in 0..<segCount {
-                let startDeg = CGFloat(i) * segDeg - 90.0 + gapDeg / 2.0
-                let endDeg = startDeg + arcDeg
+    private func makeOrbitRingIcon() -> NSImage {
+        let size = NSSize(width: 18, height: 18)
+        let image = NSImage(size: size, flipped: false) { rect in
+            let center = NSPoint(x: rect.midX, y: rect.midY)
+            let radius: CGFloat = 7.0
+            let segmentArc: CGFloat = .pi * 2.0 / 3.0 * 0.75
+            let gap: CGFloat = (.pi * 2.0 / 3.0 - segmentArc) / 2.0
+            let lineWidth: CGFloat = 1.8
 
-                let wedge = NSBezierPath()
-                wedge.appendArc(withCenter: center, radius: outerR,
-                                startAngle: startDeg, endAngle: endDeg, clockwise: false)
-                wedge.appendArc(withCenter: center, radius: innerR,
-                                startAngle: endDeg, endAngle: startDeg, clockwise: true)
-                wedge.close()
-                wedge.fill()
+            NSColor.black.setStroke()
+
+            for i in 0..<3 {
+                let baseAngle = CGFloat(i) * .pi * 2.0 / 3.0 - .pi / 2.0
+                let startAngle = baseAngle + gap
+                let endAngle = startAngle + segmentArc
+
+                let path = NSBezierPath()
+                path.appendArc(
+                    withCenter: center,
+                    radius: radius,
+                    startAngle: startAngle * 180.0 / .pi,
+                    endAngle: endAngle * 180.0 / .pi,
+                    clockwise: false
+                )
+                path.lineWidth = lineWidth
+                path.lineCapStyle = .round
+                path.stroke()
             }
             return true
         }
@@ -416,6 +448,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func quitApp() {
         NSApp.terminate(nil)
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        openSettings()
+        return true
     }
 
     func applicationWillTerminate(_ notification: Notification) {

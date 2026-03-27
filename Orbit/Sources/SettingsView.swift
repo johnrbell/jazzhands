@@ -83,6 +83,21 @@ struct SettingsView: View {
                 Text("Finder is always running — hide it when no Finder windows are open")
                     .font(.caption).foregroundColor(.secondary)
             }
+
+            Section("Menu Bar") {
+                Picker("Menu bar icon", selection: $settings.menuBarStyle) {
+                    Text("Jazz Hand").tag("hand")
+                    Text("Orbit Ring").tag("orbit")
+                    Text("Hidden").tag("hidden")
+                }
+                .onChange(of: settings.menuBarStyle) { _ in
+                    AppDelegate.shared?.updateStatusBar()
+                }
+                if settings.menuBarStyle == "hidden" {
+                    Text("Re-launch JazzHands.app to open settings.")
+                        .font(.caption).foregroundColor(.secondary)
+                }
+            }
         }
         .formStyle(.grouped)
     }
@@ -161,13 +176,8 @@ struct SettingsView: View {
                     .disabled(settings.segmentBorderCutout)
                     .opacity(settings.segmentBorderCutout ? 0.4 : 1)
 
-                Picker("Window bump style", selection: $settings.bumpStyle) {
-                    Text("Ring edge").tag("ring")
-                    Text("Under icon").tag("icon")
-                }
-                .pickerStyle(.segmented)
-                colorRow("Bump color", hex: $settings.bumpColorHex)
-                sliderRow("Bump opacity", value: $settings.bumpOpacity,
+                colorRow("Window indicator color", hex: $settings.bumpColorHex)
+                sliderRow("Window indicator opacity", value: $settings.bumpOpacity,
                           range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
             }
 
