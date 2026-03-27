@@ -295,7 +295,7 @@ final class WindowManager {
         // CGRequestScreenCaptureAccess() was triggering repeated OS prompts.
     }
 
-    func captureWindowThumbnail(windowID: CGWindowID, maxSize: CGSize = CGSize(width: 200, height: 150)) -> NSImage? {
+    func captureWindowThumbnail(windowID: CGWindowID, maxSize: CGSize = CGSize(width: 150, height: 97)) -> NSImage? {
         guard CGPreflightScreenCaptureAccess() else {
             log("capture wid=\(windowID) skipped — no screen capture permission")
             return nil
@@ -305,7 +305,7 @@ final class WindowManager {
             .null,
             .optionIncludingWindow,
             windowID,
-            [.boundsIgnoreFraming, .bestResolution]
+            [.boundsIgnoreFraming, .nominalResolution]
         ) else {
             log("  CGWindowListCreateImage returned nil")
             return nil

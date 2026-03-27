@@ -42,7 +42,7 @@ final class OrbitViewModel: ObservableObject {
     private var opacityStartValue: CGFloat = 0
     private var opacityTargetValue: CGFloat = 0
     private var opacityStartTime: CFTimeInterval = 0
-    private let opacityDuration: CFTimeInterval = 0.22
+    private let opacityDuration: CFTimeInterval = 0.12
     private var opacityCompletion: (() -> Void)?
 
     private var hoverTimer: Timer?
@@ -50,6 +50,7 @@ final class OrbitViewModel: ObservableObject {
     private var lastActiveApp: NSRunningApplication?
     private var cancelZoneTimer: Timer?
     private var cancelZoneArmed: Bool = false
+    private var lastThumbnailPrefetchTime: CFTimeInterval = 0
 
     private var settings: OrbitSettings { OrbitSettings.shared }
 
@@ -68,6 +69,12 @@ final class OrbitViewModel: ObservableObject {
         return false
     }
 
+    var deepOrbitDisplayAppIndex: Int {
+        if case .deep(let idx) = tier { return idx }
+        if slideAppIndex >= 0 { return slideAppIndex }
+        return 0
+    }
+
     var isCancelHovered: Bool {
         isInDeepOrbit && mouseDistance <= Double(deepOrbitDeadZone)
     }
@@ -84,6 +91,7 @@ final class OrbitViewModel: ObservableObject {
         slideAppIndex = -1
         slideAnimationTimer?.invalidate()
         slideAnimationTimer = nil
+        slideCompletion = nil
         returnSlideAppIndex = -1
         returnSlideOffset = 0
         returnAnimationTimer?.invalidate()
@@ -97,6 +105,33 @@ final class OrbitViewModel: ObservableObject {
         stopCancelZoneTimer()
 
         lastActiveApp = NSWorkspace.shared.frontmostApplication
+        prefetchThumbnailsIfNeeded()
+    }
+
+    private func prefetchThumbnailsIfNeeded() {
+        let now = CACurrentMediaTime()
+        guard now - lastThumbnailPrefetchTime > 10 else { return }
+        lastThumbnailPrefetchTime = now
+
+        let windowsToCapture = apps
+            .filter { $0.windows.count > 1 }
+            .flatMap { $0.windows }
+            .filter { windowThumbnails[$0.id] == nil }
+
+        guard !windowsToCapture.isEmpty else { return }
+
+        Task.detached { [weak self] in
+            var captured: [CGWindowID: NSImage] = [:]
+            for w in windowsToCapture {
+                if let img = WindowManager.shared.captureWindowThumbnail(windowID: w.id) {
+                    captured[w.id] = img
+                }
+            }
+            let result = captured
+            await MainActor.run {
+                self?.windowThumbnails.merge(result) { _, new in new }
+            }
+        }
     }
 
     func updateMouse(dx: CGFloat, dy: CGFloat) {
@@ -228,11 +263,13 @@ final class OrbitViewModel: ObservableObject {
         guard settings.deepOrbitEnabled,
               index >= 0, index < apps.count, apps[index].windows.count > 1 else { return }
 
-        hoverTimer = Timer.scheduledTimer(withTimeInterval: hoverDelay, repeats: false) { [weak self] _ in
-            Task { @MainActor in
+        let timer = Timer(timeInterval: hoverDelay, repeats: false) { [weak self] _ in
+            MainActor.assumeIsolated {
                 self?.enterDeepOrbit(for: index)
             }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        hoverTimer = timer
     }
 
     private func cancelHoverTimer() {
@@ -243,11 +280,13 @@ final class OrbitViewModel: ObservableObject {
     private func startCancelZoneTimer() {
         guard !cancelZoneArmed else { return }
         cancelZoneArmed = true
-        cancelZoneTimer = Timer.scheduledTimer(withTimeInterval: hoverDelay, repeats: false) { [weak self] _ in
-            Task { @MainActor in
+        let timer = Timer(timeInterval: hoverDelay, repeats: false) { [weak self] _ in
+            MainActor.assumeIsolated {
                 self?.cancelDeepOrbit()
             }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        cancelZoneTimer = timer
     }
 
     private func stopCancelZoneTimer() {
@@ -265,12 +304,7 @@ final class OrbitViewModel: ObservableObject {
         tier = .deep(appIndex: appIndex)
         deepOrbitWindows = app.windows
         selectedWindowIndex = -1
-        for window in app.windows {
-            if windowThumbnails[window.id] == nil {
-                windowThumbnails[window.id] = WindowManager.shared.captureWindowThumbnail(windowID: window.id)
-            }
-        }
-        animateDeepOrbitOpacity(to: 1)
+
         if settings.animateParentWedge {
             if slideAppIndex >= 0 && slideAppIndex != appIndex && deepOrbitSlideOffset > 0 {
                 returnSlideAppIndex = slideAppIndex
@@ -281,7 +315,30 @@ final class OrbitViewModel: ObservableObject {
             slideAnimationTimer = nil
             deepOrbitSlideOffset = 0
             slideAppIndex = appIndex
-            animateSlideOffset(to: deepOrbitSlideAmount)
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.animateDeepOrbitOpacity(to: 1)
+            if self.settings.animateParentWedge {
+                self.animateSlideOffset(to: self.deepOrbitSlideAmount)
+            }
+        }
+
+        let uncached = app.windows.filter { windowThumbnails[$0.id] == nil }
+        if !uncached.isEmpty {
+            Task.detached { [weak self] in
+                var captured: [CGWindowID: NSImage] = [:]
+                for w in uncached {
+                    if let img = WindowManager.shared.captureWindowThumbnail(windowID: w.id) {
+                        captured[w.id] = img
+                    }
+                }
+                let result = captured
+                await MainActor.run {
+                    self?.windowThumbnails.merge(result) { _, new in new }
+                }
+            }
         }
     }
 
@@ -309,13 +366,16 @@ final class OrbitViewModel: ObservableObject {
         stopCancelZoneTimer()
     }
 
-    private func animateSlideOffset(to target: CGFloat) {
+    private var slideCompletion: (() -> Void)?
+
+    private func animateSlideOffset(to target: CGFloat, completion: (() -> Void)? = nil) {
         slideStartValue = deepOrbitSlideOffset
         slideTargetValue = target
         slideStartTime = 0
+        slideCompletion = completion
         slideAnimationTimer?.invalidate()
-        slideAnimationTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 120.0, repeats: true) { [weak self] timer in
-            Task { @MainActor in
+        let timer = Timer(timeInterval: 1.0 / 120.0, repeats: true) { [weak self] timer in
+            MainActor.assumeIsolated {
                 guard let self else { timer.invalidate(); return }
                 if self.slideStartTime == 0 {
                     self.slideStartTime = CACurrentMediaTime()
@@ -328,21 +388,26 @@ final class OrbitViewModel: ObservableObject {
                 if t >= 1.0 {
                     timer.invalidate()
                     self.slideAnimationTimer = nil
+                    let cb = self.slideCompletion
+                    self.slideCompletion = nil
                     if self.slideTargetValue == 0 {
                         self.slideAppIndex = -1
                         self.deepOrbitWindows = []
                     }
+                    cb?()
                 }
             }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        slideAnimationTimer = timer
     }
 
     private func animateReturnSlide() {
         returnStartValue = returnSlideOffset
         returnStartTime = 0
         returnAnimationTimer?.invalidate()
-        returnAnimationTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 120.0, repeats: true) { [weak self] timer in
-            Task { @MainActor in
+        let timer = Timer(timeInterval: 1.0 / 120.0, repeats: true) { [weak self] timer in
+            MainActor.assumeIsolated {
                 guard let self else { timer.invalidate(); return }
                 if self.returnStartTime == 0 {
                     self.returnStartTime = CACurrentMediaTime()
@@ -360,21 +425,19 @@ final class OrbitViewModel: ObservableObject {
                 }
             }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        returnAnimationTimer = timer
     }
 
     private func animateDeepOrbitOpacity(to target: CGFloat, completion: (() -> Void)? = nil) {
         opacityStartValue = deepOrbitOpacity
         opacityTargetValue = target
-        opacityStartTime = 0
+        opacityStartTime = CACurrentMediaTime()
         opacityCompletion = completion
         opacityTimer?.invalidate()
-        opacityTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 120.0, repeats: true) { [weak self] timer in
-            Task { @MainActor in
+        let timer = Timer(timeInterval: 1.0 / 120.0, repeats: true) { [weak self] timer in
+            MainActor.assumeIsolated {
                 guard let self else { timer.invalidate(); return }
-                if self.opacityStartTime == 0 {
-                    self.opacityStartTime = CACurrentMediaTime()
-                    return
-                }
                 let elapsed = CACurrentMediaTime() - self.opacityStartTime
                 let t = min(elapsed / self.opacityDuration, 1.0)
                 let eased = 1.0 - pow(1.0 - t, 3.0)
@@ -387,6 +450,8 @@ final class OrbitViewModel: ObservableObject {
                 }
             }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        opacityTimer = timer
     }
 
     func returnSlideVector(appIndex: Int) -> CGPoint {
@@ -505,6 +570,15 @@ final class OrbitViewModel: ObservableObject {
         return CGPoint(
             x: deepOrbitSlideOffset * CGFloat(cos(angle)),
             y: deepOrbitSlideOffset * CGFloat(sin(angle))
+        )
+    }
+
+    func deepOrbitTargetSlideVector(appIndex: Int) -> CGPoint {
+        guard apps.count > 0, settings.animateParentWedge else { return .zero }
+        let angle = angleForSegment(at: appIndex, total: apps.count)
+        return CGPoint(
+            x: deepOrbitSlideAmount * CGFloat(cos(angle)),
+            y: deepOrbitSlideAmount * CGFloat(sin(angle))
         )
     }
 }

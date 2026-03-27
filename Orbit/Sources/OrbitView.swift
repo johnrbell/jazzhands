@@ -21,13 +21,8 @@ struct OrbitView: View {
                             DebugCanvasView(viewModel: viewModel)
                         }
                         ZStack {
-                            if case .deep(let appIndex) = viewModel.tier {
-                                deepOrbitRing(appIndex: appIndex)
-                                    .opacity(Double(viewModel.deepOrbitOpacity))
-                            } else if viewModel.slideAppIndex >= 0, !viewModel.deepOrbitWindows.isEmpty {
-                                deepOrbitRing(appIndex: viewModel.slideAppIndex)
-                                    .opacity(Double(viewModel.deepOrbitOpacity))
-                            }
+                            deepOrbitRing(appIndex: viewModel.deepOrbitDisplayAppIndex)
+                                .opacity(Double(viewModel.deepOrbitOpacity))
                             primaryRing
                             centerInfo
                             cursorIndicator
@@ -182,7 +177,7 @@ struct OrbitView: View {
         let outerR = viewModel.deepOrbitOuterRadius
 
         return Canvas { context, size in
-            let slideVec = viewModel.deepOrbitSlideVector(appIndex: appIndex)
+            let slideVec = viewModel.deepOrbitTargetSlideVector(appIndex: appIndex)
             let center = CGPoint(x: size.width / 2 + slideVec.x, y: size.height / 2 + slideVec.y)
             let highlight = s.deepGlowColor
 
