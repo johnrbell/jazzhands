@@ -30,6 +30,7 @@ final class WindowManager {
         ) as? [[String: Any]] ?? []
 
         var appWindowMap: [pid_t: [OrbitWindow]] = [:]
+        var pidZOrder: [pid_t] = []
 
         let minWindowDimension: CGFloat = 50
 
@@ -55,6 +56,9 @@ final class WindowManager {
                 isOnScreen: isOnScreen
             )
 
+            if appWindowMap[pid] == nil {
+                pidZOrder.append(pid)
+            }
             appWindowMap[pid, default: []].append(window)
         }
 
@@ -125,7 +129,8 @@ final class WindowManager {
         case "alphabetical":
             orbitApps.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         default:
-            break
+            let zOrderIndex = Dictionary(uniqueKeysWithValues: pidZOrder.enumerated().map { ($1, $0) })
+            orbitApps.sort { (zOrderIndex[$0.id] ?? Int.max) < (zOrderIndex[$1.id] ?? Int.max) }
         }
 
         return orbitApps
