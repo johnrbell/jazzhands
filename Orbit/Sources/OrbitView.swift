@@ -216,11 +216,24 @@ struct OrbitView: View {
 
                 if let thumb = viewModel.windowThumbnails[window.id] {
                     let img = Image(nsImage: thumb)
+                    let imgW = thumb.size.width
+                    let imgH = thumb.size.height
+                    var drawW = thumbW
+                    var drawH = thumbH
+                    if imgW > 0 && imgH > 0 {
+                        let imgAspect = imgW / imgH
+                        let boxAspect = thumbW / thumbH
+                        if imgAspect > boxAspect {
+                            drawH = thumbW / imgAspect
+                        } else {
+                            drawW = thumbH * imgAspect
+                        }
+                    }
                     var thumbCtx = context
                     thumbCtx.translateBy(x: thumbPos.x, y: thumbPos.y)
                     thumbCtx.rotate(by: .radians(angle + .pi / 2))
-                    thumbCtx.clip(to: RoundedRectangle(cornerRadius: 6).path(in: CGRect(x: -thumbW/2, y: -thumbH/2, width: thumbW, height: thumbH)))
-                    thumbCtx.draw(img, in: CGRect(x: -thumbW/2, y: -thumbH/2, width: thumbW, height: thumbH))
+                    thumbCtx.clip(to: RoundedRectangle(cornerRadius: 6).path(in: CGRect(x: -drawW/2, y: -drawH/2, width: drawW, height: drawH)))
+                    thumbCtx.draw(img, in: CGRect(x: -drawW/2, y: -drawH/2, width: drawW, height: drawH))
                 } else if let icon = (appIndex < viewModel.apps.count ? viewModel.apps[appIndex].icon : nil) {
                     let img = Image(nsImage: icon)
                     context.draw(img, in: CGRect(x: thumbPos.x - 18, y: thumbPos.y - 18, width: 36, height: 36))
