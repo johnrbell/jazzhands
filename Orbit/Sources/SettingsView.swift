@@ -154,6 +154,8 @@ struct SettingsView: View {
                                   range: 0...2, step: 0.1, format: { "\(Int($0 * 100))%" })
                         sliderRow("Deep orbit background fill", value: $settings.deepOrbitFillOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Deep orbit dimming", value: $settings.deepOrbitDimming,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                     }
 
                     Section("Icon Hover") {

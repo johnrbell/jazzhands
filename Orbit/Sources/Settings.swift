@@ -41,6 +41,7 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("ringFillColorHex") var ringFillColorHex: String = "#FFFFFF"
     @AppStorage("ringFillOpacity") var ringFillOpacity: Double = 0.0
     @AppStorage("deepOrbitFillOpacity") var deepOrbitFillOpacity: Double = 0.25
+    @AppStorage("deepOrbitDimming") var deepOrbitDimming: Double = 0.4
     @AppStorage("segmentBorderColorHex") var segmentBorderColorHex: String = "#FFFFFF"
     @AppStorage("segmentBorderOpacity") var segmentBorderOpacity: Double = 0.0
     @AppStorage("segmentBorderWidth") var segmentBorderWidth: Double = 1.0
