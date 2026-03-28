@@ -381,8 +381,8 @@ final class OrbitViewModel: ObservableObject {
 
     func cancelDeepOrbit() {
         guard case .deep(let appIndex) = tier else { return }
-        selectedIndex = appIndex
-        centerLabel = apps[appIndex].name
+        selectedIndex = -1
+        centerLabel = ""
         tier = .primary
         if settings.animateParentWedge {
             slideAppIndex = appIndex
