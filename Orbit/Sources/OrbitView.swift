@@ -144,7 +144,8 @@ struct OrbitView: View {
                     iconSize: viewModel.segmentIconSize,
                     showBackground: isDeepParent,
                     windowCount: app.windows.count,
-                    segmentAngle: Angle(radians: viewModel.angleForSegment(at: index, total: total))
+                    segmentAngle: Angle(radians: viewModel.angleForSegment(at: index, total: total)),
+                    activeWindowIndex: isDeepParent ? viewModel.selectedWindowIndex : -1
                 )
                 .opacity(dimmed && !isDeepParent ? s.deepOrbitDimming : 1.0)
                 .animation(.easeOut(duration: 0.15), value: isSelected)
@@ -404,6 +405,7 @@ struct AppSegmentView: View {
     var showBackground: Bool = false
     var windowCount: Int = 1
     var segmentAngle: Angle = .degrees(90)
+    var activeWindowIndex: Int = -1
 
     private var s: OrbitSettings { OrbitSettings.shared }
 
@@ -453,15 +455,19 @@ struct AppSegmentView: View {
         return ForEach(0..<indicatorCount, id: \.self) { i in
             let offset = Double(i) - Double(indicatorCount - 1) / 2.0
             let angle = anchor + spacing * offset
+            let isActive = activeWindowIndex >= 0 && i == (indicatorCount - 1 - activeWindowIndex)
+            let dotOpacity = isActive ? s.bumpActiveOpacity : opacity
+            let dotScale = isActive ? CGFloat(s.bumpActiveScale) : (isSelected ? 1.2 : 1.0)
             Circle()
-                .fill(s.bumpColor.opacity(opacity))
+                .fill(s.bumpColor.opacity(dotOpacity))
                 .frame(width: dotSize, height: dotSize)
-                .shadow(color: s.bumpColor.opacity(isSelected ? 0.5 : 0.2), radius: 3)
+                .scaleEffect(dotScale)
+                .shadow(color: s.bumpColor.opacity(isActive ? 0.6 : (isSelected ? 0.5 : 0.2)), radius: isActive ? 5 : 3)
                 .offset(
                     x: edgeRadius * CGFloat(cos(angle.radians)),
                     y: edgeRadius * CGFloat(sin(angle.radians))
                 )
-                .scaleEffect(isSelected ? 1.2 : 1.0)
+                .animation(.easeOut(duration: 0.12), value: isActive)
         }
     }
 }

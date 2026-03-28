@@ -235,7 +235,11 @@ struct SettingsView: View {
                         colorRow("Color", hex: $settings.bumpColorHex)
                         sliderRow("Opacity", value: $settings.bumpOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        Text("Dots only appear on apps with multiple windows. Hover an app in the preview to see changes.")
+                        sliderRow("Active scale", value: $settings.bumpActiveScale,
+                                  range: 1.0...3.0, step: 0.1, format: { String(format: "%.1fx", $0) })
+                        sliderRow("Active opacity", value: $settings.bumpActiveOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        Text("Dots highlight when hovering the corresponding window in deep orbit.")
                             .font(.caption).foregroundColor(.secondary)
                     }
                 }

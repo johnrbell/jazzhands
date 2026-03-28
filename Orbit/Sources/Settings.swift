@@ -71,6 +71,8 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("bumpStyle") var bumpStyle: String = "ring"
     @AppStorage("bumpColorHex") var bumpColorHex: String = "#FFFFFF"
     @AppStorage("bumpOpacity") var bumpOpacity: Double = 0.55
+    @AppStorage("bumpActiveScale") var bumpActiveScale: Double = 1.5
+    @AppStorage("bumpActiveOpacity") var bumpActiveOpacity: Double = 1.0
 
     // Menu Bar
     @AppStorage("menuBarStyle") var menuBarStyle: String = "hand"
