@@ -109,19 +109,6 @@ struct SettingsView: View {
 
     private var appearanceTab: some View {
         VStack(spacing: 0) {
-            HStack {
-                Spacer()
-                VStack(spacing: 4) {
-                    Text("Use your shortcut (\(settings.shortcutDisplayName)) to preview changes live.")
-                        .font(.callout)
-                    Text("No in-app preview yet. It sucks, we know. 🤷")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-            }
-            .padding(.vertical, 8)
-
             HStack(alignment: .top, spacing: 0) {
                 Form {
                     PresetsSection()
@@ -129,9 +116,6 @@ struct SettingsView: View {
                     Section("Colors") {
                         colorRow("Center icon glow", hex: $settings.glowColorHex)
                         colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
-                        colorRow("Hover highlight", hex: $settings.hoverColorHex)
-                        sliderRow("Hover highlight opacity", value: $settings.hoverHighlightOpacity,
-                                  range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
                         colorRow("Ring color", hex: $settings.ringColorHex)
                         colorRow("Background", hex: $settings.backgroundColorHex)
                     }
@@ -171,26 +155,40 @@ struct SettingsView: View {
                         sliderRow("Glow intensity", value: $settings.glowIntensity,
                                   range: 0...2, step: 0.1, format: { "\(Int($0 * 100))%" })
                         sliderRow("Deep orbit fill", value: $settings.deepOrbitFillOpacity,
-                                  range: 0...0.6, step: 0.05, format: { "\(Int($0 * 100))%" })
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                         sliderRow("Cancel button size", value: $settings.cancelButtonSize,
                                   range: 24...128, step: 4, format: { "\(Int($0))px" })
                         sliderRow("Cancel button opacity", value: $settings.cancelButtonOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                     }
 
+                    Section("Icon Hover") {
+                        colorRow("Color", hex: $settings.hoverColorHex)
+                        sliderRow("Opacity", value: $settings.hoverHighlightOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Fill opacity", value: $settings.hoverFillOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Ring size", value: $settings.hoverRingSize,
+                                  range: 0...60, step: 2, format: { "\(Int($0))px" })
+                        sliderRow("Stroke width", value: $settings.hoverStrokeWidth,
+                                  range: 0...8, step: 0.5, format: { String(format: "%.1fpt", $0) })
+                        sliderRow("Icon scale", value: $settings.hoverIconScale,
+                                  range: 1.0...1.8, step: 0.05, format: { String(format: "%.2fx", $0) })
+                        sliderRow("Glow radius", value: $settings.hoverGlowRadius,
+                                  range: 0...50, step: 1, format: { "\(Int($0))px" })
+                    }
+
                     Section("Segment Borders") {
                         Toggle("Cutout style", isOn: $settings.segmentBorderCutout)
                         Text("Cut borders as negative space instead of drawing colored lines")
                             .font(.caption).foregroundColor(.secondary)
+                        sliderRow("Width", value: $settings.segmentBorderWidth,
+                                  range: 0.5...5, step: 0.5, format: { String(format: "%.1fpt", $0) })
                         colorRow("Color", hex: $settings.segmentBorderColorHex)
                             .disabled(settings.segmentBorderCutout)
                             .opacity(settings.segmentBorderCutout ? 0.4 : 1)
                         sliderRow("Opacity", value: $settings.segmentBorderOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                            .disabled(settings.segmentBorderCutout)
-                            .opacity(settings.segmentBorderCutout ? 0.4 : 1)
-                        sliderRow("Width", value: $settings.segmentBorderWidth,
-                                  range: 0.5...5, step: 0.5, format: { String(format: "%.1fpt", $0) })
                             .disabled(settings.segmentBorderCutout)
                             .opacity(settings.segmentBorderCutout ? 0.4 : 1)
                     }
@@ -204,6 +202,8 @@ struct SettingsView: View {
                         colorRow("Color", hex: $settings.bumpColorHex)
                         sliderRow("Opacity", value: $settings.bumpOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        Text("Dots only appear on apps with multiple windows. Hover an app in the preview to see changes.")
+                            .font(.caption).foregroundColor(.secondary)
                     }
                 }
                 .formStyle(.grouped)

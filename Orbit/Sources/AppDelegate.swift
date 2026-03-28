@@ -19,7 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var tapRunLoopSource: CFRunLoopSource?
     nonisolated(unsafe) static var shared: AppDelegate?
 
-    private static let logFile = "/tmp/orbit.log"
+    private nonisolated static let logFile = "/tmp/orbit.log"
 
     nonisolated static func log(_ msg: String) {
         let line = "\(Date()): \(msg)\n"
@@ -313,6 +313,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Status Bar
 
     private var settingsWindow: NSWindow?
+    private var settingsCloseObserver: Any?
+    private var previewController: PreviewWindowController?
     private var onboardingWindow: NSWindow?
 
     private func showOnboarding() {
@@ -438,6 +440,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let w = settingsWindow {
             w.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
+            showPreview()
             return
         }
 
@@ -452,11 +455,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         w.title = "JazzHands Settings"
         w.contentView = hostingView
-        w.center()
+        w.setFrameAutosaveName("SettingsWindow")
+        if !w.setFrameUsingName("SettingsWindow") {
+            w.center()
+        }
         w.isReleasedWhenClosed = false
         w.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow = w
+
+        settingsCloseObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.willCloseNotification,
+            object: w,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.previewController?.hidePreview()
+            }
+        }
+
+        showPreview()
+    }
+
+    private func showPreview() {
+        if previewController == nil {
+            previewController = PreviewWindowController()
+        }
+        previewController?.showPreview(relativeTo: settingsWindow)
     }
 
     @objc private func showAbout() {
@@ -474,6 +499,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        previewController?.hidePreview()
+        if let obs = settingsCloseObserver { NotificationCenter.default.removeObserver(obs) }
         if let ref = hotKeyRef { UnregisterEventHotKey(ref) }
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)

@@ -396,10 +396,13 @@ struct OrbitView: View {
 
             }
 
-            Circle()
-                .stroke(s.ringColor.opacity(dimmed ? 0.1 : s.centerRingOpacity), lineWidth: 1.5)
-                .frame(width: radius * 2, height: radius * 2)
-                .shadow(color: color.opacity((dimmed ? 0.05 : 0.15) * s.glowIntensity), radius: 20)
+            let centerOpacity = dimmed ? min(0.1, s.centerRingOpacity) : s.centerRingOpacity
+            if centerOpacity > 0 {
+                Circle()
+                    .stroke(s.ringColor.opacity(centerOpacity), lineWidth: 1.5)
+                    .frame(width: radius * 2, height: radius * 2)
+                    .shadow(color: color.opacity(0.15 * centerOpacity * s.glowIntensity), radius: 20)
+            }
         }
     }
 }
@@ -424,31 +427,26 @@ struct AppSegmentView: View {
 
     var body: some View {
         ZStack {
-            if showBackground {
-                Circle()
-                    .fill(Color.black.opacity(0.7))
-                    .frame(width: iconSize + 24, height: iconSize + 24)
-
-                Circle()
-                    .stroke(s.hoverColor.opacity(0.8), lineWidth: 2)
-                    .frame(width: iconSize + 24, height: iconSize + 24)
-            } else if isSelected {
+            if showBackground || isSelected {
                 let ho = s.hoverHighlightOpacity
+                let ringPad = CGFloat(s.hoverRingSize)
                 Circle()
-                    .fill(s.hoverColor.opacity(0.2 * ho))
-                    .frame(width: iconSize + 20, height: iconSize + 20)
-                    .shadow(color: s.hoverColor.opacity(0.5 * s.glowIntensity * ho), radius: 15)
+                    .fill(s.hoverColor.opacity(s.hoverFillOpacity * ho))
+                    .frame(width: iconSize + ringPad, height: iconSize + ringPad)
+                    .shadow(color: s.hoverColor.opacity(0.5 * s.glowIntensity * ho), radius: CGFloat(s.hoverGlowRadius))
 
-                Circle()
-                    .stroke(s.hoverColor.opacity(0.6 * ho), lineWidth: 2)
-                    .frame(width: iconSize + 20, height: iconSize + 20)
+                if s.hoverStrokeWidth > 0 {
+                    Circle()
+                        .stroke(s.hoverColor.opacity(0.6 * ho), lineWidth: CGFloat(s.hoverStrokeWidth))
+                        .frame(width: iconSize + ringPad, height: iconSize + ringPad)
+                }
             }
 
             Image(nsImage: app.icon)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: iconSize, height: iconSize)
-                .scaleEffect(isSelected ? 1.2 : 1.0)
+                .scaleEffect(isSelected ? CGFloat(s.hoverIconScale) : 1.0)
                 .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
 
             if indicatorCount > 0 {

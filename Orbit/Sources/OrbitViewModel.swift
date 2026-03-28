@@ -112,6 +112,37 @@ final class OrbitViewModel: ObservableObject {
         prefetchThumbnailsIfNeeded()
     }
 
+    func softRefresh() {
+        let previousBundleID: String? = {
+            guard selectedIndex >= 0, selectedIndex < apps.count else { return nil }
+            return apps[selectedIndex].bundleIdentifier
+        }()
+
+        let newApps = WindowManager.shared.fetchActiveApps()
+        apps = newApps
+
+        if let bid = previousBundleID,
+           let idx = newApps.firstIndex(where: { $0.bundleIdentifier == bid }) {
+            selectedIndex = idx
+            centerLabel = newApps[idx].name
+        } else if selectedIndex >= newApps.count {
+            selectedIndex = newApps.isEmpty ? -1 : 0
+            centerLabel = newApps.isEmpty ? "" : newApps[0].name
+        }
+
+        if case .deep(let appIndex) = tier {
+            if appIndex < newApps.count {
+                deepOrbitWindows = newApps[appIndex].windows
+            } else {
+                tier = .primary
+                deepOrbitWindows = []
+                selectedWindowIndex = -1
+            }
+        }
+
+        prefetchThumbnailsIfNeeded()
+    }
+
     private func prefetchThumbnailsIfNeeded() {
         let now = CACurrentMediaTime()
         guard now - lastThumbnailPrefetchTime > 10 else { return }
@@ -132,8 +163,9 @@ final class OrbitViewModel: ObservableObject {
                 }
             }
             let result = captured
+            guard let target = self else { return }
             await MainActor.run {
-                self?.windowThumbnails.merge(result) { _, new in new }
+                target.windowThumbnails.merge(result) { _, new in new }
             }
         }
     }
@@ -339,8 +371,9 @@ final class OrbitViewModel: ObservableObject {
                     }
                 }
                 let result = captured
+                guard let target = self else { return }
                 await MainActor.run {
-                    self?.windowThumbnails.merge(result) { _, new in new }
+                    target.windowThumbnails.merge(result) { _, new in new }
                 }
             }
         }

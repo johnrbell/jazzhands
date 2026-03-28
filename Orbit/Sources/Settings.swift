@@ -52,6 +52,13 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("parentWedgeSlideDistance") var parentWedgeSlideDistance: Double = 30
     @AppStorage("deepOrbitScale") var deepOrbitScale: Double = 1.0
 
+    // Icon Hover
+    @AppStorage("hoverRingSize") var hoverRingSize: Double = 20
+    @AppStorage("hoverStrokeWidth") var hoverStrokeWidth: Double = 2
+    @AppStorage("hoverFillOpacity") var hoverFillOpacity: Double = 0.2
+    @AppStorage("hoverIconScale") var hoverIconScale: Double = 1.2
+    @AppStorage("hoverGlowRadius") var hoverGlowRadius: Double = 15
+
     // Window indicators
     @AppStorage("bumpStyle") var bumpStyle: String = "ring"
     @AppStorage("bumpColorHex") var bumpColorHex: String = "#FFFFFF"
@@ -132,6 +139,8 @@ final class OrbitSettings: ObservableObject {
             segmentBorderOpacity: segmentBorderOpacity, segmentBorderWidth: segmentBorderWidth,
             segmentBorderCutout: segmentBorderCutout,
             animateParentWedge: animateParentWedge, parentWedgeSlideDistance: parentWedgeSlideDistance,
+            hoverRingSize: hoverRingSize, hoverStrokeWidth: hoverStrokeWidth,
+            hoverFillOpacity: hoverFillOpacity, hoverIconScale: hoverIconScale, hoverGlowRadius: hoverGlowRadius,
             bumpStyle: bumpStyle, bumpColorHex: bumpColorHex, bumpOpacity: bumpOpacity
         )
     }
@@ -160,6 +169,11 @@ final class OrbitSettings: ObservableObject {
         segmentBorderCutout = preset.segmentBorderCutout
         animateParentWedge = preset.animateParentWedge
         parentWedgeSlideDistance = preset.parentWedgeSlideDistance
+        hoverRingSize = preset.hoverRingSize
+        hoverStrokeWidth = preset.hoverStrokeWidth
+        hoverFillOpacity = preset.hoverFillOpacity
+        hoverIconScale = preset.hoverIconScale
+        hoverGlowRadius = preset.hoverGlowRadius
         bumpStyle = preset.bumpStyle
         bumpColorHex = preset.bumpColorHex
         bumpOpacity = preset.bumpOpacity
@@ -339,6 +353,11 @@ struct AppearancePreset: Codable {
     var segmentBorderCutout: Bool
     var animateParentWedge: Bool
     var parentWedgeSlideDistance: Double
+    var hoverRingSize: Double
+    var hoverStrokeWidth: Double
+    var hoverFillOpacity: Double
+    var hoverIconScale: Double
+    var hoverGlowRadius: Double
     var bumpStyle: String
     var bumpColorHex: String
     var bumpOpacity: Double
@@ -351,6 +370,8 @@ struct AppearancePreset: Codable {
          segmentBorderOpacity: Double, segmentBorderWidth: Double,
          segmentBorderCutout: Bool = false,
          animateParentWedge: Bool = true, parentWedgeSlideDistance: Double = 30,
+         hoverRingSize: Double = 20, hoverStrokeWidth: Double = 2,
+         hoverFillOpacity: Double = 0.2, hoverIconScale: Double = 1.2, hoverGlowRadius: Double = 15,
          bumpStyle: String = "ring", bumpColorHex: String = "#FFFFFF", bumpOpacity: Double = 0.55) {
         self.primaryRadius = primaryRadius; self.iconSize = iconSize; self.centerIconSize = centerIconSize
         self.centerDeadZone = centerDeadZone; self.glowColorHex = glowColorHex
@@ -363,6 +384,8 @@ struct AppearancePreset: Codable {
         self.cancelButtonOpacity = cancelButtonOpacity; self.segmentBorderOpacity = segmentBorderOpacity
         self.segmentBorderWidth = segmentBorderWidth; self.segmentBorderCutout = segmentBorderCutout
         self.animateParentWedge = animateParentWedge; self.parentWedgeSlideDistance = parentWedgeSlideDistance
+        self.hoverRingSize = hoverRingSize; self.hoverStrokeWidth = hoverStrokeWidth
+        self.hoverFillOpacity = hoverFillOpacity; self.hoverIconScale = hoverIconScale; self.hoverGlowRadius = hoverGlowRadius
         self.bumpStyle = bumpStyle; self.bumpColorHex = bumpColorHex; self.bumpOpacity = bumpOpacity
     }
 
@@ -396,6 +419,11 @@ struct AppearancePreset: Codable {
         segmentBorderCutout = (try? c.decode(Bool.self, forKey: .segmentBorderCutout)) ?? d.segmentBorderCutout
         animateParentWedge = (try? c.decode(Bool.self, forKey: .animateParentWedge)) ?? d.animateParentWedge
         parentWedgeSlideDistance = (try? c.decode(Double.self, forKey: .parentWedgeSlideDistance)) ?? d.parentWedgeSlideDistance
+        hoverRingSize = (try? c.decode(Double.self, forKey: .hoverRingSize)) ?? d.hoverRingSize
+        hoverStrokeWidth = (try? c.decode(Double.self, forKey: .hoverStrokeWidth)) ?? d.hoverStrokeWidth
+        hoverFillOpacity = (try? c.decode(Double.self, forKey: .hoverFillOpacity)) ?? d.hoverFillOpacity
+        hoverIconScale = (try? c.decode(Double.self, forKey: .hoverIconScale)) ?? d.hoverIconScale
+        hoverGlowRadius = (try? c.decode(Double.self, forKey: .hoverGlowRadius)) ?? d.hoverGlowRadius
         bumpStyle = (try? c.decode(String.self, forKey: .bumpStyle)) ?? d.bumpStyle
         bumpColorHex = (try? c.decode(String.self, forKey: .bumpColorHex)) ?? d.bumpColorHex
         bumpOpacity = (try? c.decode(Double.self, forKey: .bumpOpacity)) ?? d.bumpOpacity
@@ -426,6 +454,11 @@ struct AppearancePreset: Codable {
         try c.encode(segmentBorderCutout, forKey: .segmentBorderCutout)
         try c.encode(animateParentWedge, forKey: .animateParentWedge)
         try c.encode(parentWedgeSlideDistance, forKey: .parentWedgeSlideDistance)
+        try c.encode(hoverRingSize, forKey: .hoverRingSize)
+        try c.encode(hoverStrokeWidth, forKey: .hoverStrokeWidth)
+        try c.encode(hoverFillOpacity, forKey: .hoverFillOpacity)
+        try c.encode(hoverIconScale, forKey: .hoverIconScale)
+        try c.encode(hoverGlowRadius, forKey: .hoverGlowRadius)
         try c.encode(bumpStyle, forKey: .bumpStyle)
         try c.encode(bumpColorHex, forKey: .bumpColorHex)
         try c.encode(bumpOpacity, forKey: .bumpOpacity)
@@ -439,6 +472,7 @@ struct AppearancePreset: Codable {
         case deepOrbitFillOpacity, cancelButtonSize, cancelButtonOpacity
         case segmentBorderOpacity, segmentBorderWidth, segmentBorderCutout
         case animateParentWedge, parentWedgeSlideDistance
+        case hoverRingSize, hoverStrokeWidth, hoverFillOpacity, hoverIconScale, hoverGlowRadius
         case bumpStyle, bumpColorHex, bumpOpacity
         case spokeColorHex, spokeOpacity, spokeWidth
     }
