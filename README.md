@@ -63,6 +63,8 @@ Right-click (or click) the menu bar icon → **Settings** to configure:
 - **Animation** — parent wedge slide on deep orbit entry
 - **Presets** — save and load full appearance configurations
 
+![JazzHands Demo](settings.png)
+
 ## Scripts
 
 ### `build.sh` — Local Development Build
