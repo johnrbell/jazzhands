@@ -168,7 +168,6 @@ final class OverlayWindowController {
         }
     }
 
-    private var clickMonitor: Any?
     private var localMoveMonitor: Any?
     private var lastEventTimestamp: TimeInterval = 0
 
@@ -194,18 +193,9 @@ final class OverlayWindowController {
             return event
         }
 
-        let click = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown]) { [weak self] event in
-            guard let self else { return event }
-            Task { @MainActor in
-                self.handleClick(event)
-            }
-            return event
-        }
-
         Task { @MainActor in
             self.mouseMonitor = global
             self.localMoveMonitor = local
-            self.clickMonitor = click
         }
     }
 
@@ -215,25 +205,9 @@ final class OverlayWindowController {
         handleDelta(dx: dx, dy: dy, eventTime: timestamp)
     }
 
-    private func handleClick(_ event: NSEvent) {
-        guard viewModel.isInDeepOrbit else { return }
-        guard let win = window else { return }
-
-        let loc = event.locationInWindow
-        let center = CGPoint(x: win.frame.width / 2, y: win.frame.height / 2)
-        let dx = loc.x - center.x
-        let dy = loc.y - center.y
-        let dist = sqrt(dx * dx + dy * dy)
-
-        if dist < 40 {
-            viewModel.cancelDeepOrbit()
-        }
-    }
-
     private func stopMouseTracking() {
         if let m = mouseMonitor { NSEvent.removeMonitor(m); mouseMonitor = nil }
         if let m = localMoveMonitor { NSEvent.removeMonitor(m); localMoveMonitor = nil }
-        if let m = clickMonitor { NSEvent.removeMonitor(m); clickMonitor = nil }
         lastEventTimestamp = 0
     }
 }

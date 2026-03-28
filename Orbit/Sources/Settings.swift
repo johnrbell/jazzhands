@@ -42,8 +42,6 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("ringFillColorHex") var ringFillColorHex: String = "#FFFFFF"
     @AppStorage("ringFillOpacity") var ringFillOpacity: Double = 0.0
     @AppStorage("deepOrbitFillOpacity") var deepOrbitFillOpacity: Double = 0.25
-    @AppStorage("cancelButtonSize") var cancelButtonSize: Double = 56
-    @AppStorage("cancelButtonOpacity") var cancelButtonOpacity: Double = 0.7
     @AppStorage("segmentBorderColorHex") var segmentBorderColorHex: String = "#FFFFFF"
     @AppStorage("segmentBorderOpacity") var segmentBorderOpacity: Double = 0.0
     @AppStorage("segmentBorderWidth") var segmentBorderWidth: Double = 1.0
@@ -135,7 +133,6 @@ final class OrbitSettings: ObservableObject {
             backgroundOpacity: backgroundOpacity, glowIntensity: glowIntensity,
             ringOpacity: ringOpacity, ringFillOpacity: ringFillOpacity,
             deepOrbitFillOpacity: deepOrbitFillOpacity,
-            cancelButtonSize: cancelButtonSize, cancelButtonOpacity: cancelButtonOpacity,
             segmentBorderOpacity: segmentBorderOpacity, segmentBorderWidth: segmentBorderWidth,
             segmentBorderCutout: segmentBorderCutout,
             animateParentWedge: animateParentWedge, parentWedgeSlideDistance: parentWedgeSlideDistance,
@@ -162,8 +159,6 @@ final class OrbitSettings: ObservableObject {
         ringOpacity = preset.ringOpacity
         ringFillOpacity = preset.ringFillOpacity
         deepOrbitFillOpacity = preset.deepOrbitFillOpacity
-        cancelButtonSize = preset.cancelButtonSize
-        cancelButtonOpacity = preset.cancelButtonOpacity
         segmentBorderOpacity = preset.segmentBorderOpacity
         segmentBorderWidth = preset.segmentBorderWidth
         segmentBorderCutout = preset.segmentBorderCutout
@@ -189,7 +184,6 @@ final class OrbitSettings: ObservableObject {
         backgroundOpacity: 0.65, glowIntensity: 1.0,
         ringOpacity: 0.25, ringFillOpacity: 0.0,
         deepOrbitFillOpacity: 0.25,
-        cancelButtonSize: 56, cancelButtonOpacity: 0.7,
         segmentBorderOpacity: 0.0, segmentBorderWidth: 1.0,
         segmentBorderCutout: false,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -206,7 +200,6 @@ final class OrbitSettings: ObservableObject {
         backgroundOpacity: 0.65, glowIntensity: 1.0,
         ringOpacity: 0.0, ringFillOpacity: 0.0,
         deepOrbitFillOpacity: 0.5,
-        cancelButtonSize: 56, cancelButtonOpacity: 0.45,
         segmentBorderOpacity: 0.45, segmentBorderWidth: 2.5,
         segmentBorderCutout: false,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -223,7 +216,6 @@ final class OrbitSettings: ObservableObject {
         backgroundOpacity: 0.65, glowIntensity: 1.0,
         ringOpacity: 0.0, ringFillOpacity: 0.3,
         deepOrbitFillOpacity: 0.5,
-        cancelButtonSize: 56, cancelButtonOpacity: 0.45,
         segmentBorderOpacity: 0.45, segmentBorderWidth: 2.5,
         segmentBorderCutout: true,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -240,7 +232,6 @@ final class OrbitSettings: ObservableObject {
         backgroundOpacity: 0.65, glowIntensity: 1.0,
         ringOpacity: 0.0, ringFillOpacity: 0.3,
         deepOrbitFillOpacity: 0.5,
-        cancelButtonSize: 56, cancelButtonOpacity: 0.45,
         segmentBorderOpacity: 0.45, segmentBorderWidth: 2.5,
         segmentBorderCutout: true,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -257,7 +248,6 @@ final class OrbitSettings: ObservableObject {
         backgroundOpacity: 0.7, glowIntensity: 0.8,
         ringOpacity: 0.15, ringFillOpacity: 0.12,
         deepOrbitFillOpacity: 0.4,
-        cancelButtonSize: 56, cancelButtonOpacity: 0.5,
         segmentBorderOpacity: 0.35, segmentBorderWidth: 2.0,
         segmentBorderCutout: true,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -274,7 +264,6 @@ final class OrbitSettings: ObservableObject {
         backgroundOpacity: 0.75, glowIntensity: 0.6,
         ringOpacity: 0.2, ringFillOpacity: 0.08,
         deepOrbitFillOpacity: 0.3,
-        cancelButtonSize: 56, cancelButtonOpacity: 0.5,
         segmentBorderOpacity: 0.3, segmentBorderWidth: 2.0,
         segmentBorderCutout: true,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -346,8 +335,6 @@ struct AppearancePreset: Codable {
     var ringOpacity: Double
     var ringFillOpacity: Double
     var deepOrbitFillOpacity: Double
-    var cancelButtonSize: Double
-    var cancelButtonOpacity: Double
     var segmentBorderOpacity: Double
     var segmentBorderWidth: Double
     var segmentBorderCutout: Bool
@@ -366,7 +353,7 @@ struct AppearancePreset: Codable {
          glowColorHex: String, deepGlowColorHex: String, ringColorHex: String, hoverColorHex: String,
          backgroundColorHex: String, ringFillColorHex: String, segmentBorderColorHex: String,
          backgroundOpacity: Double, glowIntensity: Double, ringOpacity: Double, ringFillOpacity: Double,
-         deepOrbitFillOpacity: Double, cancelButtonSize: Double, cancelButtonOpacity: Double,
+         deepOrbitFillOpacity: Double,
          segmentBorderOpacity: Double, segmentBorderWidth: Double,
          segmentBorderCutout: Bool = false,
          animateParentWedge: Bool = true, parentWedgeSlideDistance: Double = 30,
@@ -380,8 +367,7 @@ struct AppearancePreset: Codable {
         self.ringFillColorHex = ringFillColorHex; self.segmentBorderColorHex = segmentBorderColorHex
         self.backgroundOpacity = backgroundOpacity; self.glowIntensity = glowIntensity
         self.ringOpacity = ringOpacity; self.ringFillOpacity = ringFillOpacity
-        self.deepOrbitFillOpacity = deepOrbitFillOpacity; self.cancelButtonSize = cancelButtonSize
-        self.cancelButtonOpacity = cancelButtonOpacity; self.segmentBorderOpacity = segmentBorderOpacity
+        self.deepOrbitFillOpacity = deepOrbitFillOpacity; self.segmentBorderOpacity = segmentBorderOpacity
         self.segmentBorderWidth = segmentBorderWidth; self.segmentBorderCutout = segmentBorderCutout
         self.animateParentWedge = animateParentWedge; self.parentWedgeSlideDistance = parentWedgeSlideDistance
         self.hoverRingSize = hoverRingSize; self.hoverStrokeWidth = hoverStrokeWidth
@@ -407,8 +393,6 @@ struct AppearancePreset: Codable {
         ringOpacity = (try? c.decode(Double.self, forKey: .ringOpacity)) ?? d.ringOpacity
         ringFillOpacity = (try? c.decode(Double.self, forKey: .ringFillOpacity)) ?? d.ringFillOpacity
         deepOrbitFillOpacity = (try? c.decode(Double.self, forKey: .deepOrbitFillOpacity)) ?? d.deepOrbitFillOpacity
-        cancelButtonSize = (try? c.decode(Double.self, forKey: .cancelButtonSize)) ?? d.cancelButtonSize
-        cancelButtonOpacity = (try? c.decode(Double.self, forKey: .cancelButtonOpacity)) ?? d.cancelButtonOpacity
         // Handle renamed fields: segment border was previously spoke
         segmentBorderColorHex = (try? c.decode(String.self, forKey: .segmentBorderColorHex))
             ?? (try? c.decode(String.self, forKey: .spokeColorHex)) ?? d.segmentBorderColorHex
@@ -447,8 +431,6 @@ struct AppearancePreset: Codable {
         try c.encode(ringOpacity, forKey: .ringOpacity)
         try c.encode(ringFillOpacity, forKey: .ringFillOpacity)
         try c.encode(deepOrbitFillOpacity, forKey: .deepOrbitFillOpacity)
-        try c.encode(cancelButtonSize, forKey: .cancelButtonSize)
-        try c.encode(cancelButtonOpacity, forKey: .cancelButtonOpacity)
         try c.encode(segmentBorderOpacity, forKey: .segmentBorderOpacity)
         try c.encode(segmentBorderWidth, forKey: .segmentBorderWidth)
         try c.encode(segmentBorderCutout, forKey: .segmentBorderCutout)
@@ -469,7 +451,7 @@ struct AppearancePreset: Codable {
         case glowColorHex, deepGlowColorHex, ringColorHex, hoverColorHex
         case backgroundColorHex, ringFillColorHex, segmentBorderColorHex
         case backgroundOpacity, glowIntensity, ringOpacity, ringFillOpacity
-        case deepOrbitFillOpacity, cancelButtonSize, cancelButtonOpacity
+        case deepOrbitFillOpacity
         case segmentBorderOpacity, segmentBorderWidth, segmentBorderCutout
         case animateParentWedge, parentWedgeSlideDistance
         case hoverRingSize, hoverStrokeWidth, hoverFillOpacity, hoverIconScale, hoverGlowRadius

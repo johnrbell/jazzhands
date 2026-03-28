@@ -156,10 +156,6 @@ struct SettingsView: View {
                                   range: 0...2, step: 0.1, format: { "\(Int($0 * 100))%" })
                         sliderRow("Deep orbit fill", value: $settings.deepOrbitFillOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Cancel button size", value: $settings.cancelButtonSize,
-                                  range: 24...128, step: 4, format: { "\(Int($0))px" })
-                        sliderRow("Cancel button opacity", value: $settings.cancelButtonOpacity,
-                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                     }
 
                     Section("Icon Hover") {

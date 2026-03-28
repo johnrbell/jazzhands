@@ -51,10 +51,8 @@ struct OrbitView: View {
 
     private var centerInfo: some View {
         VStack(spacing: 6) {
-            if viewModel.isInDeepOrbit {
-                cancelButton
-            } else if viewModel.selectedIndex >= 0,
-                      viewModel.selectedIndex < viewModel.apps.count {
+            if viewModel.selectedIndex >= 0,
+               viewModel.selectedIndex < viewModel.apps.count {
                 Image(nsImage: viewModel.apps[viewModel.selectedIndex].icon)
                     .resizable()
                     .frame(width: CGFloat(s.centerIconSize), height: CGFloat(s.centerIconSize))
@@ -69,40 +67,6 @@ struct OrbitView: View {
         }
         .animation(.easeOut(duration: 0.15), value: viewModel.selectedIndex)
         .animation(.easeOut(duration: 0.15), value: viewModel.isInDeepOrbit)
-    }
-
-    @ViewBuilder
-    private var cancelButton: some View {
-        let hovered = viewModel.isCancelHovered
-        let btnSize = CGFloat(s.cancelButtonSize)
-        let btnOpacity = s.cancelButtonOpacity
-        Button(action: {
-            viewModel.cancelDeepOrbit()
-        }) {
-            ZStack {
-                Circle()
-                    .fill(.ultraThinMaterial)
-                    .environment(\.colorScheme, .dark)
-                    .frame(width: btnSize, height: btnSize)
-
-                Circle()
-                    .fill(Color.white.opacity((hovered ? 0.18 : 0.06) * btnOpacity))
-                    .frame(width: btnSize, height: btnSize)
-
-                Circle()
-                    .stroke(Color.white.opacity((hovered ? 0.6 : 0.25) * btnOpacity), lineWidth: hovered ? 2 : 1.5)
-                    .frame(width: btnSize, height: btnSize)
-
-                Image(systemName: "xmark")
-                    .font(.system(size: btnSize * 0.32, weight: .semibold))
-                    .foregroundColor(.white.opacity(hovered ? btnOpacity : btnOpacity * 0.7))
-            }
-            .scaleEffect(hovered ? 1.1 : 1.0)
-        }
-        .buttonStyle(.plain)
-        .shadow(color: hovered ? .white.opacity(0.15 * btnOpacity) : .black.opacity(0.4 * btnOpacity), radius: hovered ? 12 : 8)
-        .animation(.easeOut(duration: 0.12), value: hovered)
-        .transition(.scale(scale: 0.5).combined(with: .opacity))
     }
 
     // MARK: - Cursor Indicator

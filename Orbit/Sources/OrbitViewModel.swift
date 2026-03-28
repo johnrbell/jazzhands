@@ -48,8 +48,6 @@ final class OrbitViewModel: ObservableObject {
     private var hoverTimer: Timer?
     private var hoveredIndex: Int = -1
     private var lastActiveApp: NSRunningApplication?
-    private var cancelZoneTimer: Timer?
-    private var cancelZoneArmed: Bool = false
     private var lastThumbnailPrefetchTime: CFTimeInterval = 0
 
     private var settings: OrbitSettings { OrbitSettings.shared }
@@ -79,9 +77,7 @@ final class OrbitViewModel: ObservableObject {
         return 0
     }
 
-    var isCancelHovered: Bool {
-        isInDeepOrbit && mouseDistance <= Double(deepOrbitDeadZone)
-    }
+    
 
     func refresh() {
         apps = WindowManager.shared.fetchActiveApps()
@@ -106,7 +102,6 @@ final class OrbitViewModel: ObservableObject {
         opacityCompletion = nil
         hoveredIndex = -1
         hoverTimer?.invalidate()
-        stopCancelZoneTimer()
 
         lastActiveApp = NSWorkspace.shared.frontmostApplication
         prefetchThumbnailsIfNeeded()
@@ -177,12 +172,9 @@ final class OrbitViewModel: ObservableObject {
 
         if case .deep = tier {
             guard distance > Double(deepOrbitDeadZone) else {
-                selectedWindowIndex = -1
-                centerLabel = ""
-                startCancelZoneTimer()
+                cancelDeepOrbit()
                 return
             }
-            stopCancelZoneTimer()
         } else {
             guard distance > Double(centerDeadZone) else {
                 selectedIndex = -1
@@ -313,23 +305,7 @@ final class OrbitViewModel: ObservableObject {
         hoveredIndex = -1
     }
 
-    private func startCancelZoneTimer() {
-        guard !cancelZoneArmed else { return }
-        cancelZoneArmed = true
-        let timer = Timer(timeInterval: hoverDelay, repeats: false) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.cancelDeepOrbit()
-            }
-        }
-        RunLoop.main.add(timer, forMode: .common)
-        cancelZoneTimer = timer
-    }
-
-    private func stopCancelZoneTimer() {
-        cancelZoneTimer?.invalidate()
-        cancelZoneTimer = nil
-        cancelZoneArmed = false
-    }
+    
 
     private func enterDeepOrbit(for appIndex: Int) {
         guard appIndex >= 0, appIndex < apps.count else { return }
@@ -400,7 +376,6 @@ final class OrbitViewModel: ObservableObject {
         selectedWindowIndex = -1
         hoveredIndex = -1
         cancelHoverTimer()
-        stopCancelZoneTimer()
     }
 
     private var slideCompletion: (() -> Void)?
