@@ -125,8 +125,6 @@ struct SettingsView: View {
                                   range: 80...250, step: 10, format: { "\(Int($0))px" })
                         sliderRow("Icon size", value: $settings.iconSize,
                                   range: 32...192, step: 4, format: { "\(Int($0))px" })
-                        sliderRow("Center icon size", value: $settings.centerIconSize,
-                                  range: 24...128, step: 4, format: { "\(Int($0))px" })
                         sliderRow("Center dead zone", value: $settings.centerDeadZone,
                                   range: 10...(settings.primaryRadius - settings.iconSize / 2),
                                   step: 5, format: { "\(Int($0))px" })
@@ -172,6 +170,43 @@ struct SettingsView: View {
                                   range: 1.0...1.8, step: 0.05, format: { String(format: "%.2fx", $0) })
                         sliderRow("Glow radius", value: $settings.hoverGlowRadius,
                                   range: 0...50, step: 1, format: { "\(Int($0))px" })
+                    }
+
+                    Section("Center Label") {
+                        Toggle("Show label", isOn: $settings.centerLabelEnabled)
+                        Group {
+                            colorRow("Color", hex: $settings.centerLabelColorHex)
+                            sliderRow("Opacity", value: $settings.centerLabelOpacity,
+                                      range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                            sliderRow("Font size", value: $settings.centerLabelFontSize,
+                                      range: 8...32, step: 1, format: { "\(Int($0))pt" })
+                            Picker("Weight", selection: $settings.centerLabelFontWeight) {
+                                Text("Ultralight").tag("ultralight")
+                                Text("Thin").tag("thin")
+                                Text("Light").tag("light")
+                                Text("Regular").tag("regular")
+                                Text("Medium").tag("medium")
+                                Text("Semibold").tag("semibold")
+                                Text("Bold").tag("bold")
+                                Text("Heavy").tag("heavy")
+                                Text("Black").tag("black")
+                            }
+                            Picker("Style", selection: $settings.centerLabelFontDesign) {
+                                Text("Default").tag("default")
+                                Text("Rounded").tag("rounded")
+                                Text("Serif").tag("serif")
+                                Text("Monospaced").tag("monospaced")
+                            }
+                            .pickerStyle(.segmented)
+                            sliderRow("Max width", value: $settings.centerLabelMaxWidth,
+                                      range: 60...400, step: 10, format: { "\(Int($0))px" })
+                            Text("Text truncates with \"...\" when it exceeds this width")
+                                .font(.caption).foregroundColor(.secondary)
+                            sliderRow("Shadow", value: $settings.centerLabelShadowRadius,
+                                      range: 0...20, step: 1, format: { "\(Int($0))px" })
+                        }
+                        .disabled(!settings.centerLabelEnabled)
+                        .opacity(settings.centerLabelEnabled ? 1 : 0.4)
                     }
 
                     Section("Segment Borders") {

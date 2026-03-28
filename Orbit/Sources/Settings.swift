@@ -23,7 +23,6 @@ final class OrbitSettings: ObservableObject {
     // Layout
     @AppStorage("primaryRadius") var primaryRadius: Double = 160
     @AppStorage("iconSize") var iconSize: Double = 92
-    @AppStorage("centerIconSize") var centerIconSize: Double = 92
 
     // Colors (stored as hex strings)
     @AppStorage("glowColorHex") var glowColorHex: String = "#DEE9F8"
@@ -57,6 +56,16 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("hoverIconScale") var hoverIconScale: Double = 1.2
     @AppStorage("hoverGlowRadius") var hoverGlowRadius: Double = 15
 
+    // Center Label
+    @AppStorage("centerLabelEnabled") var centerLabelEnabled: Bool = true
+    @AppStorage("centerLabelFontSize") var centerLabelFontSize: Double = 14
+    @AppStorage("centerLabelFontWeight") var centerLabelFontWeight: String = "semibold"
+    @AppStorage("centerLabelFontDesign") var centerLabelFontDesign: String = "rounded"
+    @AppStorage("centerLabelColorHex") var centerLabelColorHex: String = "#FFFFFF"
+    @AppStorage("centerLabelOpacity") var centerLabelOpacity: Double = 1.0
+    @AppStorage("centerLabelMaxWidth") var centerLabelMaxWidth: Double = 160
+    @AppStorage("centerLabelShadowRadius") var centerLabelShadowRadius: Double = 0
+
     // Window indicators
     @AppStorage("bumpStyle") var bumpStyle: String = "ring"
     @AppStorage("bumpColorHex") var bumpColorHex: String = "#FFFFFF"
@@ -77,6 +86,7 @@ final class OrbitSettings: ObservableObject {
     var backgroundColor: Color { Color(hex: backgroundColorHex) }
     var ringFillColor: Color { Color(hex: ringFillColorHex) }
     var segmentBorderColor: Color { Color(hex: segmentBorderColorHex) }
+    var centerLabelColor: Color { Color(hex: centerLabelColorHex) }
     var bumpColor: Color { Color(hex: bumpColorHex) }
 
     var modifierFlag: CGEventFlags {
@@ -124,7 +134,7 @@ final class OrbitSettings: ObservableObject {
 
     func capturePreset() -> AppearancePreset {
         AppearancePreset(
-            primaryRadius: primaryRadius, iconSize: iconSize, centerIconSize: centerIconSize,
+            primaryRadius: primaryRadius, iconSize: iconSize,
             centerDeadZone: centerDeadZone,
             glowColorHex: glowColorHex, deepGlowColorHex: deepGlowColorHex,
             ringColorHex: ringColorHex, hoverColorHex: hoverColorHex,
@@ -138,6 +148,10 @@ final class OrbitSettings: ObservableObject {
             animateParentWedge: animateParentWedge, parentWedgeSlideDistance: parentWedgeSlideDistance,
             hoverRingSize: hoverRingSize, hoverStrokeWidth: hoverStrokeWidth,
             hoverFillOpacity: hoverFillOpacity, hoverIconScale: hoverIconScale, hoverGlowRadius: hoverGlowRadius,
+            centerLabelEnabled: centerLabelEnabled, centerLabelFontSize: centerLabelFontSize,
+            centerLabelFontWeight: centerLabelFontWeight, centerLabelFontDesign: centerLabelFontDesign,
+            centerLabelColorHex: centerLabelColorHex, centerLabelOpacity: centerLabelOpacity,
+            centerLabelMaxWidth: centerLabelMaxWidth, centerLabelShadowRadius: centerLabelShadowRadius,
             bumpStyle: bumpStyle, bumpColorHex: bumpColorHex, bumpOpacity: bumpOpacity
         )
     }
@@ -145,7 +159,6 @@ final class OrbitSettings: ObservableObject {
     func applyPreset(_ preset: AppearancePreset) {
         primaryRadius = preset.primaryRadius
         iconSize = preset.iconSize
-        centerIconSize = preset.centerIconSize
         centerDeadZone = preset.centerDeadZone
         glowColorHex = preset.glowColorHex
         deepGlowColorHex = preset.deepGlowColorHex
@@ -169,13 +182,21 @@ final class OrbitSettings: ObservableObject {
         hoverFillOpacity = preset.hoverFillOpacity
         hoverIconScale = preset.hoverIconScale
         hoverGlowRadius = preset.hoverGlowRadius
+        centerLabelEnabled = preset.centerLabelEnabled
+        centerLabelFontSize = preset.centerLabelFontSize
+        centerLabelFontWeight = preset.centerLabelFontWeight
+        centerLabelFontDesign = preset.centerLabelFontDesign
+        centerLabelColorHex = preset.centerLabelColorHex
+        centerLabelOpacity = preset.centerLabelOpacity
+        centerLabelMaxWidth = preset.centerLabelMaxWidth
+        centerLabelShadowRadius = preset.centerLabelShadowRadius
         bumpStyle = preset.bumpStyle
         bumpColorHex = preset.bumpColorHex
         bumpOpacity = preset.bumpOpacity
     }
 
     static let defaultPreset = AppearancePreset(
-        primaryRadius: 160, iconSize: 92, centerIconSize: 92,
+        primaryRadius: 160, iconSize: 92,
         centerDeadZone: 80,
         glowColorHex: "#DEE9F8", deepGlowColorHex: "#9966FF",
         ringColorHex: "#4D99FF", hoverColorHex: "#4D99FF",
@@ -191,7 +212,7 @@ final class OrbitSettings: ObservableObject {
     )
 
     static let overwatchPreset = AppearancePreset(
-        primaryRadius: 200, iconSize: 92, centerIconSize: 92,
+        primaryRadius: 200, iconSize: 92,
         centerDeadZone: 150,
         glowColorHex: "#DEE9F8", deepGlowColorHex: "#9966FF",
         ringColorHex: "#E3F7F4", hoverColorHex: "#F4F7F7",
@@ -207,7 +228,7 @@ final class OrbitSettings: ObservableObject {
     )
 
     static let whiteRingSmallPreset = AppearancePreset(
-        primaryRadius: 150, iconSize: 92, centerIconSize: 92,
+        primaryRadius: 150, iconSize: 92,
         centerDeadZone: 90,
         glowColorHex: "#DEE9F8", deepGlowColorHex: "#9966FF",
         ringColorHex: "#E3F7F4", hoverColorHex: "#F4F7F7",
@@ -223,7 +244,7 @@ final class OrbitSettings: ObservableObject {
     )
 
     static let whiteRingPreset = AppearancePreset(
-        primaryRadius: 200, iconSize: 92, centerIconSize: 92,
+        primaryRadius: 200, iconSize: 92,
         centerDeadZone: 150,
         glowColorHex: "#DEE9F8", deepGlowColorHex: "#FF81FF",
         ringColorHex: "#E3F7F4", hoverColorHex: "#FF81FE",
@@ -239,7 +260,7 @@ final class OrbitSettings: ObservableObject {
     )
 
     static let claudeGeneratedPreset = AppearancePreset(
-        primaryRadius: 175, iconSize: 92, centerIconSize: 92,
+        primaryRadius: 175, iconSize: 92,
         centerDeadZone: 110,
         glowColorHex: "#66FFCC", deepGlowColorHex: "#33CCAA",
         ringColorHex: "#44DDBB", hoverColorHex: "#88FFE0",
@@ -255,7 +276,7 @@ final class OrbitSettings: ObservableObject {
     )
 
     static let whiteoutPreset = AppearancePreset(
-        primaryRadius: 175, iconSize: 92, centerIconSize: 92,
+        primaryRadius: 175, iconSize: 92,
         centerDeadZone: 110,
         glowColorHex: "#AAAAAA", deepGlowColorHex: "#999999",
         ringColorHex: "#CCCCCC", hoverColorHex: "#888888",
@@ -321,7 +342,6 @@ final class OrbitSettings: ObservableObject {
 struct AppearancePreset: Codable {
     var primaryRadius: Double
     var iconSize: Double
-    var centerIconSize: Double
     var centerDeadZone: Double
     var glowColorHex: String
     var deepGlowColorHex: String
@@ -345,11 +365,19 @@ struct AppearancePreset: Codable {
     var hoverFillOpacity: Double
     var hoverIconScale: Double
     var hoverGlowRadius: Double
+    var centerLabelEnabled: Bool
+    var centerLabelFontSize: Double
+    var centerLabelFontWeight: String
+    var centerLabelFontDesign: String
+    var centerLabelColorHex: String
+    var centerLabelOpacity: Double
+    var centerLabelMaxWidth: Double
+    var centerLabelShadowRadius: Double
     var bumpStyle: String
     var bumpColorHex: String
     var bumpOpacity: Double
 
-    init(primaryRadius: Double, iconSize: Double, centerIconSize: Double, centerDeadZone: Double,
+    init(primaryRadius: Double, iconSize: Double, centerDeadZone: Double,
          glowColorHex: String, deepGlowColorHex: String, ringColorHex: String, hoverColorHex: String,
          backgroundColorHex: String, ringFillColorHex: String, segmentBorderColorHex: String,
          backgroundOpacity: Double, glowIntensity: Double, ringOpacity: Double, ringFillOpacity: Double,
@@ -359,8 +387,12 @@ struct AppearancePreset: Codable {
          animateParentWedge: Bool = true, parentWedgeSlideDistance: Double = 30,
          hoverRingSize: Double = 20, hoverStrokeWidth: Double = 2,
          hoverFillOpacity: Double = 0.2, hoverIconScale: Double = 1.2, hoverGlowRadius: Double = 15,
+         centerLabelEnabled: Bool = true, centerLabelFontSize: Double = 14,
+         centerLabelFontWeight: String = "semibold", centerLabelFontDesign: String = "rounded",
+         centerLabelColorHex: String = "#FFFFFF", centerLabelOpacity: Double = 1.0,
+         centerLabelMaxWidth: Double = 160, centerLabelShadowRadius: Double = 0,
          bumpStyle: String = "ring", bumpColorHex: String = "#FFFFFF", bumpOpacity: Double = 0.55) {
-        self.primaryRadius = primaryRadius; self.iconSize = iconSize; self.centerIconSize = centerIconSize
+        self.primaryRadius = primaryRadius; self.iconSize = iconSize
         self.centerDeadZone = centerDeadZone; self.glowColorHex = glowColorHex
         self.deepGlowColorHex = deepGlowColorHex; self.ringColorHex = ringColorHex
         self.hoverColorHex = hoverColorHex; self.backgroundColorHex = backgroundColorHex
@@ -372,6 +404,10 @@ struct AppearancePreset: Codable {
         self.animateParentWedge = animateParentWedge; self.parentWedgeSlideDistance = parentWedgeSlideDistance
         self.hoverRingSize = hoverRingSize; self.hoverStrokeWidth = hoverStrokeWidth
         self.hoverFillOpacity = hoverFillOpacity; self.hoverIconScale = hoverIconScale; self.hoverGlowRadius = hoverGlowRadius
+        self.centerLabelEnabled = centerLabelEnabled; self.centerLabelFontSize = centerLabelFontSize
+        self.centerLabelFontWeight = centerLabelFontWeight; self.centerLabelFontDesign = centerLabelFontDesign
+        self.centerLabelColorHex = centerLabelColorHex; self.centerLabelOpacity = centerLabelOpacity
+        self.centerLabelMaxWidth = centerLabelMaxWidth; self.centerLabelShadowRadius = centerLabelShadowRadius
         self.bumpStyle = bumpStyle; self.bumpColorHex = bumpColorHex; self.bumpOpacity = bumpOpacity
     }
 
@@ -380,7 +416,6 @@ struct AppearancePreset: Codable {
         let d = OrbitSettings.defaultPreset
         primaryRadius = (try? c.decode(Double.self, forKey: .primaryRadius)) ?? d.primaryRadius
         iconSize = (try? c.decode(Double.self, forKey: .iconSize)) ?? d.iconSize
-        centerIconSize = (try? c.decode(Double.self, forKey: .centerIconSize)) ?? d.centerIconSize
         centerDeadZone = (try? c.decode(Double.self, forKey: .centerDeadZone)) ?? d.centerDeadZone
         glowColorHex = (try? c.decode(String.self, forKey: .glowColorHex)) ?? d.glowColorHex
         deepGlowColorHex = (try? c.decode(String.self, forKey: .deepGlowColorHex)) ?? d.deepGlowColorHex
@@ -408,6 +443,14 @@ struct AppearancePreset: Codable {
         hoverFillOpacity = (try? c.decode(Double.self, forKey: .hoverFillOpacity)) ?? d.hoverFillOpacity
         hoverIconScale = (try? c.decode(Double.self, forKey: .hoverIconScale)) ?? d.hoverIconScale
         hoverGlowRadius = (try? c.decode(Double.self, forKey: .hoverGlowRadius)) ?? d.hoverGlowRadius
+        centerLabelEnabled = (try? c.decode(Bool.self, forKey: .centerLabelEnabled)) ?? d.centerLabelEnabled
+        centerLabelFontSize = (try? c.decode(Double.self, forKey: .centerLabelFontSize)) ?? d.centerLabelFontSize
+        centerLabelFontWeight = (try? c.decode(String.self, forKey: .centerLabelFontWeight)) ?? d.centerLabelFontWeight
+        centerLabelFontDesign = (try? c.decode(String.self, forKey: .centerLabelFontDesign)) ?? d.centerLabelFontDesign
+        centerLabelColorHex = (try? c.decode(String.self, forKey: .centerLabelColorHex)) ?? d.centerLabelColorHex
+        centerLabelOpacity = (try? c.decode(Double.self, forKey: .centerLabelOpacity)) ?? d.centerLabelOpacity
+        centerLabelMaxWidth = (try? c.decode(Double.self, forKey: .centerLabelMaxWidth)) ?? d.centerLabelMaxWidth
+        centerLabelShadowRadius = (try? c.decode(Double.self, forKey: .centerLabelShadowRadius)) ?? d.centerLabelShadowRadius
         bumpStyle = (try? c.decode(String.self, forKey: .bumpStyle)) ?? d.bumpStyle
         bumpColorHex = (try? c.decode(String.self, forKey: .bumpColorHex)) ?? d.bumpColorHex
         bumpOpacity = (try? c.decode(Double.self, forKey: .bumpOpacity)) ?? d.bumpOpacity
@@ -417,7 +460,6 @@ struct AppearancePreset: Codable {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(primaryRadius, forKey: .primaryRadius)
         try c.encode(iconSize, forKey: .iconSize)
-        try c.encode(centerIconSize, forKey: .centerIconSize)
         try c.encode(centerDeadZone, forKey: .centerDeadZone)
         try c.encode(glowColorHex, forKey: .glowColorHex)
         try c.encode(deepGlowColorHex, forKey: .deepGlowColorHex)
@@ -441,13 +483,21 @@ struct AppearancePreset: Codable {
         try c.encode(hoverFillOpacity, forKey: .hoverFillOpacity)
         try c.encode(hoverIconScale, forKey: .hoverIconScale)
         try c.encode(hoverGlowRadius, forKey: .hoverGlowRadius)
+        try c.encode(centerLabelEnabled, forKey: .centerLabelEnabled)
+        try c.encode(centerLabelFontSize, forKey: .centerLabelFontSize)
+        try c.encode(centerLabelFontWeight, forKey: .centerLabelFontWeight)
+        try c.encode(centerLabelFontDesign, forKey: .centerLabelFontDesign)
+        try c.encode(centerLabelColorHex, forKey: .centerLabelColorHex)
+        try c.encode(centerLabelOpacity, forKey: .centerLabelOpacity)
+        try c.encode(centerLabelMaxWidth, forKey: .centerLabelMaxWidth)
+        try c.encode(centerLabelShadowRadius, forKey: .centerLabelShadowRadius)
         try c.encode(bumpStyle, forKey: .bumpStyle)
         try c.encode(bumpColorHex, forKey: .bumpColorHex)
         try c.encode(bumpOpacity, forKey: .bumpOpacity)
     }
 
     private enum CodingKeys: String, CodingKey {
-        case primaryRadius, iconSize, centerIconSize, centerDeadZone
+        case primaryRadius, iconSize, centerDeadZone
         case glowColorHex, deepGlowColorHex, ringColorHex, hoverColorHex
         case backgroundColorHex, ringFillColorHex, segmentBorderColorHex
         case backgroundOpacity, glowIntensity, ringOpacity, ringFillOpacity
@@ -455,6 +505,8 @@ struct AppearancePreset: Codable {
         case segmentBorderOpacity, segmentBorderWidth, segmentBorderCutout
         case animateParentWedge, parentWedgeSlideDistance
         case hoverRingSize, hoverStrokeWidth, hoverFillOpacity, hoverIconScale, hoverGlowRadius
+        case centerLabelEnabled, centerLabelFontSize, centerLabelFontWeight, centerLabelFontDesign
+        case centerLabelColorHex, centerLabelOpacity, centerLabelMaxWidth, centerLabelShadowRadius
         case bumpStyle, bumpColorHex, bumpOpacity
         case spokeColorHex, spokeOpacity, spokeWidth
     }

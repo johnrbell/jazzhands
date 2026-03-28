@@ -7,6 +7,31 @@ struct OrbitView: View {
     private var glowColor: Color { s.glowColor }
     private var deepGlowColor: Color { s.deepGlowColor }
 
+    private func fontWeight(_ name: String) -> Font.Weight {
+        switch name {
+        case "ultralight": return .ultraLight
+        case "thin": return .thin
+        case "light": return .light
+        case "regular": return .regular
+        case "medium": return .medium
+        case "semibold": return .semibold
+        case "bold": return .bold
+        case "heavy": return .heavy
+        case "black": return .black
+        default: return .semibold
+        }
+    }
+
+    private func fontDesign(_ name: String) -> Font.Design {
+        switch name {
+        case "default": return .default
+        case "rounded": return .rounded
+        case "serif": return .serif
+        case "monospaced": return .monospaced
+        default: return .rounded
+        }
+    }
+
     var body: some View {
         ZStack {
             backgroundBlur
@@ -50,20 +75,18 @@ struct OrbitView: View {
     // MARK: - Center Info
 
     private var centerInfo: some View {
-        VStack(spacing: 6) {
-            if viewModel.selectedIndex >= 0,
-               viewModel.selectedIndex < viewModel.apps.count {
-                Image(nsImage: viewModel.apps[viewModel.selectedIndex].icon)
-                    .resizable()
-                    .frame(width: CGFloat(s.centerIconSize), height: CGFloat(s.centerIconSize))
-                    .shadow(color: glowColor.opacity(0.6), radius: 12)
+        Group {
+            if s.centerLabelEnabled {
+                Text(viewModel.centerLabel)
+                    .font(.system(size: CGFloat(s.centerLabelFontSize),
+                                  weight: fontWeight(s.centerLabelFontWeight),
+                                  design: fontDesign(s.centerLabelFontDesign)))
+                    .foregroundColor(s.centerLabelColor.opacity(s.centerLabelOpacity))
+                    .lineLimit(1)
+                    .frame(maxWidth: CGFloat(s.centerLabelMaxWidth))
+                    .shadow(color: s.centerLabelColor.opacity(s.centerLabelOpacity * 0.5),
+                            radius: CGFloat(s.centerLabelShadowRadius))
             }
-
-            Text(viewModel.centerLabel)
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                .foregroundColor(.white)
-                .lineLimit(1)
-                .frame(maxWidth: 160)
         }
         .animation(.easeOut(duration: 0.15), value: viewModel.selectedIndex)
         .animation(.easeOut(duration: 0.15), value: viewModel.isInDeepOrbit)
