@@ -152,7 +152,7 @@ struct SettingsView: View {
                                   range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
                         sliderRow("Glow intensity", value: $settings.glowIntensity,
                                   range: 0...2, step: 0.1, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Deep orbit fill", value: $settings.deepOrbitFillOpacity,
+                        sliderRow("Deep orbit background fill", value: $settings.deepOrbitFillOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                     }
 
