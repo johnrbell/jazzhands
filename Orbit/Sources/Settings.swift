@@ -50,6 +50,7 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("segmentBorderCutout") var segmentBorderCutout: Bool = false
     @AppStorage("animateParentWedge") var animateParentWedge: Bool = true
     @AppStorage("parentWedgeSlideDistance") var parentWedgeSlideDistance: Double = 30
+    @AppStorage("deepOrbitScale") var deepOrbitScale: Double = 1.0
 
     // Window indicators
     @AppStorage("bumpStyle") var bumpStyle: String = "ring"
