@@ -202,8 +202,11 @@ struct SettingsView: View {
                             .pickerStyle(.segmented)
                             sliderRow("Max width", value: $settings.centerLabelMaxWidth,
                                       range: 60...400, step: 10, format: { "\(Int($0))px" })
-                            Text("Text truncates with \"...\" when it exceeds this width")
-                                .font(.caption).foregroundColor(.secondary)
+                            Picker("Overflow", selection: $settings.centerLabelWrap) {
+                                Text("Truncate").tag(false)
+                                Text("Wrap").tag(true)
+                            }
+                            .pickerStyle(.segmented)
                             sliderRow("Shadow", value: $settings.centerLabelShadowRadius,
                                       range: 0...20, step: 1, format: { "\(Int($0))px" })
                         }

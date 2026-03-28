@@ -65,6 +65,7 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("centerLabelColorHex") var centerLabelColorHex: String = "#FFFFFF"
     @AppStorage("centerLabelOpacity") var centerLabelOpacity: Double = 1.0
     @AppStorage("centerLabelMaxWidth") var centerLabelMaxWidth: Double = 160
+    @AppStorage("centerLabelWrap") var centerLabelWrap: Bool = false
     @AppStorage("centerLabelShadowRadius") var centerLabelShadowRadius: Double = 0
 
     // Window indicators

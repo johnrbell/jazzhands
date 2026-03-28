@@ -82,7 +82,9 @@ struct OrbitView: View {
                                   weight: fontWeight(s.centerLabelFontWeight),
                                   design: fontDesign(s.centerLabelFontDesign)))
                     .foregroundColor(s.centerLabelColor.opacity(s.centerLabelOpacity))
-                    .lineLimit(1)
+                    .lineLimit(s.centerLabelWrap ? 3 : 1)
+                    .truncationMode(.tail)
+                    .multilineTextAlignment(.center)
                     .frame(maxWidth: CGFloat(s.centerLabelMaxWidth))
                     .shadow(color: s.centerLabelColor.opacity(s.centerLabelOpacity * 0.5),
                             radius: CGFloat(s.centerLabelShadowRadius))
