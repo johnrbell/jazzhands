@@ -63,6 +63,39 @@ Right-click (or click) the menu bar icon → **Settings** to configure:
 - **Animation** — parent wedge slide on deep orbit entry
 - **Presets** — save and load full appearance configurations
 
+## Scripts
+
+### `build.sh` — Local Development Build
+
+Builds a debug version of JazzHands, installs it to `~/Applications`, and launches it immediately. If a running instance is detected it will be killed first. The bundle is signed with your Apple Development identity (falls back to ad-hoc if none is found).
+
+```bash
+bash build.sh
+```
+
+Use this for day-to-day development and testing.
+
+### `release.sh` — Production Release Build
+
+Compiles an optimized release build, creates a signed `.app` bundle and a `.dmg` installer in the `release/` directory. With a Developer ID Application certificate it will also notarize both artifacts via Apple's notary service.
+
+```bash
+# Full signed + notarized release (requires Developer ID Application certificate)
+bash release.sh
+
+# Local release build without notarization
+bash release.sh --local
+```
+
+Before your first notarized release, store your credentials once:
+
+```bash
+xcrun notarytool store-credentials "notarytool-profile" \
+  --apple-id YOUR_APPLE_ID \
+  --team-id YOUR_TEAM_ID \
+  --password YOUR_APP_SPECIFIC_PASSWORD
+```
+
 ## Requirements
 
 - macOS 13.0+
