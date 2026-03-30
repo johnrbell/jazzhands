@@ -368,7 +368,7 @@ struct OrbitView: View {
                     }
                 }
                 .frame(width: (outerR + slideOffset) * 2 + 4, height: (outerR + slideOffset) * 2 + 4)
-                .shadow(color: color.opacity((dimmed ? 0.15 * s.deepOrbitDimming : 0.15) * s.glowIntensity), radius: 20)
+                .shadow(color: color.opacity(min((dimmed ? 0.15 * s.deepOrbitDimming : 0.15) * s.glowIntensity, 1.0)), radius: 20 * s.glowIntensity)
             } else {
                 if fillOpacity > 0 {
                     Circle()
@@ -391,7 +391,7 @@ struct OrbitView: View {
                 Circle()
                     .stroke(s.ringColor.opacity(centerOpacity), lineWidth: 1.5)
                     .frame(width: radius * 2, height: radius * 2)
-                    .shadow(color: color.opacity(0.15 * centerOpacity * s.glowIntensity), radius: 20)
+                    .shadow(color: color.opacity(min(0.15 * centerOpacity * s.glowIntensity, 1.0)), radius: 20 * s.glowIntensity)
             }
         }
     }
@@ -424,7 +424,7 @@ struct AppSegmentView: View {
                 Circle()
                     .fill(s.hoverColor.opacity(s.hoverFillOpacity * ho))
                     .frame(width: iconSize + ringPad, height: iconSize + ringPad)
-                    .shadow(color: s.hoverColor.opacity(0.5 * s.glowIntensity * ho), radius: CGFloat(s.hoverGlowRadius))
+                    .shadow(color: s.hoverColor.opacity(min(0.5 * s.glowIntensity * ho, 1.0)), radius: CGFloat(s.hoverGlowRadius) * s.glowIntensity)
 
                 if s.hoverStrokeWidth > 0 {
                     Circle()
@@ -457,7 +457,8 @@ struct AppSegmentView: View {
         return ForEach(0..<indicatorCount, id: \.self) { i in
             let offset = Double(i) - Double(indicatorCount - 1) / 2.0
             let angle = anchor + spacing * offset
-            let isActive = activeWindowIndex >= 0 && i == (indicatorCount - 1 - activeWindowIndex)
+            let mappedIndex = s.bumpStyle == "icon" ? (indicatorCount - 1 - activeWindowIndex) : activeWindowIndex
+            let isActive = activeWindowIndex >= 0 && i == mappedIndex
             let dotOpacity = isActive ? s.bumpActiveOpacity : opacity
             let dotScale = isActive ? CGFloat(s.bumpActiveScale) : (isSelected ? 1.2 : 1.0)
             Circle()

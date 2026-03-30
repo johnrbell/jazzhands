@@ -46,29 +46,22 @@ struct SettingsView: View {
             }
 
             Section("Behavior") {
-                Toggle("Enable deep orbit (multi-window expansion)", isOn: $settings.deepOrbitEnabled)
-
-                if settings.deepOrbitEnabled {
-                    sliderRow("Multi-window hover delay", value: $settings.hoverTimeout,
-                              range: 0.2...2.0, step: 0.1, format: { "\(Int($0 * 1000))ms" })
-                    Toggle("Switch deep orbit on hover", isOn: $settings.deepOrbitSwitchOnHover)
-                    Text("Hovering a different app icon while in deep orbit will switch to that app after the delay")
-                        .font(.caption).foregroundColor(.secondary)
-                    sliderRow("Window arc scale", value: $settings.deepOrbitScale,
-                              range: 0.5...1.5, step: 0.05, format: { String(format: "%.0f%%", $0 * 100) })
-                    Toggle("Animate parent wedge", isOn: $settings.animateParentWedge)
-                    if settings.animateParentWedge {
-                        sliderRow("Slide distance", value: $settings.parentWedgeSlideDistance,
-                                  range: 10...60, step: 5, format: { "\(Int($0))px" })
-                    }
-                }
-
                 sliderRow("Cursor sensitivity", value: $settings.cursorSensitivity,
                           range: 0.5...3.0, step: 0.1, format: { String(format: "%.1fx", $0) })
 
                 Picker("App sort order", selection: $settings.appSortOrder) {
                     Text("Recently used").tag("recent")
                     Text("Alphabetical").tag("alphabetical")
+                }
+
+                Toggle("Enable deep orbit (multi-window expansion)", isOn: $settings.deepOrbitEnabled)
+
+                if settings.deepOrbitEnabled {
+                    sliderRow("Multi-window hover delay", value: $settings.hoverTimeout,
+                              range: 0.2...2.0, step: 0.1, format: { "\(Int($0 * 1000))ms" })
+                    Toggle("Switch deep orbit on hover", isOn: $settings.deepOrbitSwitchOnHover)
+                    Text("Hovering a different app while in deep orbit switches after the delay")
+                        .font(.caption).foregroundColor(.secondary)
                 }
             }
 
@@ -113,13 +106,6 @@ struct SettingsView: View {
                 Form {
                     PresetsSection()
 
-                    Section("Colors") {
-                        colorRow("Center icon glow", hex: $settings.glowColorHex)
-                        colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
-                        colorRow("Ring color", hex: $settings.ringColorHex)
-                        colorRow("Background", hex: $settings.backgroundColorHex)
-                    }
-
                     Section("Layout") {
                         sliderRow("Ring radius", value: $settings.primaryRadius,
                                   range: 80...250, step: 10, format: { "\(Int($0))px" })
@@ -128,8 +114,18 @@ struct SettingsView: View {
                         sliderRow("Center dead zone", value: $settings.centerDeadZone,
                                   range: 10...(settings.primaryRadius - settings.iconSize / 2),
                                   step: 5, format: { "\(Int($0))px" })
-                        Text("Also adjusts behavior — this value is shared with the General tab.")
-                            .font(.caption).foregroundColor(.secondary)
+                    }
+
+                    Section("Colors") {
+                        colorRow("Background", hex: $settings.backgroundColorHex)
+                        colorRow("Ring", hex: $settings.ringColorHex)
+                        colorRow("Ring fill", hex: $settings.ringFillColorHex)
+                        colorRow("Icon glow", hex: $settings.glowColorHex)
+                        colorRow("Hover highlight", hex: $settings.hoverColorHex)
+                        colorRow("Center label", hex: $settings.centerLabelColorHex)
+                        colorRow("Segment borders", hex: $settings.segmentBorderColorHex)
+                        colorRow("Window indicators", hex: $settings.bumpColorHex)
+                        colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
                     }
 
                     Button("Reset to Defaults") {
@@ -140,26 +136,34 @@ struct SettingsView: View {
                 .formStyle(.grouped)
 
                 Form {
-                    Section("Effects") {
-                        colorRow("Ring fill color", hex: $settings.ringFillColorHex)
-                        sliderRow("Ring fill opacity", value: $settings.ringFillOpacity,
-                                  range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Ring stroke opacity", value: $settings.ringOpacity,
-                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Center ring opacity", value: $settings.centerRingOpacity,
-                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                    Section("Ring & Background") {
                         sliderRow("Background dimming", value: $settings.backgroundOpacity,
                                   range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
                         sliderRow("Glow intensity", value: $settings.glowIntensity,
-                                  range: 0...2, step: 0.1, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Deep orbit background fill", value: $settings.deepOrbitFillOpacity,
+                                  range: 0...5, step: 0.1, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Ring stroke opacity", value: $settings.ringOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Deep orbit dimming", value: $settings.deepOrbitDimming,
+                        sliderRow("Ring fill opacity", value: $settings.ringFillOpacity,
+                                  range: 0...1, step: 0.01, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Center ring opacity", value: $settings.centerRingOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                     }
 
+                    Section("Deep Orbit") {
+                        sliderRow("Window arc scale", value: $settings.deepOrbitScale,
+                                  range: 0.5...1.5, step: 0.05, format: { String(format: "%.0f%%", $0 * 100) })
+                        sliderRow("Background fill", value: $settings.deepOrbitFillOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Primary ring dimming", value: $settings.deepOrbitDimming,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        Toggle("Animate parent wedge", isOn: $settings.animateParentWedge)
+                        if settings.animateParentWedge {
+                            sliderRow("Slide distance", value: $settings.parentWedgeSlideDistance,
+                                      range: 10...60, step: 5, format: { "\(Int($0))px" })
+                        }
+                    }
+
                     Section("Icon Hover") {
-                        colorRow("Color", hex: $settings.hoverColorHex)
                         sliderRow("Opacity", value: $settings.hoverHighlightOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                         sliderRow("Fill opacity", value: $settings.hoverFillOpacity,
@@ -177,7 +181,6 @@ struct SettingsView: View {
                     Section("Center Label") {
                         Toggle("Show label", isOn: $settings.centerLabelEnabled)
                         Group {
-                            colorRow("Color", hex: $settings.centerLabelColorHex)
                             sliderRow("Opacity", value: $settings.centerLabelOpacity,
                                       range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                             sliderRow("Font size", value: $settings.centerLabelFontSize,
@@ -220,9 +223,6 @@ struct SettingsView: View {
                             .font(.caption).foregroundColor(.secondary)
                         sliderRow("Width", value: $settings.segmentBorderWidth,
                                   range: 0.5...5, step: 0.5, format: { String(format: "%.1fpt", $0) })
-                        colorRow("Color", hex: $settings.segmentBorderColorHex)
-                            .disabled(settings.segmentBorderCutout)
-                            .opacity(settings.segmentBorderCutout ? 0.4 : 1)
                         sliderRow("Opacity", value: $settings.segmentBorderOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                             .disabled(settings.segmentBorderCutout)
@@ -235,15 +235,12 @@ struct SettingsView: View {
                             Text("Below icon").tag("icon")
                         }
                         .pickerStyle(.segmented)
-                        colorRow("Color", hex: $settings.bumpColorHex)
                         sliderRow("Opacity", value: $settings.bumpOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                         sliderRow("Active scale", value: $settings.bumpActiveScale,
                                   range: 1.0...3.0, step: 0.1, format: { String(format: "%.1fx", $0) })
                         sliderRow("Active opacity", value: $settings.bumpActiveOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        Text("Dots highlight when hovering the corresponding window in deep orbit.")
-                            .font(.caption).foregroundColor(.secondary)
                     }
                 }
                 .formStyle(.grouped)
