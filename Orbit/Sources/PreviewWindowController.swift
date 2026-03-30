@@ -3,9 +3,15 @@ import SwiftUI
 import Combine
 
 @MainActor
+final class PreviewLockState: ObservableObject {
+    @Published var isLocked: Bool = false
+}
+
+@MainActor
 final class PreviewWindowController {
     private var window: NSWindow?
     private let viewModel = OrbitViewModel()
+    private let lockState = PreviewLockState()
     private var refreshTimer: Timer?
     private var settingsCancellable: AnyCancellable?
     private var trackingView: PreviewTrackingView?
@@ -30,11 +36,13 @@ final class PreviewWindowController {
                         .clipped()
                 }
                 OrbitView(viewModel: viewModel)
+                PreviewOverlayView(lockState: lockState)
             }
             let hosting = NSHostingView(rootView: previewContent)
             hosting.translatesAutoresizingMaskIntoConstraints = false
 
             let tracker = PreviewTrackingView(frame: contentRect)
+            tracker.lockState = lockState
             tracker.onMouseMoved = { [weak self] location, viewSize in
                 let cx = location.x - viewSize.width / 2
                 let cy = -(location.y - viewSize.height / 2)
@@ -64,6 +72,7 @@ final class PreviewWindowController {
             w.isReleasedWhenClosed = false
             w.backgroundColor = .black
             w.setFrameAutosaveName("PreviewWindow")
+            w.makeFirstResponder(tracker)
             window = w
         }
 
@@ -153,16 +162,75 @@ final class PreviewWindowController {
     private func subscribeToSettings() {
         settingsCancellable = OrbitSettings.shared.objectWillChange.sink { [weak self] _ in
             Task { @MainActor in
-                self?.viewModel.objectWillChange.send()
+                guard let self else { return }
+                self.viewModel.objectWillChange.send()
+                self.viewModel.softRefresh()
             }
         }
     }
 }
 
+// MARK: - Lock Overlay
+
+private struct PreviewOverlayView: View {
+    @ObservedObject var lockState: PreviewLockState
+
+    var body: some View {
+        ZStack {
+            if lockState.isLocked {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            lockState.isLocked = false
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "lock.open.fill")
+                                    .font(.system(size: 11, weight: .medium))
+                                Text("Unlock")
+                                    .font(.system(size: 11, weight: .medium))
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(.ultraThinMaterial)
+                            .environment(\.colorScheme, .dark)
+                            .cornerRadius(6)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(8)
+                    }
+                    Spacer()
+                }
+            }
+
+            VStack {
+                Spacer()
+                Text(lockState.isLocked
+                     ? "Interaction locked — press Space to unlock"
+                     : "Press Space to lock interaction")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.white.opacity(0.5))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(.black.opacity(0.4))
+                    .cornerRadius(4)
+                    .padding(.bottom, 6)
+            }
+        }
+        .allowsHitTesting(lockState.isLocked)
+        .animation(.easeOut(duration: 0.15), value: lockState.isLocked)
+    }
+}
+
+// MARK: - Tracking View
+
 private class PreviewTrackingView: NSView {
     var onMouseMoved: ((NSPoint, NSSize) -> Void)?
     var onMouseExited: (() -> Void)?
+    var lockState: PreviewLockState?
     private var area: NSTrackingArea?
+
+    override var acceptsFirstResponder: Bool { true }
 
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
@@ -178,11 +246,23 @@ private class PreviewTrackingView: NSView {
     }
 
     override func mouseMoved(with event: NSEvent) {
+        if lockState?.isLocked == true { return }
         let loc = convert(event.locationInWindow, from: nil)
         onMouseMoved?(loc, bounds.size)
     }
 
     override func mouseExited(with event: NSEvent) {
+        if lockState?.isLocked == true { return }
         onMouseExited?()
+    }
+
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 49 {
+            MainActor.assumeIsolated {
+                lockState?.isLocked.toggle()
+            }
+        } else {
+            super.keyDown(with: event)
+        }
     }
 }
