@@ -20,7 +20,18 @@ final class PreviewWindowController {
             let size = CGFloat(700)
             let contentRect = NSRect(x: 0, y: 0, width: size, height: size)
 
-            let hosting = NSHostingView(rootView: OrbitView(viewModel: viewModel))
+            let wallpaper = desktopWallpaperImage(size: CGSize(width: size, height: size))
+            let previewContent = ZStack {
+                if let wallpaper {
+                    Image(nsImage: wallpaper)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: size, height: size)
+                        .clipped()
+                }
+                OrbitView(viewModel: viewModel)
+            }
+            let hosting = NSHostingView(rootView: previewContent)
             hosting.translatesAutoresizingMaskIntoConstraints = false
 
             let tracker = PreviewTrackingView(frame: contentRect)
@@ -124,6 +135,19 @@ final class PreviewWindowController {
                 self?.viewModel.softRefresh()
             }
         }
+    }
+
+    private func desktopWallpaperImage(size: CGSize) -> NSImage? {
+        guard let screen = NSScreen.main,
+              let url = NSWorkspace.shared.desktopImageURL(for: screen),
+              let image = NSImage(contentsOf: url) else { return nil }
+        let result = NSImage(size: size)
+        result.lockFocus()
+        image.draw(in: NSRect(origin: .zero, size: size),
+                   from: NSRect(origin: .zero, size: image.size),
+                   operation: .copy, fraction: 1.0)
+        result.unlockFocus()
+        return result
     }
 
     private func subscribeToSettings() {
