@@ -60,7 +60,7 @@ final class JazzHandsViewModel: ObservableObject {
         let baseOuter = deepJazzHandsRadius + 130
         return innerR + (baseOuter - innerR) * CGFloat(settings.deepJazzHandsScale)
     }
-    let deepJazzHandsSpread: Double = 0.7
+    var deepJazzHandsSpread: Double { 0.7 * settings.deepJazzHandsScale }
     var segmentIconSize: CGFloat { CGFloat(settings.iconSize) }
     var centerDeadZone: CGFloat { CGFloat(settings.centerDeadZone) }
     var deepJazzHandsDeadZone: CGFloat { primaryRadius * 0.65 }
