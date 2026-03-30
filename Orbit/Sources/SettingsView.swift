@@ -63,7 +63,7 @@ struct SettingsView: View {
 
                 if settings.deepOrbitEnabled {
                     sliderRow("Multi-window hover delay", value: $settings.hoverTimeout,
-                              range: 0.2...2.0, step: 0.1, format: { "\(Int($0 * 1000))ms" })
+                              range: 0...1.0, step: 0.05, format: { "\(Int($0 * 1000))ms" })
                     Toggle("Switch deep orbit on hover", isOn: $settings.deepOrbitSwitchOnHover)
                     Text("Hovering a different app while in deep orbit switches after the delay")
                         .font(.caption).foregroundColor(.secondary)
