@@ -2,7 +2,7 @@
 set -e
 
 APP_NAME="JazzHands"
-VERSION=$(grep -A1 "CFBundleShortVersionString" Orbit/Resources/Info.plist | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
+VERSION=$(grep -A1 "CFBundleShortVersionString" JazzHands/Resources/Info.plist | tail -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
 BUILD_DIR=".build/release"
 RELEASE_DIR="release"
 APP_BUNDLE="$RELEASE_DIR/$APP_NAME.app"
@@ -46,15 +46,15 @@ mkdir -p "$APP_BUNDLE/Contents/MacOS"
 mkdir -p "$APP_BUNDLE/Contents/Resources"
 
 cp "$BUILD_DIR/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
-cp "Orbit/Resources/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
-cp "Orbit/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+cp "JazzHands/Resources/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
+cp "JazzHands/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
 cat > "$APP_BUNDLE/Contents/PkgInfo" <<EOF
 APPL????
 EOF
 
 # --- Sign ---
 echo "Signing app bundle..."
-codesign -fs "$SIGNING_IDENTITY" --options runtime --entitlements "Orbit/Resources/Orbit.entitlements" "$APP_BUNDLE" --deep
+codesign -fs "$SIGNING_IDENTITY" --options runtime --entitlements "JazzHands/Resources/JazzHands.entitlements" "$APP_BUNDLE" --deep
 
 # --- Notarize (only with Developer ID) ---
 if echo "$SIGNING_IDENTITY" | grep -q "Developer ID"; then

@@ -10,7 +10,7 @@ final class PreviewLockState: ObservableObject {
 @MainActor
 final class PreviewWindowController {
     private var window: NSWindow?
-    private let viewModel = OrbitViewModel()
+    private let viewModel = JazzHandsViewModel()
     private let lockState = PreviewLockState()
     private var refreshTimer: Timer?
     private var settingsCancellable: AnyCancellable?
@@ -117,7 +117,7 @@ final class PreviewWindowController {
     }
 
     private func subscribeToSettings() {
-        settingsCancellable = OrbitSettings.shared.objectWillChange.sink { [weak self] _ in
+        settingsCancellable = JazzHandsSettings.shared.objectWillChange.sink { [weak self] _ in
             Task { @MainActor in
                 guard let self else { return }
                 self.viewModel.objectWillChange.send()
@@ -130,7 +130,7 @@ final class PreviewWindowController {
 // MARK: - Preview Content
 
 private struct PreviewContentView: View {
-    @ObservedObject var viewModel: OrbitViewModel
+    @ObservedObject var viewModel: JazzHandsViewModel
     @ObservedObject var lockState: PreviewLockState
     var wallpaperProvider: @MainActor (CGSize) -> NSImage?
 
@@ -145,7 +145,7 @@ private struct PreviewContentView: View {
                         .frame(width: size.width, height: size.height)
                         .clipped()
                 }
-                OrbitView(viewModel: viewModel)
+                JazzHandsView(viewModel: viewModel)
                 PreviewOverlayView(lockState: lockState)
             }
         }

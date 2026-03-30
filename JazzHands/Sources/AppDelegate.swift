@@ -9,7 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var globalFlagsMonitor: Any?
     private var backtickMonitor: Any?
 
-    private var isOrbitVisible = false
+    private var isJazzHandsVisible = false
     private var activationTimestamp: Date?
     private let tapThreshold: TimeInterval = 0.2
     private var didCycle = false
@@ -19,7 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var tapRunLoopSource: CFRunLoopSource?
     nonisolated(unsafe) static var shared: AppDelegate?
 
-    private nonisolated static let logFile = "/tmp/orbit.log"
+    private nonisolated static let logFile = "/tmp/jazzHands.log"
 
     nonisolated static func log(_ msg: String) {
         let line = "\(Date()): \(msg)\n"
@@ -72,7 +72,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func installHotKey() {
-        let s = OrbitSettings.shared
+        let s = JazzHandsSettings.shared
         let keyCode = s.keyCode
         let modFlag = s.modifierFlag
 
@@ -86,7 +86,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func installCarbonHotKey() {
-        let s = OrbitSettings.shared
+        let s = JazzHandsSettings.shared
 
         var eventType = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
         let selfPtr = Unmanaged.passUnretained(self).toOpaque()
@@ -99,7 +99,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return noErr
         }, 1, &eventType, selfPtr, nil)
 
-        let hotKeyID = EventHotKeyID(signature: OSType(0x4F524254), id: 1) // "ORBT"
+        let hotKeyID = EventHotKeyID(signature: OSType(0x4A5A4844), id: 1) // "JZHD"
         let keyCode = UInt32(s.keyCode)
         var modifiers: UInt32 = 0
         if s.modifierFlag.contains(.maskAlternate) { modifiers |= UInt32(optionKey) }
@@ -129,7 +129,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 return Unmanaged.passUnretained(event)
             }
 
-            let s = OrbitSettings.shared
+            let s = JazzHandsSettings.shared
             let kc = event.getIntegerValueField(.keyboardEventKeycode)
             let flags = event.flags
             let targetMod = s.modifierFlag
@@ -190,14 +190,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func installFlagsMonitor() {
         globalFlagsMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             guard let self else { return }
-            if !event.modifierFlags.contains(OrbitSettings.shared.nsModifierFlag) && self.isOrbitVisible {
+            if !event.modifierFlags.contains(JazzHandsSettings.shared.nsModifierFlag) && self.isJazzHandsVisible {
                 Task { @MainActor in self.onOptionReleased() }
             }
         }
 
         let localFlags = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             guard let self else { return event }
-            if !event.modifierFlags.contains(OrbitSettings.shared.nsModifierFlag) && self.isOrbitVisible {
+            if !event.modifierFlags.contains(JazzHandsSettings.shared.nsModifierFlag) && self.isJazzHandsVisible {
                 Task { @MainActor in self.onOptionReleased() }
             }
             return event
@@ -211,14 +211,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let kVK_ANSI_Grave: UInt16 = 50
 
         backtickMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self, self.isOrbitVisible, event.keyCode == kVK_ANSI_Grave else { return event }
+            guard let self, self.isJazzHandsVisible, event.keyCode == kVK_ANSI_Grave else { return event }
             self.didCycle = true
             self.overlayController?.cycleSelectionReverse()
             return nil
         }
 
         NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self, self.isOrbitVisible, event.keyCode == kVK_ANSI_Grave else { return }
+            guard let self, self.isJazzHandsVisible, event.keyCode == kVK_ANSI_Grave else { return }
             Task { @MainActor in
                 self.didCycle = true
                 self.overlayController?.cycleSelectionReverse()
@@ -235,43 +235,43 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                guard let self, self.isOrbitVisible else { return }
-                AppDelegate.log("Space changed while orbit visible — dismissing")
-                self.isOrbitVisible = false
+                guard let self, self.isJazzHandsVisible else { return }
+                AppDelegate.log("Space changed while jazzHands visible — dismissing")
+                self.isJazzHandsVisible = false
                 self.activationTimestamp = nil
                 self.didCycle = false
-                self.overlayController?.hideOrbit()
+                self.overlayController?.hideJazzHands()
             }
         }
     }
 
-    // MARK: - Orbit control
+    // MARK: - JazzHands control
 
     private func onHotkeyDown() {
-        AppDelegate.log("onHotkeyDown isOrbitVisible=\(isOrbitVisible)")
+        AppDelegate.log("onHotkeyDown isJazzHandsVisible=\(isJazzHandsVisible)")
 
         if isMissionControlActive() {
             AppDelegate.log("Mission Control active — ignoring hotkey")
             return
         }
 
-        if isOrbitVisible {
+        if isJazzHandsVisible {
             didCycle = true
             overlayController?.cycleSelection()
             return
         }
-        isOrbitVisible = true
+        isJazzHandsVisible = true
         activationTimestamp = Date()
         didCycle = false
 
         if overlayController == nil {
             overlayController = OverlayWindowController()
         }
-        overlayController?.showOrbit()
+        overlayController?.showJazzHands()
     }
 
     private func onOptionReleased() {
-        guard isOrbitVisible else { return }
+        guard isJazzHandsVisible else { return }
 
         let wasTap: Bool
         if !didCycle, let ts = activationTimestamp {
@@ -280,7 +280,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             wasTap = false
         }
 
-        isOrbitVisible = false
+        isJazzHandsVisible = false
         activationTimestamp = nil
         didCycle = false
 
@@ -289,7 +289,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             overlayController?.confirmSelection()
         }
-        overlayController?.hideOrbit()
+        overlayController?.hideJazzHands()
     }
 
     // MARK: - Mission Control Detection
@@ -339,7 +339,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupStatusBar() {
-        let style = OrbitSettings.shared.menuBarStyle
+        let style = JazzHandsSettings.shared.menuBarStyle
         if style == "hidden" {
             statusItem = nil
             return
@@ -348,7 +348,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = item.button {
             switch style {
-            case "orbit": button.image = makeOrbitRingIcon()
+            case "jazzHands": button.image = makeJazzHandsRingIcon()
             case "icon": button.image = makeAppIcon()
             default: button.image = makeHandIcon()
             }
@@ -386,7 +386,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return fallback
     }
 
-    private func makeOrbitRingIcon() -> NSImage {
+    private func makeJazzHandsRingIcon() -> NSImage {
         let size = NSSize(width: 18, height: 18)
         let image = NSImage(size: size, flipped: false) { rect in
             let center = NSPoint(x: rect.midX, y: rect.midY)

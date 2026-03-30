@@ -4,11 +4,11 @@ build:
 	swift build
 
 run:
-	swift build && .build/debug/Orbit
+	swift build && .build/debug/JazzHands
 
 clean:
 	swift package clean
 	rm -rf .build
 
 xcode:
-	open Orbit.xcodeproj
+	open JazzHands.xcodeproj

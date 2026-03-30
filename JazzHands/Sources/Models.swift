@@ -1,26 +1,26 @@
 import AppKit
 
-struct OrbitApp: Identifiable, Equatable {
+struct JazzHandsApp: Identifiable, Equatable {
     let id: pid_t
     let name: String
     let bundleIdentifier: String?
     let icon: NSImage
     let runningApp: NSRunningApplication
-    var windows: [OrbitWindow]
+    var windows: [JazzHandsWindow]
 
-    static func == (lhs: OrbitApp, rhs: OrbitApp) -> Bool {
+    static func == (lhs: JazzHandsApp, rhs: JazzHandsApp) -> Bool {
         lhs.id == rhs.id
     }
 }
 
-struct OrbitWindow: Identifiable, Equatable {
+struct JazzHandsWindow: Identifiable, Equatable {
     let id: CGWindowID
     let title: String
     let bounds: CGRect
     let ownerPID: pid_t
     let isOnScreen: Bool
 
-    static func == (lhs: OrbitWindow, rhs: OrbitWindow) -> Bool {
+    static func == (lhs: JazzHandsWindow, rhs: JazzHandsWindow) -> Bool {
         lhs.id == rhs.id
     }
 }

@@ -1,32 +1,32 @@
 import SwiftUI
 import Combine
 
-enum OrbitTier {
+enum JazzHandsTier {
     case primary
     case deep(appIndex: Int)
 }
 
 @MainActor
-final class OrbitViewModel: ObservableObject {
-    @Published var apps: [OrbitApp] = []
+final class JazzHandsViewModel: ObservableObject {
+    @Published var apps: [JazzHandsApp] = []
     @Published var selectedIndex: Int = -1
     @Published var selectedWindowIndex: Int = -1
-    @Published var tier: OrbitTier = .primary
+    @Published var tier: JazzHandsTier = .primary
     @Published var mouseAngle: Double = 0
     @Published var mouseDistance: Double = 0
     @Published var isVisible: Bool = false
     @Published var centerLabel: String = ""
-    @Published var deepOrbitWindows: [OrbitWindow] = []
+    @Published var deepJazzHandsWindows: [JazzHandsWindow] = []
     @Published var windowThumbnails: [CGWindowID: NSImage] = [:]
     @Published var debugCursorPos: CGPoint = .zero
     @Published var shouldResetCursor: Bool = false
-    @Published var deepOrbitSlideOffset: CGFloat = 0
+    @Published var deepJazzHandsSlideOffset: CGFloat = 0
     @Published var slideAppIndex: Int = -1
     @Published var returnSlideAppIndex: Int = -1
     @Published var returnSlideOffset: CGFloat = 0
-    @Published var deepOrbitOpacity: CGFloat = 0
+    @Published var deepJazzHandsOpacity: CGFloat = 0
 
-    var deepOrbitSlideAmount: CGFloat { CGFloat(settings.parentWedgeSlideDistance) }
+    var deepJazzHandsSlideAmount: CGFloat { CGFloat(settings.parentWedgeSlideDistance) }
 
     private var slideAnimationTimer: Timer?
     private var slideStartValue: CGFloat = 0
@@ -50,28 +50,28 @@ final class OrbitViewModel: ObservableObject {
     private var lastActiveApp: NSRunningApplication?
     private var lastThumbnailPrefetchTime: CFTimeInterval = 0
 
-    private var settings: OrbitSettings { OrbitSettings.shared }
+    private var settings: JazzHandsSettings { JazzHandsSettings.shared }
 
     var showDebug: Bool { settings.showDebugOverlay }
     var primaryRadius: CGFloat { CGFloat(settings.primaryRadius) }
-    var deepOrbitRadius: CGFloat { CGFloat(settings.primaryRadius) + segmentIconSize / 2 + 70 }
-    var deepOrbitOuterRadius: CGFloat {
+    var deepJazzHandsRadius: CGFloat { CGFloat(settings.primaryRadius) + segmentIconSize / 2 + 70 }
+    var deepJazzHandsOuterRadius: CGFloat {
         let innerR = primaryRadius + segmentIconSize / 2 + 17
-        let baseOuter = deepOrbitRadius + 130
-        return innerR + (baseOuter - innerR) * CGFloat(settings.deepOrbitScale)
+        let baseOuter = deepJazzHandsRadius + 130
+        return innerR + (baseOuter - innerR) * CGFloat(settings.deepJazzHandsScale)
     }
-    let deepOrbitSpread: Double = 0.7
+    let deepJazzHandsSpread: Double = 0.7
     var segmentIconSize: CGFloat { CGFloat(settings.iconSize) }
     var centerDeadZone: CGFloat { CGFloat(settings.centerDeadZone) }
-    var deepOrbitDeadZone: CGFloat { primaryRadius * 0.65 }
+    var deepJazzHandsDeadZone: CGFloat { primaryRadius * 0.65 }
     var hoverDelay: TimeInterval { settings.hoverTimeout }
 
-    var isInDeepOrbit: Bool {
+    var isInDeepJazzHands: Bool {
         if case .deep = tier { return true }
         return false
     }
 
-    var deepOrbitDisplayAppIndex: Int {
+    var deepJazzHandsDisplayAppIndex: Int {
         if case .deep(let idx) = tier { return idx }
         if slideAppIndex >= 0 { return slideAppIndex }
         return 0
@@ -85,9 +85,9 @@ final class OrbitViewModel: ObservableObject {
         selectedWindowIndex = -1
         tier = .primary
         centerLabel = ""
-        deepOrbitWindows = []
+        deepJazzHandsWindows = []
         windowThumbnails = [:]
-        deepOrbitSlideOffset = 0
+        deepJazzHandsSlideOffset = 0
         slideAppIndex = -1
         slideAnimationTimer?.invalidate()
         slideAnimationTimer = nil
@@ -96,7 +96,7 @@ final class OrbitViewModel: ObservableObject {
         returnSlideOffset = 0
         returnAnimationTimer?.invalidate()
         returnAnimationTimer = nil
-        deepOrbitOpacity = 0
+        deepJazzHandsOpacity = 0
         opacityTimer?.invalidate()
         opacityTimer = nil
         opacityCompletion = nil
@@ -127,10 +127,10 @@ final class OrbitViewModel: ObservableObject {
 
         if case .deep(let appIndex) = tier {
             if appIndex < newApps.count {
-                deepOrbitWindows = newApps[appIndex].windows
+                deepJazzHandsWindows = newApps[appIndex].windows
             } else {
                 tier = .primary
-                deepOrbitWindows = []
+                deepJazzHandsWindows = []
                 selectedWindowIndex = -1
             }
         }
@@ -171,8 +171,8 @@ final class OrbitViewModel: ObservableObject {
         mouseDistance = distance
 
         if case .deep = tier {
-            guard distance > Double(deepOrbitDeadZone) else {
-                cancelDeepOrbit()
+            guard distance > Double(deepJazzHandsDeadZone) else {
+                cancelDeepJazzHands()
                 return
             }
         } else {
@@ -193,7 +193,7 @@ final class OrbitViewModel: ObservableObject {
         case .primary:
             updatePrimarySelection(normalizedAngle: normalized, distance: distance)
         case .deep(let appIndex):
-            updateDeepOrbitSelection(normalizedAngle: normalized, distance: distance, appIndex: appIndex)
+            updateDeepJazzHandsSelection(normalizedAngle: normalized, distance: distance, appIndex: appIndex)
         }
     }
 
@@ -215,14 +215,14 @@ final class OrbitViewModel: ObservableObject {
         }
     }
 
-    private func updateDeepOrbitSelection(normalizedAngle: Double, distance: Double, appIndex: Int) {
-        guard !deepOrbitWindows.isEmpty else { return }
+    private func updateDeepJazzHandsSelection(normalizedAngle: Double, distance: Double, appIndex: Int) {
+        guard !deepJazzHandsWindows.isEmpty else { return }
 
         let primaryZoneInner = Double(centerDeadZone)
         let primaryZoneOuter = Double(primaryRadius + segmentIconSize / 2 + 5)
         let inPrimaryZone = distance >= primaryZoneInner && distance <= primaryZoneOuter
 
-        if inPrimaryZone && settings.deepOrbitSwitchOnHover && !apps.isEmpty {
+        if inPrimaryZone && settings.deepJazzHandsSwitchOnHover && !apps.isEmpty {
             let segmentAngle = (2.0 * Double.pi) / Double(apps.count)
             let offset = Double.pi / 2.0 + segmentAngle / 2.0
             let adjusted = normalizeAngle(normalizedAngle + offset)
@@ -238,11 +238,11 @@ final class OrbitViewModel: ObservableObject {
                     hoverTimer = Timer.scheduledTimer(withTimeInterval: hoverDelay, repeats: false) { [weak self] _ in
                         Task { @MainActor in
                             guard let self else { return }
-                            self.cancelDeepOrbit()
+                            self.cancelDeepJazzHands()
                             self.selectedIndex = hoveredApp
                             self.centerLabel = self.apps[hoveredApp].name
                             if self.apps[hoveredApp].windows.count > 1 {
-                                self.enterDeepOrbit(for: hoveredApp)
+                                self.enterDeepJazzHands(for: hoveredApp)
                             }
                         }
                     }
@@ -255,12 +255,12 @@ final class OrbitViewModel: ObservableObject {
             cancelHoverTimer()
         }
 
-        let count = deepOrbitWindows.count
+        let count = deepJazzHandsWindows.count
         var bestIndex = 0
         var bestDist = Double.greatestFiniteMagnitude
 
         for i in 0..<count {
-            let winAngle = normalizeAngle(deepOrbitAngle(windowIndex: i, appIndex: appIndex))
+            let winAngle = normalizeAngle(deepJazzHandsAngle(windowIndex: i, appIndex: appIndex))
             var diff = normalizedAngle - winAngle
             if diff > Double.pi { diff -= 2.0 * Double.pi }
             if diff < -Double.pi { diff += 2.0 * Double.pi }
@@ -272,9 +272,9 @@ final class OrbitViewModel: ObservableObject {
         }
 
         selectedWindowIndex = bestIndex
-        centerLabel = deepOrbitWindows[bestIndex].title.isEmpty
+        centerLabel = deepJazzHandsWindows[bestIndex].title.isEmpty
             ? apps[appIndex].name
-            : deepOrbitWindows[bestIndex].title
+            : deepJazzHandsWindows[bestIndex].title
     }
 
     private func normalizeAngle(_ angle: Double) -> Double {
@@ -284,16 +284,16 @@ final class OrbitViewModel: ObservableObject {
         return a
     }
 
-    // MARK: - Hover / Deep Orbit
+    // MARK: - Hover / Deep JazzHands
 
     private func startHoverTimer(for index: Int) {
         hoverTimer?.invalidate()
-        guard settings.deepOrbitEnabled,
+        guard settings.deepJazzHandsEnabled,
               index >= 0, index < apps.count, apps[index].windows.count > 1 else { return }
 
         let timer = Timer(timeInterval: hoverDelay, repeats: false) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.enterDeepOrbit(for: index)
+                self?.enterDeepJazzHands(for: index)
             }
         }
         RunLoop.main.add(timer, forMode: .common)
@@ -307,33 +307,33 @@ final class OrbitViewModel: ObservableObject {
 
     
 
-    private func enterDeepOrbit(for appIndex: Int) {
+    private func enterDeepJazzHands(for appIndex: Int) {
         guard appIndex >= 0, appIndex < apps.count else { return }
         let app = apps[appIndex]
         guard app.windows.count > 1 else { return }
 
-        deepOrbitOpacity = 0
+        deepJazzHandsOpacity = 0
         tier = .deep(appIndex: appIndex)
-        deepOrbitWindows = app.windows
+        deepJazzHandsWindows = app.windows
         selectedWindowIndex = -1
 
         if settings.animateParentWedge {
-            if slideAppIndex >= 0 && slideAppIndex != appIndex && deepOrbitSlideOffset > 0 {
+            if slideAppIndex >= 0 && slideAppIndex != appIndex && deepJazzHandsSlideOffset > 0 {
                 returnSlideAppIndex = slideAppIndex
-                returnSlideOffset = deepOrbitSlideOffset
+                returnSlideOffset = deepJazzHandsSlideOffset
                 animateReturnSlide()
             }
             slideAnimationTimer?.invalidate()
             slideAnimationTimer = nil
-            deepOrbitSlideOffset = 0
+            deepJazzHandsSlideOffset = 0
             slideAppIndex = appIndex
         }
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            self.animateDeepOrbitOpacity(to: 1)
+            self.animateDeepJazzHandsOpacity(to: 1)
             if self.settings.animateParentWedge {
-                self.animateSlideOffset(to: self.deepOrbitSlideAmount)
+                self.animateSlideOffset(to: self.deepJazzHandsSlideAmount)
             }
         }
 
@@ -355,7 +355,7 @@ final class OrbitViewModel: ObservableObject {
         }
     }
 
-    func cancelDeepOrbit() {
+    func cancelDeepJazzHands() {
         guard case .deep(let appIndex) = tier else { return }
         selectedIndex = -1
         centerLabel = ""
@@ -366,10 +366,10 @@ final class OrbitViewModel: ObservableObject {
         } else {
             slideAppIndex = appIndex
         }
-        animateDeepOrbitOpacity(to: 0) { [weak self] in
+        animateDeepJazzHandsOpacity(to: 0) { [weak self] in
             guard let self else { return }
             if !self.settings.animateParentWedge {
-                self.deepOrbitWindows = []
+                self.deepJazzHandsWindows = []
                 self.slideAppIndex = -1
             }
         }
@@ -381,7 +381,7 @@ final class OrbitViewModel: ObservableObject {
     private var slideCompletion: (() -> Void)?
 
     private func animateSlideOffset(to target: CGFloat, completion: (() -> Void)? = nil) {
-        slideStartValue = deepOrbitSlideOffset
+        slideStartValue = deepJazzHandsSlideOffset
         slideTargetValue = target
         slideStartTime = 0
         slideCompletion = completion
@@ -396,7 +396,7 @@ final class OrbitViewModel: ObservableObject {
                 let elapsed = CACurrentMediaTime() - self.slideStartTime
                 let t = min(elapsed / self.slideAnimationDuration, 1.0)
                 let eased = 1.0 - pow(1.0 - t, 3.0)
-                self.deepOrbitSlideOffset = self.slideStartValue + CGFloat(eased) * (self.slideTargetValue - self.slideStartValue)
+                self.deepJazzHandsSlideOffset = self.slideStartValue + CGFloat(eased) * (self.slideTargetValue - self.slideStartValue)
                 if t >= 1.0 {
                     timer.invalidate()
                     self.slideAnimationTimer = nil
@@ -404,7 +404,7 @@ final class OrbitViewModel: ObservableObject {
                     self.slideCompletion = nil
                     if self.slideTargetValue == 0 {
                         self.slideAppIndex = -1
-                        self.deepOrbitWindows = []
+                        self.deepJazzHandsWindows = []
                     }
                     cb?()
                 }
@@ -441,8 +441,8 @@ final class OrbitViewModel: ObservableObject {
         returnAnimationTimer = timer
     }
 
-    private func animateDeepOrbitOpacity(to target: CGFloat, completion: (() -> Void)? = nil) {
-        opacityStartValue = deepOrbitOpacity
+    private func animateDeepJazzHandsOpacity(to target: CGFloat, completion: (() -> Void)? = nil) {
+        opacityStartValue = deepJazzHandsOpacity
         opacityTargetValue = target
         opacityStartTime = CACurrentMediaTime()
         opacityCompletion = completion
@@ -453,7 +453,7 @@ final class OrbitViewModel: ObservableObject {
                 let elapsed = CACurrentMediaTime() - self.opacityStartTime
                 let t = min(elapsed / self.opacityDuration, 1.0)
                 let eased = 1.0 - pow(1.0 - t, 3.0)
-                self.deepOrbitOpacity = self.opacityStartValue + CGFloat(eased) * (self.opacityTargetValue - self.opacityStartValue)
+                self.deepJazzHandsOpacity = self.opacityStartValue + CGFloat(eased) * (self.opacityTargetValue - self.opacityStartValue)
                 if t >= 1.0 {
                     timer.invalidate()
                     self.opacityTimer = nil
@@ -513,9 +513,9 @@ final class OrbitViewModel: ObservableObject {
             log("confirmSelection PRIMARY: \(apps[selectedIndex].name)")
             WindowManager.shared.activateApp(apps[selectedIndex])
         case .deep(let appIndex):
-            log("confirmSelection DEEP: windowIdx=\(selectedWindowIndex) count=\(deepOrbitWindows.count) distance=\(mouseDistance) deadZone=\(deepOrbitDeadZone)")
-            if selectedWindowIndex >= 0, selectedWindowIndex < deepOrbitWindows.count {
-                let w = deepOrbitWindows[selectedWindowIndex]
+            log("confirmSelection DEEP: windowIdx=\(selectedWindowIndex) count=\(deepJazzHandsWindows.count) distance=\(mouseDistance) deadZone=\(deepJazzHandsDeadZone)")
+            if selectedWindowIndex >= 0, selectedWindowIndex < deepJazzHandsWindows.count {
+                let w = deepJazzHandsWindows[selectedWindowIndex]
                 log("  activating window: '\(w.title)' id=\(w.id)")
                 WindowManager.shared.activateWindow(w)
             } else {
@@ -529,7 +529,7 @@ final class OrbitViewModel: ObservableObject {
 
     private func log(_ msg: String) {
         let entry = "[\(Date())] VM: \(msg)\n"
-        let path = "/tmp/orbit.log"
+        let path = "/tmp/jazzHands.log"
         if let handle = FileHandle(forWritingAtPath: path) {
             handle.seekToEndOfFile()
             handle.write(entry.data(using: .utf8)!)
@@ -560,37 +560,37 @@ final class OrbitViewModel: ObservableObject {
         )
     }
 
-    func deepOrbitAngle(windowIndex: Int, appIndex: Int) -> Double {
+    func deepJazzHandsAngle(windowIndex: Int, appIndex: Int) -> Double {
         let parentAngle = angleForSegment(at: appIndex, total: apps.count)
-        let count = deepOrbitWindows.count
-        let totalSpread = deepOrbitSpread * Double(count - 1)
+        let count = deepJazzHandsWindows.count
+        let totalSpread = deepJazzHandsSpread * Double(count - 1)
         let startAngle = parentAngle - totalSpread / 2.0
-        return startAngle + deepOrbitSpread * Double(windowIndex)
+        return startAngle + deepJazzHandsSpread * Double(windowIndex)
     }
 
-    func deepOrbitPosition(windowIndex: Int, appIndex: Int) -> CGPoint {
-        let angle = deepOrbitAngle(windowIndex: windowIndex, appIndex: appIndex)
+    func deepJazzHandsPosition(windowIndex: Int, appIndex: Int) -> CGPoint {
+        let angle = deepJazzHandsAngle(windowIndex: windowIndex, appIndex: appIndex)
         return CGPoint(
-            x: deepOrbitRadius * CGFloat(cos(angle)),
-            y: deepOrbitRadius * CGFloat(sin(angle))
+            x: deepJazzHandsRadius * CGFloat(cos(angle)),
+            y: deepJazzHandsRadius * CGFloat(sin(angle))
         )
     }
 
-    func deepOrbitSlideVector(appIndex: Int) -> CGPoint {
+    func deepJazzHandsSlideVector(appIndex: Int) -> CGPoint {
         guard apps.count > 0 else { return .zero }
         let angle = angleForSegment(at: appIndex, total: apps.count)
         return CGPoint(
-            x: deepOrbitSlideOffset * CGFloat(cos(angle)),
-            y: deepOrbitSlideOffset * CGFloat(sin(angle))
+            x: deepJazzHandsSlideOffset * CGFloat(cos(angle)),
+            y: deepJazzHandsSlideOffset * CGFloat(sin(angle))
         )
     }
 
-    func deepOrbitTargetSlideVector(appIndex: Int) -> CGPoint {
+    func deepJazzHandsTargetSlideVector(appIndex: Int) -> CGPoint {
         guard apps.count > 0, settings.animateParentWedge else { return .zero }
         let angle = angleForSegment(at: appIndex, total: apps.count)
         return CGPoint(
-            x: deepOrbitSlideAmount * CGFloat(cos(angle)),
-            y: deepOrbitSlideAmount * CGFloat(sin(angle))
+            x: deepJazzHandsSlideAmount * CGFloat(cos(angle)),
+            y: deepJazzHandsSlideAmount * CGFloat(sin(angle))
         )
     }
 }

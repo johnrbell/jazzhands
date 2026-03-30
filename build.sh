@@ -28,7 +28,7 @@ if [ ! -d "$APP_BUNDLE" ]; then
     echo "Creating app bundle at $APP_BUNDLE..."
     mkdir -p "$APP_BUNDLE/Contents/MacOS"
     mkdir -p "$APP_BUNDLE/Contents/Resources"
-    cp "Orbit/Resources/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
+    cp "JazzHands/Resources/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
     cat > "$APP_BUNDLE/Contents/PkgInfo" <<EOF
 APPL????
 EOF
@@ -37,15 +37,15 @@ else
 fi
 
 cp "$BUILD_DIR/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
-cp "Orbit/Resources/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
-cp "Orbit/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
-cp "Orbit/Resources/MenuBarIcon.png" "$APP_BUNDLE/Contents/Resources/MenuBarIcon.png"
-cp "Orbit/Resources/MenuBarIcon@2x.png" "$APP_BUNDLE/Contents/Resources/MenuBarIcon@2x.png"
-cp "Orbit/Resources/MenuBarAppIcon.png" "$APP_BUNDLE/Contents/Resources/MenuBarAppIcon.png"
-cp "Orbit/Resources/MenuBarAppIcon@2x.png" "$APP_BUNDLE/Contents/Resources/MenuBarAppIcon@2x.png"
+cp "JazzHands/Resources/Info.plist" "$APP_BUNDLE/Contents/Info.plist"
+cp "JazzHands/Resources/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+cp "JazzHands/Resources/MenuBarIcon.png" "$APP_BUNDLE/Contents/Resources/MenuBarIcon.png"
+cp "JazzHands/Resources/MenuBarIcon@2x.png" "$APP_BUNDLE/Contents/Resources/MenuBarIcon@2x.png"
+cp "JazzHands/Resources/MenuBarAppIcon.png" "$APP_BUNDLE/Contents/Resources/MenuBarAppIcon.png"
+cp "JazzHands/Resources/MenuBarAppIcon@2x.png" "$APP_BUNDLE/Contents/Resources/MenuBarAppIcon@2x.png"
 
 echo "Signing app bundle..."
-codesign -fs "$SIGNING_IDENTITY" --options runtime --entitlements "Orbit/Resources/Orbit.entitlements" "$APP_BUNDLE" --deep
+codesign -fs "$SIGNING_IDENTITY" --options runtime --entitlements "JazzHands/Resources/JazzHands.entitlements" "$APP_BUNDLE" --deep
 
 echo "Done! App bundle at: $APP_BUNDLE"
 echo ""

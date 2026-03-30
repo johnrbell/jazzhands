@@ -6,7 +6,7 @@ final class WindowManager {
 
     private func log(_ msg: String) {
         let entry = "[\(Date())] \(msg)\n"
-        let path = "/tmp/orbit.log"
+        let path = "/tmp/jazzHands.log"
         if let handle = FileHandle(forWritingAtPath: path) {
             handle.seekToEndOfFile()
             handle.write(entry.data(using: .utf8)!)
@@ -16,8 +16,8 @@ final class WindowManager {
         }
     }
 
-    func fetchActiveApps() -> [OrbitApp] {
-        let settings = OrbitSettings.shared
+    func fetchActiveApps() -> [JazzHandsApp] {
+        let settings = JazzHandsSettings.shared
         let includeOffScreen = settings.showMinimizedWindows
 
         let listOptions: CGWindowListOption = includeOffScreen
@@ -29,7 +29,7 @@ final class WindowManager {
             kCGNullWindowID
         ) as? [[String: Any]] ?? []
 
-        var appWindowMap: [pid_t: [OrbitWindow]] = [:]
+        var appWindowMap: [pid_t: [JazzHandsWindow]] = [:]
         var pidZOrder: [pid_t] = []
 
         let minWindowDimension: CGFloat = 50
@@ -48,7 +48,7 @@ final class WindowManager {
                 continue
             }
 
-            let window = OrbitWindow(
+            let window = JazzHandsWindow(
                 id: windowID,
                 title: title,
                 bounds: bounds,
@@ -66,7 +66,7 @@ final class WindowManager {
             $0.activationPolicy == .regular
         }
 
-        var orbitApps: [OrbitApp] = []
+        var jazzHandsApps: [JazzHandsApp] = []
 
         for app in runningApps {
             if !settings.showHiddenApps && app.isHidden { continue }
@@ -122,7 +122,7 @@ final class WindowManager {
             let icon = app.icon ?? NSImage(systemSymbolName: "app", accessibilityDescription: nil) ?? NSImage()
             icon.size = NSSize(width: 48, height: 48)
 
-            orbitApps.append(OrbitApp(
+            jazzHandsApps.append(JazzHandsApp(
                 id: pid,
                 name: app.localizedName ?? "Unknown",
                 bundleIdentifier: app.bundleIdentifier,
@@ -134,13 +134,13 @@ final class WindowManager {
 
         switch settings.appSortOrder {
         case "alphabetical":
-            orbitApps.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            jazzHandsApps.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         default:
             let zOrderIndex = Dictionary(uniqueKeysWithValues: pidZOrder.enumerated().map { ($1, $0) })
-            orbitApps.sort { (zOrderIndex[$0.id] ?? Int.max) < (zOrderIndex[$1.id] ?? Int.max) }
+            jazzHandsApps.sort { (zOrderIndex[$0.id] ?? Int.max) < (zOrderIndex[$1.id] ?? Int.max) }
         }
 
-        return orbitApps
+        return jazzHandsApps
     }
 
     private func fetchAXWindows(pid: pid_t) -> [(title: String, bounds: CGRect)] {
@@ -170,13 +170,13 @@ final class WindowManager {
         return results
     }
 
-    private func filterToAXWindows(cgWindows: [OrbitWindow], axWindows: [(title: String, bounds: CGRect)]) -> [OrbitWindow] {
+    private func filterToAXWindows(cgWindows: [JazzHandsWindow], axWindows: [(title: String, bounds: CGRect)]) -> [JazzHandsWindow] {
         return cgWindows.filter { cg in
             axWindows.contains { ax in boundsMatch(cg.bounds, ax.bounds) }
         }
     }
 
-    private func enrichWindowTitles(windows: [OrbitWindow], axTitles: [(title: String, bounds: CGRect)]) -> [OrbitWindow] {
+    private func enrichWindowTitles(windows: [JazzHandsWindow], axTitles: [(title: String, bounds: CGRect)]) -> [JazzHandsWindow] {
         var result = windows
         var usedAX = Set<Int>()
 
@@ -185,7 +185,7 @@ final class WindowManager {
             if let matchIdx = axTitles.indices.first(where: { !usedAX.contains($0) && boundsMatch(result[i].bounds, axTitles[$0].bounds) }),
                !axTitles[matchIdx].title.isEmpty {
                 usedAX.insert(matchIdx)
-                result[i] = OrbitWindow(
+                result[i] = JazzHandsWindow(
                     id: result[i].id,
                     title: axTitles[matchIdx].title,
                     bounds: result[i].bounds,
@@ -201,7 +201,7 @@ final class WindowManager {
             while axIdx < axTitles.count && usedAX.contains(axIdx) { axIdx += 1 }
             guard axIdx < axTitles.count, !axTitles[axIdx].title.isEmpty else { continue }
             usedAX.insert(axIdx)
-            result[i] = OrbitWindow(
+            result[i] = JazzHandsWindow(
                 id: result[i].id,
                 title: axTitles[axIdx].title,
                 bounds: result[i].bounds,
@@ -221,7 +221,7 @@ final class WindowManager {
         abs(a.height - b.height) < 10
     }
 
-    func activateApp(_ app: OrbitApp) {
+    func activateApp(_ app: JazzHandsApp) {
         log("activateApp: '\(app.name)' pid=\(app.id) axTrusted=\(AXIsProcessTrusted())")
 
         let appRef = AXUIElementCreateApplication(app.id)
@@ -234,7 +234,7 @@ final class WindowManager {
         app.runningApp.activate(options: [])
     }
 
-    func activateWindow(_ window: OrbitWindow) {
+    func activateWindow(_ window: JazzHandsWindow) {
         log("activateWindow: '\(window.title)' id=\(window.id) pid=\(window.ownerPID) axTrusted=\(AXIsProcessTrusted())")
 
         let app = NSRunningApplication(processIdentifier: window.ownerPID)

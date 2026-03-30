@@ -7,7 +7,7 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "JazzHands",
-            path: "Orbit/Sources",
+            path: "JazzHands/Sources",
             linkerSettings: [
                 .linkedFramework("AppKit"),
                 .linkedFramework("CoreGraphics"),

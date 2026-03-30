@@ -24,7 +24,7 @@ private class CursorHidingView: NSView {
 final class OverlayWindowController {
     private var window: NSWindow?
     private var cursorView: CursorHidingView?
-    private var viewModel = OrbitViewModel()
+    private var viewModel = JazzHandsViewModel()
     private var mouseMonitor: Any?
 
     private var screenCenter: CGPoint = .zero
@@ -33,17 +33,17 @@ final class OverlayWindowController {
     private var ignoreEventsUntil: TimeInterval = 0
     private var awaitingFirstDelta = true
     private var maxCursorRadius: CGFloat {
-        CGFloat(OrbitSettings.shared.primaryRadius) + 220
+        CGFloat(JazzHandsSettings.shared.primaryRadius) + 220
     }
 
-    func showOrbit() {
+    func showJazzHands() {
         guard let screen = NSScreen.main else { return }
         let frame = screen.frame
 
         viewModel.refresh()
 
         if window == nil {
-            let hostingView = NSHostingView(rootView: OrbitView(viewModel: viewModel))
+            let hostingView = NSHostingView(rootView: JazzHandsView(viewModel: viewModel))
             hostingView.translatesAutoresizingMaskIntoConstraints = false
 
             let wrapper = CursorHidingView(frame: CGRect(origin: .zero, size: frame.size))
@@ -91,7 +91,7 @@ final class OverlayWindowController {
         startMouseTracking()
     }
 
-    func hideOrbit() {
+    func hideJazzHands() {
         viewModel.isVisible = false
         stopMouseTracking()
         restoreCursorPosition()
@@ -103,7 +103,7 @@ final class OverlayWindowController {
     }
 
     private func restoreCursorPosition() {
-        switch OrbitSettings.shared.cursorRestoreMode {
+        switch JazzHandsSettings.shared.cursorRestoreMode {
         case "origin":
             CGWarpMouseCursorPosition(preLaunchCursorPosition)
         case "current":

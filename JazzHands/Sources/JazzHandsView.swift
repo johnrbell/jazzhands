@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct OrbitView: View {
-    @ObservedObject var viewModel: OrbitViewModel
+struct JazzHandsView: View {
+    @ObservedObject var viewModel: JazzHandsViewModel
 
-    private var s: OrbitSettings { OrbitSettings.shared }
+    private var s: JazzHandsSettings { JazzHandsSettings.shared }
     private var glowColor: Color { s.glowColor }
     private var deepGlowColor: Color { s.deepGlowColor }
 
@@ -46,8 +46,8 @@ struct OrbitView: View {
                             DebugCanvasView(viewModel: viewModel)
                         }
                         ZStack {
-                            deepOrbitRing(appIndex: viewModel.deepOrbitDisplayAppIndex)
-                                .opacity(Double(viewModel.deepOrbitOpacity))
+                            deepJazzHandsRing(appIndex: viewModel.deepJazzHandsDisplayAppIndex)
+                                .opacity(Double(viewModel.deepJazzHandsOpacity))
                             primaryRing
                             centerInfo
                             cursorIndicator
@@ -91,7 +91,7 @@ struct OrbitView: View {
             }
         }
         .animation(.easeOut(duration: 0.15), value: viewModel.selectedIndex)
-        .animation(.easeOut(duration: 0.15), value: viewModel.isInDeepOrbit)
+        .animation(.easeOut(duration: 0.15), value: viewModel.isInDeepJazzHands)
     }
 
     // MARK: - Cursor Indicator
@@ -121,7 +121,7 @@ struct OrbitView: View {
         let iconRadius = (innerR + outerR) / 2
 
         return ZStack {
-            orbitTrackRing(radius: viewModel.primaryRadius, color: glowColor, dimmed: dimmed, segmentCount: total, deepParentIndex: viewModel.slideAppIndex)
+            jazzHandsTrackRing(radius: viewModel.primaryRadius, color: glowColor, dimmed: dimmed, segmentCount: total, deepParentIndex: viewModel.slideAppIndex)
 
             if s.segmentBorderOpacity > 0, total > 0, !s.segmentBorderCutout {
                 segmentBorders(total: total, radius: viewModel.primaryRadius, dimmed: dimmed)
@@ -134,7 +134,7 @@ struct OrbitView: View {
                 let isSliding = index == viewModel.slideAppIndex
                 let isReturning = index == viewModel.returnSlideAppIndex
                 let slideVec: CGPoint = {
-                    if isSliding { return viewModel.deepOrbitSlideVector(appIndex: index) }
+                    if isSliding { return viewModel.deepJazzHandsSlideVector(appIndex: index) }
                     if isReturning { return viewModel.returnSlideVector(appIndex: index) }
                     return .zero
                 }()
@@ -149,29 +149,29 @@ struct OrbitView: View {
                     segmentAngle: Angle(radians: viewModel.angleForSegment(at: index, total: total)),
                     activeWindowIndex: isDeepParent ? viewModel.selectedWindowIndex : -1
                 )
-                .opacity(dimmed && !isDeepParent ? s.deepOrbitDimming : 1.0)
+                .opacity(dimmed && !isDeepParent ? s.deepJazzHandsDimming : 1.0)
                 .animation(.easeOut(duration: 0.15), value: isSelected)
                 .offset(x: basePos.x + slideVec.x, y: basePos.y + slideVec.y)
             }
         }
     }
 
-    // MARK: - Deep Orbit (Local Arc)
+    // MARK: - Deep JazzHands (Local Arc)
 
-    private func deepOrbitRing(appIndex: Int) -> some View {
-        let windows = viewModel.deepOrbitWindows
+    private func deepJazzHandsRing(appIndex: Int) -> some View {
+        let windows = viewModel.deepJazzHandsWindows
         let innerR = viewModel.primaryRadius + viewModel.segmentIconSize / 2 + 17
-        let outerR = viewModel.deepOrbitOuterRadius
+        let outerR = viewModel.deepJazzHandsOuterRadius
 
         return Canvas { context, size in
-            let slideVec = viewModel.deepOrbitTargetSlideVector(appIndex: appIndex)
+            let slideVec = viewModel.deepJazzHandsTargetSlideVector(appIndex: appIndex)
             let center = CGPoint(x: size.width / 2 + slideVec.x, y: size.height / 2 + slideVec.y)
             let highlight = s.deepGlowColor
 
             for (index, window) in windows.enumerated() {
                 let isSelected = index == viewModel.selectedWindowIndex
-                let angle = viewModel.deepOrbitAngle(windowIndex: index, appIndex: appIndex)
-                let half = viewModel.deepOrbitSpread / 2.0
+                let angle = viewModel.deepJazzHandsAngle(windowIndex: index, appIndex: appIndex)
+                let half = viewModel.deepJazzHandsSpread / 2.0
                 let gapPixels: Double = 3.0
                 let gapOuter = gapPixels / Double(outerR)
                 let gapInner = gapPixels / Double(innerR)
@@ -187,12 +187,12 @@ struct OrbitView: View {
                              clockwise: true)
                 wedge.closeSubpath()
 
-                let baseOpacity = s.deepOrbitFillOpacity
-                let inactiveOpacity = s.deepOrbitInactiveOpacity
-                let fillColor = isSelected ? highlight.opacity(baseOpacity) : s.deepOrbitFillColor.opacity(inactiveOpacity)
+                let baseOpacity = s.deepJazzHandsFillOpacity
+                let inactiveOpacity = s.deepJazzHandsInactiveOpacity
+                let fillColor = isSelected ? highlight.opacity(baseOpacity) : s.deepJazzHandsFillColor.opacity(inactiveOpacity)
                 context.fill(wedge, with: .color(fillColor))
 
-                let strokeColor = isSelected ? highlight.opacity(min(baseOpacity * 3.6, 1.0)) : s.deepOrbitFillColor.opacity(min(inactiveOpacity * 1.5, 1.0))
+                let strokeColor = isSelected ? highlight.opacity(min(baseOpacity * 3.6, 1.0)) : s.deepJazzHandsFillColor.opacity(min(inactiveOpacity * 1.5, 1.0))
                 context.stroke(wedge, with: .color(strokeColor), lineWidth: isSelected ? 3 : 1)
 
                 let midR = innerR + (outerR - innerR) * 0.58
@@ -277,7 +277,7 @@ struct OrbitView: View {
     private func segmentBorders(total: Int, radius: CGFloat, dimmed: Bool) -> some View {
         let outerR = radius + viewModel.segmentIconSize / 2 + 10
         let segAngle = (2.0 * CGFloat.pi) / CGFloat(total)
-        let opacity = dimmed ? s.segmentBorderOpacity * s.deepOrbitDimming : s.segmentBorderOpacity
+        let opacity = dimmed ? s.segmentBorderOpacity * s.deepJazzHandsDimming : s.segmentBorderOpacity
         let diameter = outerR * 2 + 4
 
         return Canvas { context, size in
@@ -307,12 +307,12 @@ struct OrbitView: View {
 
     // MARK: - Track Ring
 
-    private func orbitTrackRing(radius: CGFloat, color: Color, dimmed: Bool, segmentCount: Int = 0, deepParentIndex: Int = -1) -> some View {
+    private func jazzHandsTrackRing(radius: CGFloat, color: Color, dimmed: Bool, segmentCount: Int = 0, deepParentIndex: Int = -1) -> some View {
         let innerR = viewModel.centerDeadZone
         let outerR = radius + viewModel.segmentIconSize / 2 + 10
-        let fillOpacity = dimmed ? s.ringFillOpacity * s.deepOrbitDimming : s.ringFillOpacity
+        let fillOpacity = dimmed ? s.ringFillOpacity * s.deepJazzHandsDimming : s.ringFillOpacity
         let useCutout = s.segmentBorderCutout && segmentCount > 0 && s.segmentBorderOpacity > 0
-        let slideOffset = viewModel.deepOrbitSlideOffset
+        let slideOffset = viewModel.deepJazzHandsSlideOffset
 
         return ZStack {
             if useCutout {
@@ -343,7 +343,7 @@ struct OrbitView: View {
                         wedge.closeSubpath()
 
                         let wedgeFillOpacity = (isDeepParent || isReturning) ? s.ringFillOpacity : fillOpacity
-                        let wedgeStrokeOpacity = (isDeepParent || isReturning) ? s.ringOpacity : (dimmed ? s.ringOpacity * s.deepOrbitDimming : s.ringOpacity)
+                        let wedgeStrokeOpacity = (isDeepParent || isReturning) ? s.ringOpacity : (dimmed ? s.ringOpacity * s.deepJazzHandsDimming : s.ringOpacity)
 
                         var drawCtx = context
                         if isDeepParent && slideOffset > 0 {
@@ -369,7 +369,7 @@ struct OrbitView: View {
                     }
                 }
                 .frame(width: (outerR + slideOffset) * 2 + 4, height: (outerR + slideOffset) * 2 + 4)
-                .shadow(color: color.opacity(min((dimmed ? 0.15 * s.deepOrbitDimming : 0.15) * s.glowIntensity, 1.0)), radius: 20 * s.glowIntensity)
+                .shadow(color: color.opacity(min((dimmed ? 0.15 * s.deepJazzHandsDimming : 0.15) * s.glowIntensity, 1.0)), radius: 20 * s.glowIntensity)
             } else {
                 if fillOpacity > 0 {
                     Circle()
@@ -387,7 +387,7 @@ struct OrbitView: View {
 
             }
 
-            let centerOpacity = dimmed ? min(s.deepOrbitDimming * 0.25, s.centerRingOpacity) : s.centerRingOpacity
+            let centerOpacity = dimmed ? min(s.deepJazzHandsDimming * 0.25, s.centerRingOpacity) : s.centerRingOpacity
             if centerOpacity > 0 {
                 Circle()
                     .stroke(s.ringColor.opacity(centerOpacity), lineWidth: 1.5)
@@ -401,7 +401,7 @@ struct OrbitView: View {
 // MARK: - App Segment
 
 struct AppSegmentView: View {
-    let app: OrbitApp
+    let app: JazzHandsApp
     let isSelected: Bool
     let glowColor: Color
     let iconSize: CGFloat
@@ -410,10 +410,10 @@ struct AppSegmentView: View {
     var segmentAngle: Angle = .degrees(90)
     var activeWindowIndex: Int = -1
 
-    private var s: OrbitSettings { OrbitSettings.shared }
+    private var s: JazzHandsSettings { JazzHandsSettings.shared }
 
     private var indicatorCount: Int {
-        guard s.deepOrbitEnabled, s.bumpOpacity > 0, windowCount > 1 else { return 0 }
+        guard s.deepJazzHandsEnabled, s.bumpOpacity > 0, windowCount > 1 else { return 0 }
         return min(windowCount, 5)
     }
 
@@ -479,7 +479,7 @@ struct AppSegmentView: View {
 // MARK: - Window Arc Segment
 
 struct WindowArcSegment: View {
-    let window: OrbitWindow
+    let window: JazzHandsWindow
     let thumbnail: NSImage?
     let appIcon: NSImage?
     let isSelected: Bool
@@ -489,7 +489,7 @@ struct WindowArcSegment: View {
     let innerRadius: CGFloat
     let outerRadius: CGFloat
 
-    private var s: OrbitSettings { OrbitSettings.shared }
+    private var s: JazzHandsSettings { JazzHandsSettings.shared }
 
     private var wedgePath: Path {
         let gap = 0.015
@@ -570,7 +570,7 @@ struct WindowArcSegment: View {
 // MARK: - Debug Canvas
 
 struct DebugCanvasView: View {
-    @ObservedObject var viewModel: OrbitViewModel
+    @ObservedObject var viewModel: JazzHandsViewModel
 
     private static let sliceColors: [NSColor] = [
         .systemBlue, .systemPurple, .systemOrange, .systemTeal,
@@ -671,8 +671,8 @@ struct DebugCanvasView: View {
     }
 }
 
-extension OrbitTier: Equatable {
-    static func == (lhs: OrbitTier, rhs: OrbitTier) -> Bool {
+extension JazzHandsTier: Equatable {
+    static func == (lhs: JazzHandsTier, rhs: JazzHandsTier) -> Bool {
         switch (lhs, rhs) {
         case (.primary, .primary): return true
         case (.deep(let a), .deep(let b)): return a == b

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var settings = OrbitSettings.shared
+    @ObservedObject var settings = JazzHandsSettings.shared
 
     var body: some View {
         TabView {
@@ -65,13 +65,13 @@ struct SettingsView: View {
                     Text("Alphabetical").tag("alphabetical")
                 }
 
-                Toggle("Enable deep orbit (multi-window expansion)", isOn: $settings.deepOrbitEnabled)
+                Toggle("Enable deep jazzHands (multi-window expansion)", isOn: $settings.deepJazzHandsEnabled)
 
-                if settings.deepOrbitEnabled {
+                if settings.deepJazzHandsEnabled {
                     sliderRow("Multi-window hover delay", value: $settings.hoverTimeout,
                               range: 0...1.0, step: 0.05, format: { "\(Int($0 * 1000))ms" })
-                    Toggle("Switch deep orbit on hover", isOn: $settings.deepOrbitSwitchOnHover)
-                    Text("Hovering a different app while in deep orbit switches after the delay")
+                    Toggle("Switch deep jazzHands on hover", isOn: $settings.deepJazzHandsSwitchOnHover)
+                    Text("Hovering a different app while in deep jazzHands switches after the delay")
                         .font(.caption).foregroundColor(.secondary)
                 }
             }
@@ -93,7 +93,7 @@ struct SettingsView: View {
             Section("Menu Bar") {
                 Picker("Menu bar icon", selection: $settings.menuBarStyle) {
                     Text("Jazz Hand").tag("hand")
-                    Text("Orbit Ring").tag("orbit")
+                    Text("JazzHands Ring").tag("jazzHands")
                     Text("App Icon").tag("icon")
                     Text("Hidden").tag("hidden")
                 }
@@ -136,12 +136,12 @@ struct SettingsView: View {
                         colorRow("Center label", hex: $settings.centerLabelColorHex)
                         colorRow("Segment borders", hex: $settings.segmentBorderColorHex)
                         colorRow("Window indicators", hex: $settings.bumpColorHex)
-                        colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
-                        colorRow("Deep orbit fill", hex: $settings.deepOrbitFillColorHex)
+                        colorRow("Deep jazzHands glow", hex: $settings.deepGlowColorHex)
+                        colorRow("Deep jazzHands fill", hex: $settings.deepJazzHandsFillColorHex)
                     }
 
                     Button("Reset to Defaults") {
-                        settings.applyPreset(OrbitSettings.defaultPreset)
+                        settings.applyPreset(JazzHandsSettings.defaultPreset)
                     }
                     .font(.caption)
                 }
@@ -161,14 +161,14 @@ struct SettingsView: View {
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                     }
 
-                    Section("Deep Orbit") {
-                        sliderRow("Window arc scale", value: $settings.deepOrbitScale,
+                    Section("Deep JazzHands") {
+                        sliderRow("Window arc scale", value: $settings.deepJazzHandsScale,
                                   range: 0.5...1.5, step: 0.05, format: { String(format: "%.0f%%", $0 * 100) })
-                        sliderRow("Selected fill", value: $settings.deepOrbitFillOpacity,
+                        sliderRow("Selected fill", value: $settings.deepJazzHandsFillOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Unselected fill", value: $settings.deepOrbitInactiveOpacity,
+                        sliderRow("Unselected fill", value: $settings.deepJazzHandsInactiveOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Primary ring dimming", value: $settings.deepOrbitDimming,
+                        sliderRow("Primary ring dimming", value: $settings.deepJazzHandsDimming,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                         Toggle("Animate parent wedge", isOn: $settings.animateParentWedge)
                         if settings.animateParentWedge {
@@ -316,7 +316,7 @@ struct SettingsView: View {
 // MARK: - Presets Section
 
 private struct PresetsSection: View {
-    @ObservedObject private var settings = OrbitSettings.shared
+    @ObservedObject private var settings = JazzHandsSettings.shared
     @State private var presets: [NamedPreset] = []
     @State private var newPresetName = ""
     @State private var showingSaveField = false

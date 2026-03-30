@@ -32,7 +32,7 @@ bash build.sh
 On first launch you'll be asked to grant two permissions:
 
 1. **Accessibility** — lets JazzHands listen for your hotkey and raise windows. Go to **System Settings → Privacy & Security → Accessibility** and toggle JazzHands on.
-2. **Screen Recording** — lets JazzHands capture window thumbnails for Deep Orbit. Same path but under **Screen Recording**.
+2. **Screen Recording** — lets JazzHands capture window thumbnails for Deep JazzHands. Same path but under **Screen Recording**.
 
 After granting both, restart JazzHands from the menu bar icon (Quit → relaunch, or just run `bash build.sh` again).
 
@@ -49,7 +49,7 @@ After granting both, restart JazzHands from the menu bar icon (Quit → relaunch
 | **Tab** (while held) | Cycles selection clockwise |
 | **Backtick** (while held) | Cycles selection counter-clockwise |
 
-### Deep Orbit (Window Picker)
+### Deep JazzHands (Window Picker)
 
 When you hover over a multi-window app for 500ms (configurable), a second ring fans out showing individual windows with thumbnails. Move outward to pick a specific window, or move to a different app to switch targets. Release to activate.
 
@@ -59,8 +59,8 @@ Right-click (or click) the menu bar icon → **Settings** to configure:
 
 - **Shortcut** — change the trigger key combo (default: Option + Space)
 - **Appearance** — ring colors, glow, opacity, icon size, segment borders
-- **Behavior** — hover delay, cursor sensitivity, dead zone, deep orbit toggle
-- **Animation** — parent wedge slide on deep orbit entry
+- **Behavior** — hover delay, cursor sensitivity, dead zone, deep jazzHands toggle
+- **Animation** — parent wedge slide on deep jazzHands entry
 - **Presets** — save and load full appearance configurations
 
 ![JazzHands Demo](settings.png)
