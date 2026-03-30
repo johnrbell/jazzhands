@@ -268,7 +268,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             overlayController = OverlayWindowController()
         }
         overlayController?.showOrbit()
-        overlayController?.cycleSelection()
     }
 
     private func onOptionReleased() {
