@@ -42,6 +42,7 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("centerFillOpacity") var centerFillOpacity: Double = 0.0
     @AppStorage("ringFillColorHex") var ringFillColorHex: String = "#FFFFFF"
     @AppStorage("ringFillOpacity") var ringFillOpacity: Double = 0.0
+    @AppStorage("deepOrbitFillColorHex") var deepOrbitFillColorHex: String = "#FFFFFF"
     @AppStorage("deepOrbitFillOpacity") var deepOrbitFillOpacity: Double = 0.25
     @AppStorage("deepOrbitDimming") var deepOrbitDimming: Double = 0.4
     @AppStorage("segmentBorderColorHex") var segmentBorderColorHex: String = "#FFFFFF"
@@ -92,6 +93,7 @@ final class OrbitSettings: ObservableObject {
     var backgroundColor: Color { Color(hex: backgroundColorHex) }
     var ringFillColor: Color { Color(hex: ringFillColorHex) }
     var segmentBorderColor: Color { Color(hex: segmentBorderColorHex) }
+    var deepOrbitFillColor: Color { Color(hex: deepOrbitFillColorHex) }
     var centerLabelColor: Color { Color(hex: centerLabelColorHex) }
     var bumpColor: Color { Color(hex: bumpColorHex) }
 

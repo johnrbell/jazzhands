@@ -137,6 +137,7 @@ struct SettingsView: View {
                         colorRow("Segment borders", hex: $settings.segmentBorderColorHex)
                         colorRow("Window indicators", hex: $settings.bumpColorHex)
                         colorRow("Deep orbit glow", hex: $settings.deepGlowColorHex)
+                        colorRow("Deep orbit fill", hex: $settings.deepOrbitFillColorHex)
                     }
 
                     Button("Reset to Defaults") {
