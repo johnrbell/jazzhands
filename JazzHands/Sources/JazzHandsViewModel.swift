@@ -16,17 +16,17 @@ final class JazzHandsViewModel: ObservableObject {
     @Published var mouseDistance: Double = 0
     @Published var isVisible: Bool = false
     @Published var centerLabel: String = ""
-    @Published var deepJazzHandsWindows: [JazzHandsWindow] = []
+    @Published var fingersWindows: [JazzHandsWindow] = []
     @Published var windowThumbnails: [CGWindowID: NSImage] = [:]
     @Published var debugCursorPos: CGPoint = .zero
     @Published var shouldResetCursor: Bool = false
-    @Published var deepJazzHandsSlideOffset: CGFloat = 0
+    @Published var fingersSlideOffset: CGFloat = 0
     @Published var slideAppIndex: Int = -1
     @Published var returnSlideAppIndex: Int = -1
     @Published var returnSlideOffset: CGFloat = 0
-    @Published var deepJazzHandsOpacity: CGFloat = 0
+    @Published var fingersOpacity: CGFloat = 0
 
-    var deepJazzHandsSlideAmount: CGFloat { CGFloat(settings.parentWedgeSlideDistance) }
+    var fingersSlideAmount: CGFloat { CGFloat(settings.parentWedgeSlideDistance) }
 
     private var slideAnimationTimer: Timer?
     private var slideStartValue: CGFloat = 0
@@ -54,24 +54,24 @@ final class JazzHandsViewModel: ObservableObject {
 
     var showDebug: Bool { settings.showDebugOverlay }
     var primaryRadius: CGFloat { CGFloat(settings.primaryRadius) }
-    var deepJazzHandsRadius: CGFloat { CGFloat(settings.primaryRadius) + segmentIconSize / 2 + 70 }
-    var deepJazzHandsOuterRadius: CGFloat {
+    var fingersRadius: CGFloat { CGFloat(settings.primaryRadius) + segmentIconSize / 2 + 70 }
+    var fingersOuterRadius: CGFloat {
         let innerR = primaryRadius + segmentIconSize / 2 + 17
-        let baseOuter = deepJazzHandsRadius + 130
-        return innerR + (baseOuter - innerR) * CGFloat(settings.deepJazzHandsScale)
+        let baseOuter = fingersRadius + 130
+        return innerR + (baseOuter - innerR) * CGFloat(settings.fingersScale)
     }
-    var deepJazzHandsSpread: Double { 0.7 * settings.deepJazzHandsScale }
+    var fingersSpread: Double { 0.7 * settings.fingersScale }
     var segmentIconSize: CGFloat { CGFloat(settings.iconSize) }
     var centerDeadZone: CGFloat { CGFloat(settings.centerDeadZone) }
-    var deepJazzHandsDeadZone: CGFloat { primaryRadius * 0.65 }
+    var fingersDeadZone: CGFloat { primaryRadius * 0.65 }
     var hoverDelay: TimeInterval { settings.hoverTimeout }
 
-    var isInDeepJazzHands: Bool {
+    var isInFingers: Bool {
         if case .deep = tier { return true }
         return false
     }
 
-    var deepJazzHandsDisplayAppIndex: Int {
+    var fingersDisplayAppIndex: Int {
         if case .deep(let idx) = tier { return idx }
         if slideAppIndex >= 0 { return slideAppIndex }
         return 0
@@ -85,9 +85,9 @@ final class JazzHandsViewModel: ObservableObject {
         selectedWindowIndex = -1
         tier = .primary
         centerLabel = ""
-        deepJazzHandsWindows = []
+        fingersWindows = []
         windowThumbnails = [:]
-        deepJazzHandsSlideOffset = 0
+        fingersSlideOffset = 0
         slideAppIndex = -1
         slideAnimationTimer?.invalidate()
         slideAnimationTimer = nil
@@ -96,7 +96,7 @@ final class JazzHandsViewModel: ObservableObject {
         returnSlideOffset = 0
         returnAnimationTimer?.invalidate()
         returnAnimationTimer = nil
-        deepJazzHandsOpacity = 0
+        fingersOpacity = 0
         opacityTimer?.invalidate()
         opacityTimer = nil
         opacityCompletion = nil
@@ -127,10 +127,10 @@ final class JazzHandsViewModel: ObservableObject {
 
         if case .deep(let appIndex) = tier {
             if appIndex < newApps.count {
-                deepJazzHandsWindows = newApps[appIndex].windows
+                fingersWindows = newApps[appIndex].windows
             } else {
                 tier = .primary
-                deepJazzHandsWindows = []
+                fingersWindows = []
                 selectedWindowIndex = -1
             }
         }
@@ -171,8 +171,8 @@ final class JazzHandsViewModel: ObservableObject {
         mouseDistance = distance
 
         if case .deep = tier {
-            guard distance > Double(deepJazzHandsDeadZone) else {
-                cancelDeepJazzHands()
+            guard distance > Double(fingersDeadZone) else {
+                cancelFingers()
                 return
             }
         } else {
@@ -193,7 +193,7 @@ final class JazzHandsViewModel: ObservableObject {
         case .primary:
             updatePrimarySelection(normalizedAngle: normalized, distance: distance)
         case .deep(let appIndex):
-            updateDeepJazzHandsSelection(normalizedAngle: normalized, distance: distance, appIndex: appIndex)
+            updateFingersSelection(normalizedAngle: normalized, distance: distance, appIndex: appIndex)
         }
     }
 
@@ -215,14 +215,14 @@ final class JazzHandsViewModel: ObservableObject {
         }
     }
 
-    private func updateDeepJazzHandsSelection(normalizedAngle: Double, distance: Double, appIndex: Int) {
-        guard !deepJazzHandsWindows.isEmpty else { return }
+    private func updateFingersSelection(normalizedAngle: Double, distance: Double, appIndex: Int) {
+        guard !fingersWindows.isEmpty else { return }
 
         let primaryZoneInner = Double(centerDeadZone)
         let primaryZoneOuter = Double(primaryRadius + segmentIconSize / 2 + 5)
         let inPrimaryZone = distance >= primaryZoneInner && distance <= primaryZoneOuter
 
-        if inPrimaryZone && settings.deepJazzHandsSwitchOnHover && !apps.isEmpty {
+        if inPrimaryZone && settings.fingersSwitchOnHover && !apps.isEmpty {
             let segmentAngle = (2.0 * Double.pi) / Double(apps.count)
             let offset = Double.pi / 2.0 + segmentAngle / 2.0
             let adjusted = normalizeAngle(normalizedAngle + offset)
@@ -238,11 +238,11 @@ final class JazzHandsViewModel: ObservableObject {
                     hoverTimer = Timer.scheduledTimer(withTimeInterval: hoverDelay, repeats: false) { [weak self] _ in
                         Task { @MainActor in
                             guard let self else { return }
-                            self.cancelDeepJazzHands()
+                            self.cancelFingers()
                             self.selectedIndex = hoveredApp
                             self.centerLabel = self.apps[hoveredApp].name
                             if self.apps[hoveredApp].windows.count > 1 {
-                                self.enterDeepJazzHands(for: hoveredApp)
+                                self.enterFingers(for: hoveredApp)
                             }
                         }
                     }
@@ -255,12 +255,12 @@ final class JazzHandsViewModel: ObservableObject {
             cancelHoverTimer()
         }
 
-        let count = deepJazzHandsWindows.count
+        let count = fingersWindows.count
         var bestIndex = 0
         var bestDist = Double.greatestFiniteMagnitude
 
         for i in 0..<count {
-            let winAngle = normalizeAngle(deepJazzHandsAngle(windowIndex: i, appIndex: appIndex))
+            let winAngle = normalizeAngle(fingersAngle(windowIndex: i, appIndex: appIndex))
             var diff = normalizedAngle - winAngle
             if diff > Double.pi { diff -= 2.0 * Double.pi }
             if diff < -Double.pi { diff += 2.0 * Double.pi }
@@ -272,9 +272,9 @@ final class JazzHandsViewModel: ObservableObject {
         }
 
         selectedWindowIndex = bestIndex
-        centerLabel = deepJazzHandsWindows[bestIndex].title.isEmpty
+        centerLabel = fingersWindows[bestIndex].title.isEmpty
             ? apps[appIndex].name
-            : deepJazzHandsWindows[bestIndex].title
+            : fingersWindows[bestIndex].title
     }
 
     private func normalizeAngle(_ angle: Double) -> Double {
@@ -284,16 +284,16 @@ final class JazzHandsViewModel: ObservableObject {
         return a
     }
 
-    // MARK: - Hover / Deep JazzHands
+    // MARK: - Hover / Fingers
 
     private func startHoverTimer(for index: Int) {
         hoverTimer?.invalidate()
-        guard settings.deepJazzHandsEnabled,
+        guard settings.fingersEnabled,
               index >= 0, index < apps.count, apps[index].windows.count > 1 else { return }
 
         let timer = Timer(timeInterval: hoverDelay, repeats: false) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.enterDeepJazzHands(for: index)
+                self?.enterFingers(for: index)
             }
         }
         RunLoop.main.add(timer, forMode: .common)
@@ -307,33 +307,33 @@ final class JazzHandsViewModel: ObservableObject {
 
     
 
-    private func enterDeepJazzHands(for appIndex: Int) {
+    private func enterFingers(for appIndex: Int) {
         guard appIndex >= 0, appIndex < apps.count else { return }
         let app = apps[appIndex]
         guard app.windows.count > 1 else { return }
 
-        deepJazzHandsOpacity = 0
+        fingersOpacity = 0
         tier = .deep(appIndex: appIndex)
-        deepJazzHandsWindows = app.windows
+        fingersWindows = app.windows
         selectedWindowIndex = -1
 
         if settings.animateParentWedge {
-            if slideAppIndex >= 0 && slideAppIndex != appIndex && deepJazzHandsSlideOffset > 0 {
+            if slideAppIndex >= 0 && slideAppIndex != appIndex && fingersSlideOffset > 0 {
                 returnSlideAppIndex = slideAppIndex
-                returnSlideOffset = deepJazzHandsSlideOffset
+                returnSlideOffset = fingersSlideOffset
                 animateReturnSlide()
             }
             slideAnimationTimer?.invalidate()
             slideAnimationTimer = nil
-            deepJazzHandsSlideOffset = 0
+            fingersSlideOffset = 0
             slideAppIndex = appIndex
         }
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            self.animateDeepJazzHandsOpacity(to: 1)
+            self.animateFingersOpacity(to: 1)
             if self.settings.animateParentWedge {
-                self.animateSlideOffset(to: self.deepJazzHandsSlideAmount)
+                self.animateSlideOffset(to: self.fingersSlideAmount)
             }
         }
 
@@ -355,7 +355,7 @@ final class JazzHandsViewModel: ObservableObject {
         }
     }
 
-    func cancelDeepJazzHands() {
+    func cancelFingers() {
         guard case .deep(let appIndex) = tier else { return }
         selectedIndex = -1
         centerLabel = ""
@@ -366,10 +366,10 @@ final class JazzHandsViewModel: ObservableObject {
         } else {
             slideAppIndex = appIndex
         }
-        animateDeepJazzHandsOpacity(to: 0) { [weak self] in
+        animateFingersOpacity(to: 0) { [weak self] in
             guard let self else { return }
             if !self.settings.animateParentWedge {
-                self.deepJazzHandsWindows = []
+                self.fingersWindows = []
                 self.slideAppIndex = -1
             }
         }
@@ -381,7 +381,7 @@ final class JazzHandsViewModel: ObservableObject {
     private var slideCompletion: (() -> Void)?
 
     private func animateSlideOffset(to target: CGFloat, completion: (() -> Void)? = nil) {
-        slideStartValue = deepJazzHandsSlideOffset
+        slideStartValue = fingersSlideOffset
         slideTargetValue = target
         slideStartTime = 0
         slideCompletion = completion
@@ -396,7 +396,7 @@ final class JazzHandsViewModel: ObservableObject {
                 let elapsed = CACurrentMediaTime() - self.slideStartTime
                 let t = min(elapsed / self.slideAnimationDuration, 1.0)
                 let eased = 1.0 - pow(1.0 - t, 3.0)
-                self.deepJazzHandsSlideOffset = self.slideStartValue + CGFloat(eased) * (self.slideTargetValue - self.slideStartValue)
+                self.fingersSlideOffset = self.slideStartValue + CGFloat(eased) * (self.slideTargetValue - self.slideStartValue)
                 if t >= 1.0 {
                     timer.invalidate()
                     self.slideAnimationTimer = nil
@@ -404,7 +404,7 @@ final class JazzHandsViewModel: ObservableObject {
                     self.slideCompletion = nil
                     if self.slideTargetValue == 0 {
                         self.slideAppIndex = -1
-                        self.deepJazzHandsWindows = []
+                        self.fingersWindows = []
                     }
                     cb?()
                 }
@@ -441,8 +441,8 @@ final class JazzHandsViewModel: ObservableObject {
         returnAnimationTimer = timer
     }
 
-    private func animateDeepJazzHandsOpacity(to target: CGFloat, completion: (() -> Void)? = nil) {
-        opacityStartValue = deepJazzHandsOpacity
+    private func animateFingersOpacity(to target: CGFloat, completion: (() -> Void)? = nil) {
+        opacityStartValue = fingersOpacity
         opacityTargetValue = target
         opacityStartTime = CACurrentMediaTime()
         opacityCompletion = completion
@@ -453,7 +453,7 @@ final class JazzHandsViewModel: ObservableObject {
                 let elapsed = CACurrentMediaTime() - self.opacityStartTime
                 let t = min(elapsed / self.opacityDuration, 1.0)
                 let eased = 1.0 - pow(1.0 - t, 3.0)
-                self.deepJazzHandsOpacity = self.opacityStartValue + CGFloat(eased) * (self.opacityTargetValue - self.opacityStartValue)
+                self.fingersOpacity = self.opacityStartValue + CGFloat(eased) * (self.opacityTargetValue - self.opacityStartValue)
                 if t >= 1.0 {
                     timer.invalidate()
                     self.opacityTimer = nil
@@ -513,9 +513,9 @@ final class JazzHandsViewModel: ObservableObject {
             log("confirmSelection PRIMARY: \(apps[selectedIndex].name)")
             WindowManager.shared.activateApp(apps[selectedIndex])
         case .deep(let appIndex):
-            log("confirmSelection DEEP: windowIdx=\(selectedWindowIndex) count=\(deepJazzHandsWindows.count) distance=\(mouseDistance) deadZone=\(deepJazzHandsDeadZone)")
-            if selectedWindowIndex >= 0, selectedWindowIndex < deepJazzHandsWindows.count {
-                let w = deepJazzHandsWindows[selectedWindowIndex]
+            log("confirmSelection DEEP: windowIdx=\(selectedWindowIndex) count=\(fingersWindows.count) distance=\(mouseDistance) deadZone=\(fingersDeadZone)")
+            if selectedWindowIndex >= 0, selectedWindowIndex < fingersWindows.count {
+                let w = fingersWindows[selectedWindowIndex]
                 log("  activating window: '\(w.title)' id=\(w.id)")
                 WindowManager.shared.activateWindow(w)
             } else {
@@ -560,37 +560,37 @@ final class JazzHandsViewModel: ObservableObject {
         )
     }
 
-    func deepJazzHandsAngle(windowIndex: Int, appIndex: Int) -> Double {
+    func fingersAngle(windowIndex: Int, appIndex: Int) -> Double {
         let parentAngle = angleForSegment(at: appIndex, total: apps.count)
-        let count = deepJazzHandsWindows.count
-        let totalSpread = deepJazzHandsSpread * Double(count - 1)
+        let count = fingersWindows.count
+        let totalSpread = fingersSpread * Double(count - 1)
         let startAngle = parentAngle - totalSpread / 2.0
-        return startAngle + deepJazzHandsSpread * Double(windowIndex)
+        return startAngle + fingersSpread * Double(windowIndex)
     }
 
-    func deepJazzHandsPosition(windowIndex: Int, appIndex: Int) -> CGPoint {
-        let angle = deepJazzHandsAngle(windowIndex: windowIndex, appIndex: appIndex)
+    func fingersPosition(windowIndex: Int, appIndex: Int) -> CGPoint {
+        let angle = fingersAngle(windowIndex: windowIndex, appIndex: appIndex)
         return CGPoint(
-            x: deepJazzHandsRadius * CGFloat(cos(angle)),
-            y: deepJazzHandsRadius * CGFloat(sin(angle))
+            x: fingersRadius * CGFloat(cos(angle)),
+            y: fingersRadius * CGFloat(sin(angle))
         )
     }
 
-    func deepJazzHandsSlideVector(appIndex: Int) -> CGPoint {
+    func fingersSlideVector(appIndex: Int) -> CGPoint {
         guard apps.count > 0 else { return .zero }
         let angle = angleForSegment(at: appIndex, total: apps.count)
         return CGPoint(
-            x: deepJazzHandsSlideOffset * CGFloat(cos(angle)),
-            y: deepJazzHandsSlideOffset * CGFloat(sin(angle))
+            x: fingersSlideOffset * CGFloat(cos(angle)),
+            y: fingersSlideOffset * CGFloat(sin(angle))
         )
     }
 
-    func deepJazzHandsTargetSlideVector(appIndex: Int) -> CGPoint {
+    func fingersTargetSlideVector(appIndex: Int) -> CGPoint {
         guard apps.count > 0, settings.animateParentWedge else { return .zero }
         let angle = angleForSegment(at: appIndex, total: apps.count)
         return CGPoint(
-            x: deepJazzHandsSlideAmount * CGFloat(cos(angle)),
-            y: deepJazzHandsSlideAmount * CGFloat(sin(angle))
+            x: fingersSlideAmount * CGFloat(cos(angle)),
+            y: fingersSlideAmount * CGFloat(sin(angle))
         )
     }
 }

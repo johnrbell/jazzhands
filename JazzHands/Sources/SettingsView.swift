@@ -65,13 +65,13 @@ struct SettingsView: View {
                     Text("Alphabetical").tag("alphabetical")
                 }
 
-                Toggle("Enable deep jazzHands (multi-window expansion)", isOn: $settings.deepJazzHandsEnabled)
+                Toggle("Enable fingers (multi-window expansion)", isOn: $settings.fingersEnabled)
 
-                if settings.deepJazzHandsEnabled {
+                if settings.fingersEnabled {
                     sliderRow("Multi-window hover delay", value: $settings.hoverTimeout,
                               range: 0...1.0, step: 0.05, format: { "\(Int($0 * 1000))ms" })
-                    Toggle("Switch deep jazzHands on hover", isOn: $settings.deepJazzHandsSwitchOnHover)
-                    Text("Hovering a different app while in deep jazzHands switches after the delay")
+                    Toggle("Switch fingers on hover", isOn: $settings.fingersSwitchOnHover)
+                    Text("Hovering a different app while in fingers switches after the delay")
                         .font(.caption).foregroundColor(.secondary)
                 }
             }
@@ -136,8 +136,8 @@ struct SettingsView: View {
                         colorRow("Center label", hex: $settings.centerLabelColorHex)
                         colorRow("Segment borders", hex: $settings.segmentBorderColorHex)
                         colorRow("Window indicators", hex: $settings.bumpColorHex)
-                        colorRow("Deep jazzHands glow", hex: $settings.deepGlowColorHex)
-                        colorRow("Deep jazzHands fill", hex: $settings.deepJazzHandsFillColorHex)
+                        colorRow("Fingers glow", hex: $settings.deepGlowColorHex)
+                        colorRow("Fingers fill", hex: $settings.fingersFillColorHex)
                     }
 
                     Button("Reset to Defaults") {
@@ -161,14 +161,14 @@ struct SettingsView: View {
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                     }
 
-                    Section("Deep JazzHands") {
-                        sliderRow("Window arc scale", value: $settings.deepJazzHandsScale,
+                    Section("Fingers") {
+                        sliderRow("Window arc scale", value: $settings.fingersScale,
                                   range: 0.5...1.5, step: 0.05, format: { String(format: "%.0f%%", $0 * 100) })
-                        sliderRow("Selected fill", value: $settings.deepJazzHandsFillOpacity,
+                        sliderRow("Selected fill", value: $settings.fingersFillOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Unselected fill", value: $settings.deepJazzHandsInactiveOpacity,
+                        sliderRow("Unselected fill", value: $settings.fingersInactiveOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
-                        sliderRow("Primary ring dimming", value: $settings.deepJazzHandsDimming,
+                        sliderRow("Primary ring dimming", value: $settings.fingersDimming,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                         Toggle("Animate parent wedge", isOn: $settings.animateParentWedge)
                         if settings.animateParentWedge {

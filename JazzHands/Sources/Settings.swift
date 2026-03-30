@@ -9,12 +9,12 @@ final class JazzHandsSettings: ObservableObject {
     @AppStorage("hotkeyKey") var hotkeyKey: String = "space"
 
     // Behavior
-    @AppStorage("deepJazzHandsEnabled") var deepJazzHandsEnabled: Bool = true
+    @AppStorage("fingersEnabled") var fingersEnabled: Bool = true
     @AppStorage("hoverTimeout") var hoverTimeout: Double = 0.5
     @AppStorage("cursorSensitivity") var cursorSensitivity: Double = 1.0
     @AppStorage("centerDeadZone") var centerDeadZone: Double = 80
     @AppStorage("maxCursorRadius") var maxCursorRadius: Double = 120
-    @AppStorage("deepJazzHandsSwitchOnHover") var deepJazzHandsSwitchOnHover: Bool = true
+    @AppStorage("fingersSwitchOnHover") var fingersSwitchOnHover: Bool = true
     @AppStorage("showHiddenApps") var showHiddenApps: Bool = false
     @AppStorage("showMinimizedWindows") var showMinimizedWindows: Bool = false
     @AppStorage("hideFinderUnlessWindowed") var hideFinderUnlessWindowed: Bool = false
@@ -42,17 +42,17 @@ final class JazzHandsSettings: ObservableObject {
     @AppStorage("centerFillOpacity") var centerFillOpacity: Double = 0.0
     @AppStorage("ringFillColorHex") var ringFillColorHex: String = "#FFFFFF"
     @AppStorage("ringFillOpacity") var ringFillOpacity: Double = 0.0
-    @AppStorage("deepJazzHandsFillColorHex") var deepJazzHandsFillColorHex: String = "#FFFFFF"
-    @AppStorage("deepJazzHandsFillOpacity") var deepJazzHandsFillOpacity: Double = 0.25
-    @AppStorage("deepJazzHandsInactiveOpacity") var deepJazzHandsInactiveOpacity: Double = 0.15
-    @AppStorage("deepJazzHandsDimming") var deepJazzHandsDimming: Double = 0.4
+    @AppStorage("fingersFillColorHex") var fingersFillColorHex: String = "#FFFFFF"
+    @AppStorage("fingersFillOpacity") var fingersFillOpacity: Double = 0.25
+    @AppStorage("fingersInactiveOpacity") var fingersInactiveOpacity: Double = 0.15
+    @AppStorage("fingersDimming") var fingersDimming: Double = 0.4
     @AppStorage("segmentBorderColorHex") var segmentBorderColorHex: String = "#FFFFFF"
     @AppStorage("segmentBorderOpacity") var segmentBorderOpacity: Double = 0.0
     @AppStorage("segmentBorderWidth") var segmentBorderWidth: Double = 1.0
     @AppStorage("segmentBorderCutout") var segmentBorderCutout: Bool = false
     @AppStorage("animateParentWedge") var animateParentWedge: Bool = true
     @AppStorage("parentWedgeSlideDistance") var parentWedgeSlideDistance: Double = 30
-    @AppStorage("deepJazzHandsScale") var deepJazzHandsScale: Double = 1.0
+    @AppStorage("fingersScale") var fingersScale: Double = 1.0
 
     // Icon Hover
     @AppStorage("hoverRingSize") var hoverRingSize: Double = 20
@@ -94,7 +94,7 @@ final class JazzHandsSettings: ObservableObject {
     var backgroundColor: Color { Color(hex: backgroundColorHex) }
     var ringFillColor: Color { Color(hex: ringFillColorHex) }
     var segmentBorderColor: Color { Color(hex: segmentBorderColorHex) }
-    var deepJazzHandsFillColor: Color { Color(hex: deepJazzHandsFillColorHex) }
+    var fingersFillColor: Color { Color(hex: fingersFillColorHex) }
     var centerLabelColor: Color { Color(hex: centerLabelColorHex) }
     var bumpColor: Color { Color(hex: bumpColorHex) }
 
@@ -151,7 +151,7 @@ final class JazzHandsSettings: ObservableObject {
             segmentBorderColorHex: segmentBorderColorHex,
             backgroundOpacity: backgroundOpacity, glowIntensity: glowIntensity,
             ringOpacity: ringOpacity, ringFillOpacity: ringFillOpacity,
-            deepJazzHandsFillOpacity: deepJazzHandsFillOpacity,
+            fingersFillOpacity: fingersFillOpacity,
             segmentBorderOpacity: segmentBorderOpacity, segmentBorderWidth: segmentBorderWidth,
             segmentBorderCutout: segmentBorderCutout,
             animateParentWedge: animateParentWedge, parentWedgeSlideDistance: parentWedgeSlideDistance,
@@ -164,8 +164,8 @@ final class JazzHandsSettings: ObservableObject {
             centerLabelWrap: centerLabelWrap,
             centerRingOpacity: centerRingOpacity, hoverHighlightOpacity: hoverHighlightOpacity,
             centerFillOpacity: centerFillOpacity,
-            deepJazzHandsFillColorHex: deepJazzHandsFillColorHex, deepJazzHandsInactiveOpacity: deepJazzHandsInactiveOpacity,
-            deepJazzHandsDimming: deepJazzHandsDimming, deepJazzHandsScale: deepJazzHandsScale,
+            fingersFillColorHex: fingersFillColorHex, fingersInactiveOpacity: fingersInactiveOpacity,
+            fingersDimming: fingersDimming, fingersScale: fingersScale,
             bumpStyle: bumpStyle, bumpColorHex: bumpColorHex, bumpOpacity: bumpOpacity,
             bumpActiveScale: bumpActiveScale, bumpActiveOpacity: bumpActiveOpacity
         )
@@ -186,7 +186,7 @@ final class JazzHandsSettings: ObservableObject {
         glowIntensity = preset.glowIntensity
         ringOpacity = preset.ringOpacity
         ringFillOpacity = preset.ringFillOpacity
-        deepJazzHandsFillOpacity = preset.deepJazzHandsFillOpacity
+        fingersFillOpacity = preset.fingersFillOpacity
         segmentBorderOpacity = preset.segmentBorderOpacity
         segmentBorderWidth = preset.segmentBorderWidth
         segmentBorderCutout = preset.segmentBorderCutout
@@ -209,10 +209,10 @@ final class JazzHandsSettings: ObservableObject {
         centerRingOpacity = preset.centerRingOpacity
         hoverHighlightOpacity = preset.hoverHighlightOpacity
         centerFillOpacity = preset.centerFillOpacity
-        deepJazzHandsFillColorHex = preset.deepJazzHandsFillColorHex
-        deepJazzHandsInactiveOpacity = preset.deepJazzHandsInactiveOpacity
-        deepJazzHandsDimming = preset.deepJazzHandsDimming
-        deepJazzHandsScale = preset.deepJazzHandsScale
+        fingersFillColorHex = preset.fingersFillColorHex
+        fingersInactiveOpacity = preset.fingersInactiveOpacity
+        fingersDimming = preset.fingersDimming
+        fingersScale = preset.fingersScale
         bumpStyle = preset.bumpStyle
         bumpColorHex = preset.bumpColorHex
         bumpOpacity = preset.bumpOpacity
@@ -229,7 +229,7 @@ final class JazzHandsSettings: ObservableObject {
         segmentBorderColorHex: "#FFFFFF",
         backgroundOpacity: 0.65, glowIntensity: 1.0,
         ringOpacity: 0.25, ringFillOpacity: 0.0,
-        deepJazzHandsFillOpacity: 0.25,
+        fingersFillOpacity: 0.25,
         segmentBorderOpacity: 0.0, segmentBorderWidth: 1.0,
         segmentBorderCutout: false,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -245,7 +245,7 @@ final class JazzHandsSettings: ObservableObject {
         segmentBorderColorHex: "#F0F6FF",
         backgroundOpacity: 0.65, glowIntensity: 1.0,
         ringOpacity: 0.0, ringFillOpacity: 0.0,
-        deepJazzHandsFillOpacity: 0.5,
+        fingersFillOpacity: 0.5,
         segmentBorderOpacity: 0.45, segmentBorderWidth: 2.5,
         segmentBorderCutout: false,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -261,7 +261,7 @@ final class JazzHandsSettings: ObservableObject {
         segmentBorderColorHex: "#F0F6FF",
         backgroundOpacity: 0.65, glowIntensity: 1.0,
         ringOpacity: 0.0, ringFillOpacity: 0.3,
-        deepJazzHandsFillOpacity: 0.5,
+        fingersFillOpacity: 0.5,
         segmentBorderOpacity: 0.45, segmentBorderWidth: 2.5,
         segmentBorderCutout: true,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -277,7 +277,7 @@ final class JazzHandsSettings: ObservableObject {
         segmentBorderColorHex: "#F0F6FF",
         backgroundOpacity: 0.65, glowIntensity: 1.0,
         ringOpacity: 0.0, ringFillOpacity: 0.3,
-        deepJazzHandsFillOpacity: 0.5,
+        fingersFillOpacity: 0.5,
         segmentBorderOpacity: 0.45, segmentBorderWidth: 2.5,
         segmentBorderCutout: true,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -293,7 +293,7 @@ final class JazzHandsSettings: ObservableObject {
         segmentBorderColorHex: "#88FFE0",
         backgroundOpacity: 0.7, glowIntensity: 0.8,
         ringOpacity: 0.15, ringFillOpacity: 0.12,
-        deepJazzHandsFillOpacity: 0.4,
+        fingersFillOpacity: 0.4,
         segmentBorderOpacity: 0.35, segmentBorderWidth: 2.0,
         segmentBorderCutout: true,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -309,7 +309,7 @@ final class JazzHandsSettings: ObservableObject {
         segmentBorderColorHex: "#AAAAAA",
         backgroundOpacity: 0.75, glowIntensity: 0.6,
         ringOpacity: 0.2, ringFillOpacity: 0.08,
-        deepJazzHandsFillOpacity: 0.3,
+        fingersFillOpacity: 0.3,
         segmentBorderOpacity: 0.3, segmentBorderWidth: 2.0,
         segmentBorderCutout: true,
         animateParentWedge: true, parentWedgeSlideDistance: 30,
@@ -379,7 +379,7 @@ struct AppearancePreset: Codable {
     var glowIntensity: Double
     var ringOpacity: Double
     var ringFillOpacity: Double
-    var deepJazzHandsFillOpacity: Double
+    var fingersFillOpacity: Double
     var segmentBorderOpacity: Double
     var segmentBorderWidth: Double
     var segmentBorderCutout: Bool
@@ -401,10 +401,10 @@ struct AppearancePreset: Codable {
     var centerRingOpacity: Double
     var hoverHighlightOpacity: Double
     var centerFillOpacity: Double
-    var deepJazzHandsFillColorHex: String
-    var deepJazzHandsInactiveOpacity: Double
-    var deepJazzHandsDimming: Double
-    var deepJazzHandsScale: Double
+    var fingersFillColorHex: String
+    var fingersInactiveOpacity: Double
+    var fingersDimming: Double
+    var fingersScale: Double
     var centerLabelWrap: Bool
     var bumpStyle: String
     var bumpColorHex: String
@@ -416,7 +416,7 @@ struct AppearancePreset: Codable {
          glowColorHex: String, deepGlowColorHex: String, ringColorHex: String, hoverColorHex: String,
          backgroundColorHex: String, ringFillColorHex: String, segmentBorderColorHex: String,
          backgroundOpacity: Double, glowIntensity: Double, ringOpacity: Double, ringFillOpacity: Double,
-         deepJazzHandsFillOpacity: Double,
+         fingersFillOpacity: Double,
          segmentBorderOpacity: Double, segmentBorderWidth: Double,
          segmentBorderCutout: Bool = false,
          animateParentWedge: Bool = true, parentWedgeSlideDistance: Double = 30,
@@ -429,8 +429,8 @@ struct AppearancePreset: Codable {
          centerLabelWrap: Bool = false,
          centerRingOpacity: Double = 0.25, hoverHighlightOpacity: Double = 1.0,
          centerFillOpacity: Double = 0.0,
-         deepJazzHandsFillColorHex: String = "#FFFFFF", deepJazzHandsInactiveOpacity: Double = 0.15,
-         deepJazzHandsDimming: Double = 0.4, deepJazzHandsScale: Double = 1.0,
+         fingersFillColorHex: String = "#FFFFFF", fingersInactiveOpacity: Double = 0.15,
+         fingersDimming: Double = 0.4, fingersScale: Double = 1.0,
          bumpStyle: String = "ring", bumpColorHex: String = "#FFFFFF", bumpOpacity: Double = 0.55,
          bumpActiveScale: Double = 1.5, bumpActiveOpacity: Double = 1.0) {
         self.primaryRadius = primaryRadius; self.iconSize = iconSize
@@ -440,7 +440,7 @@ struct AppearancePreset: Codable {
         self.ringFillColorHex = ringFillColorHex; self.segmentBorderColorHex = segmentBorderColorHex
         self.backgroundOpacity = backgroundOpacity; self.glowIntensity = glowIntensity
         self.ringOpacity = ringOpacity; self.ringFillOpacity = ringFillOpacity
-        self.deepJazzHandsFillOpacity = deepJazzHandsFillOpacity; self.segmentBorderOpacity = segmentBorderOpacity
+        self.fingersFillOpacity = fingersFillOpacity; self.segmentBorderOpacity = segmentBorderOpacity
         self.segmentBorderWidth = segmentBorderWidth; self.segmentBorderCutout = segmentBorderCutout
         self.animateParentWedge = animateParentWedge; self.parentWedgeSlideDistance = parentWedgeSlideDistance
         self.hoverRingSize = hoverRingSize; self.hoverStrokeWidth = hoverStrokeWidth
@@ -452,8 +452,8 @@ struct AppearancePreset: Codable {
         self.centerLabelWrap = centerLabelWrap
         self.centerRingOpacity = centerRingOpacity; self.hoverHighlightOpacity = hoverHighlightOpacity
         self.centerFillOpacity = centerFillOpacity
-        self.deepJazzHandsFillColorHex = deepJazzHandsFillColorHex; self.deepJazzHandsInactiveOpacity = deepJazzHandsInactiveOpacity
-        self.deepJazzHandsDimming = deepJazzHandsDimming; self.deepJazzHandsScale = deepJazzHandsScale
+        self.fingersFillColorHex = fingersFillColorHex; self.fingersInactiveOpacity = fingersInactiveOpacity
+        self.fingersDimming = fingersDimming; self.fingersScale = fingersScale
         self.bumpStyle = bumpStyle; self.bumpColorHex = bumpColorHex; self.bumpOpacity = bumpOpacity
         self.bumpActiveScale = bumpActiveScale; self.bumpActiveOpacity = bumpActiveOpacity
     }
@@ -474,7 +474,7 @@ struct AppearancePreset: Codable {
         glowIntensity = (try? c.decode(Double.self, forKey: .glowIntensity)) ?? d.glowIntensity
         ringOpacity = (try? c.decode(Double.self, forKey: .ringOpacity)) ?? d.ringOpacity
         ringFillOpacity = (try? c.decode(Double.self, forKey: .ringFillOpacity)) ?? d.ringFillOpacity
-        deepJazzHandsFillOpacity = (try? c.decode(Double.self, forKey: .deepJazzHandsFillOpacity)) ?? d.deepJazzHandsFillOpacity
+        fingersFillOpacity = (try? c.decode(Double.self, forKey: .fingersFillOpacity)) ?? d.fingersFillOpacity
         // Handle renamed fields: segment border was previously spoke
         segmentBorderColorHex = (try? c.decode(String.self, forKey: .segmentBorderColorHex))
             ?? (try? c.decode(String.self, forKey: .spokeColorHex)) ?? d.segmentBorderColorHex
@@ -502,10 +502,10 @@ struct AppearancePreset: Codable {
         centerRingOpacity = (try? c.decode(Double.self, forKey: .centerRingOpacity)) ?? d.centerRingOpacity
         hoverHighlightOpacity = (try? c.decode(Double.self, forKey: .hoverHighlightOpacity)) ?? d.hoverHighlightOpacity
         centerFillOpacity = (try? c.decode(Double.self, forKey: .centerFillOpacity)) ?? d.centerFillOpacity
-        deepJazzHandsFillColorHex = (try? c.decode(String.self, forKey: .deepJazzHandsFillColorHex)) ?? d.deepJazzHandsFillColorHex
-        deepJazzHandsInactiveOpacity = (try? c.decode(Double.self, forKey: .deepJazzHandsInactiveOpacity)) ?? d.deepJazzHandsInactiveOpacity
-        deepJazzHandsDimming = (try? c.decode(Double.self, forKey: .deepJazzHandsDimming)) ?? d.deepJazzHandsDimming
-        deepJazzHandsScale = (try? c.decode(Double.self, forKey: .deepJazzHandsScale)) ?? d.deepJazzHandsScale
+        fingersFillColorHex = (try? c.decode(String.self, forKey: .fingersFillColorHex)) ?? d.fingersFillColorHex
+        fingersInactiveOpacity = (try? c.decode(Double.self, forKey: .fingersInactiveOpacity)) ?? d.fingersInactiveOpacity
+        fingersDimming = (try? c.decode(Double.self, forKey: .fingersDimming)) ?? d.fingersDimming
+        fingersScale = (try? c.decode(Double.self, forKey: .fingersScale)) ?? d.fingersScale
         bumpStyle = (try? c.decode(String.self, forKey: .bumpStyle)) ?? d.bumpStyle
         bumpColorHex = (try? c.decode(String.self, forKey: .bumpColorHex)) ?? d.bumpColorHex
         bumpOpacity = (try? c.decode(Double.self, forKey: .bumpOpacity)) ?? d.bumpOpacity
@@ -529,7 +529,7 @@ struct AppearancePreset: Codable {
         try c.encode(glowIntensity, forKey: .glowIntensity)
         try c.encode(ringOpacity, forKey: .ringOpacity)
         try c.encode(ringFillOpacity, forKey: .ringFillOpacity)
-        try c.encode(deepJazzHandsFillOpacity, forKey: .deepJazzHandsFillOpacity)
+        try c.encode(fingersFillOpacity, forKey: .fingersFillOpacity)
         try c.encode(segmentBorderOpacity, forKey: .segmentBorderOpacity)
         try c.encode(segmentBorderWidth, forKey: .segmentBorderWidth)
         try c.encode(segmentBorderCutout, forKey: .segmentBorderCutout)
@@ -552,10 +552,10 @@ struct AppearancePreset: Codable {
         try c.encode(centerRingOpacity, forKey: .centerRingOpacity)
         try c.encode(hoverHighlightOpacity, forKey: .hoverHighlightOpacity)
         try c.encode(centerFillOpacity, forKey: .centerFillOpacity)
-        try c.encode(deepJazzHandsFillColorHex, forKey: .deepJazzHandsFillColorHex)
-        try c.encode(deepJazzHandsInactiveOpacity, forKey: .deepJazzHandsInactiveOpacity)
-        try c.encode(deepJazzHandsDimming, forKey: .deepJazzHandsDimming)
-        try c.encode(deepJazzHandsScale, forKey: .deepJazzHandsScale)
+        try c.encode(fingersFillColorHex, forKey: .fingersFillColorHex)
+        try c.encode(fingersInactiveOpacity, forKey: .fingersInactiveOpacity)
+        try c.encode(fingersDimming, forKey: .fingersDimming)
+        try c.encode(fingersScale, forKey: .fingersScale)
         try c.encode(bumpStyle, forKey: .bumpStyle)
         try c.encode(bumpColorHex, forKey: .bumpColorHex)
         try c.encode(bumpOpacity, forKey: .bumpOpacity)
@@ -569,8 +569,8 @@ struct AppearancePreset: Codable {
         case backgroundColorHex, ringFillColorHex, segmentBorderColorHex
         case backgroundOpacity, glowIntensity, ringOpacity, ringFillOpacity
         case centerRingOpacity, hoverHighlightOpacity, centerFillOpacity
-        case deepJazzHandsFillOpacity, deepJazzHandsFillColorHex, deepJazzHandsInactiveOpacity
-        case deepJazzHandsDimming, deepJazzHandsScale
+        case fingersFillOpacity, fingersFillColorHex, fingersInactiveOpacity
+        case fingersDimming, fingersScale
         case segmentBorderOpacity, segmentBorderWidth, segmentBorderCutout
         case animateParentWedge, parentWedgeSlideDistance
         case hoverRingSize, hoverStrokeWidth, hoverFillOpacity, hoverIconScale, hoverGlowRadius

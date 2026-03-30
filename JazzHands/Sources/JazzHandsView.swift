@@ -46,8 +46,8 @@ struct JazzHandsView: View {
                             DebugCanvasView(viewModel: viewModel)
                         }
                         ZStack {
-                            deepJazzHandsRing(appIndex: viewModel.deepJazzHandsDisplayAppIndex)
-                                .opacity(Double(viewModel.deepJazzHandsOpacity))
+                            fingersRing(appIndex: viewModel.fingersDisplayAppIndex)
+                                .opacity(Double(viewModel.fingersOpacity))
                             primaryRing
                             centerInfo
                             cursorIndicator
@@ -91,7 +91,7 @@ struct JazzHandsView: View {
             }
         }
         .animation(.easeOut(duration: 0.15), value: viewModel.selectedIndex)
-        .animation(.easeOut(duration: 0.15), value: viewModel.isInDeepJazzHands)
+        .animation(.easeOut(duration: 0.15), value: viewModel.isInFingers)
     }
 
     // MARK: - Cursor Indicator
@@ -134,7 +134,7 @@ struct JazzHandsView: View {
                 let isSliding = index == viewModel.slideAppIndex
                 let isReturning = index == viewModel.returnSlideAppIndex
                 let slideVec: CGPoint = {
-                    if isSliding { return viewModel.deepJazzHandsSlideVector(appIndex: index) }
+                    if isSliding { return viewModel.fingersSlideVector(appIndex: index) }
                     if isReturning { return viewModel.returnSlideVector(appIndex: index) }
                     return .zero
                 }()
@@ -149,29 +149,29 @@ struct JazzHandsView: View {
                     segmentAngle: Angle(radians: viewModel.angleForSegment(at: index, total: total)),
                     activeWindowIndex: isDeepParent ? viewModel.selectedWindowIndex : -1
                 )
-                .opacity(dimmed && !isDeepParent ? s.deepJazzHandsDimming : 1.0)
+                .opacity(dimmed && !isDeepParent ? s.fingersDimming : 1.0)
                 .animation(.easeOut(duration: 0.15), value: isSelected)
                 .offset(x: basePos.x + slideVec.x, y: basePos.y + slideVec.y)
             }
         }
     }
 
-    // MARK: - Deep JazzHands (Local Arc)
+    // MARK: - Fingers (Local Arc)
 
-    private func deepJazzHandsRing(appIndex: Int) -> some View {
-        let windows = viewModel.deepJazzHandsWindows
+    private func fingersRing(appIndex: Int) -> some View {
+        let windows = viewModel.fingersWindows
         let innerR = viewModel.primaryRadius + viewModel.segmentIconSize / 2 + 17
-        let outerR = viewModel.deepJazzHandsOuterRadius
+        let outerR = viewModel.fingersOuterRadius
 
         return Canvas { context, size in
-            let slideVec = viewModel.deepJazzHandsTargetSlideVector(appIndex: appIndex)
+            let slideVec = viewModel.fingersTargetSlideVector(appIndex: appIndex)
             let center = CGPoint(x: size.width / 2 + slideVec.x, y: size.height / 2 + slideVec.y)
             let highlight = s.deepGlowColor
 
             for (index, window) in windows.enumerated() {
                 let isSelected = index == viewModel.selectedWindowIndex
-                let angle = viewModel.deepJazzHandsAngle(windowIndex: index, appIndex: appIndex)
-                let half = viewModel.deepJazzHandsSpread / 2.0
+                let angle = viewModel.fingersAngle(windowIndex: index, appIndex: appIndex)
+                let half = viewModel.fingersSpread / 2.0
                 let gapPixels: Double = 3.0
                 let gapOuter = gapPixels / Double(outerR)
                 let gapInner = gapPixels / Double(innerR)
@@ -187,12 +187,12 @@ struct JazzHandsView: View {
                              clockwise: true)
                 wedge.closeSubpath()
 
-                let baseOpacity = s.deepJazzHandsFillOpacity
-                let inactiveOpacity = s.deepJazzHandsInactiveOpacity
-                let fillColor = isSelected ? highlight.opacity(baseOpacity) : s.deepJazzHandsFillColor.opacity(inactiveOpacity)
+                let baseOpacity = s.fingersFillOpacity
+                let inactiveOpacity = s.fingersInactiveOpacity
+                let fillColor = isSelected ? highlight.opacity(baseOpacity) : s.fingersFillColor.opacity(inactiveOpacity)
                 context.fill(wedge, with: .color(fillColor))
 
-                let strokeColor = isSelected ? highlight.opacity(min(baseOpacity * 3.6, 1.0)) : s.deepJazzHandsFillColor.opacity(min(inactiveOpacity * 1.5, 1.0))
+                let strokeColor = isSelected ? highlight.opacity(min(baseOpacity * 3.6, 1.0)) : s.fingersFillColor.opacity(min(inactiveOpacity * 1.5, 1.0))
                 context.stroke(wedge, with: .color(strokeColor), lineWidth: isSelected ? 3 : 1)
 
                 let midR = innerR + (outerR - innerR) * 0.58
@@ -277,7 +277,7 @@ struct JazzHandsView: View {
     private func segmentBorders(total: Int, radius: CGFloat, dimmed: Bool) -> some View {
         let outerR = radius + viewModel.segmentIconSize / 2 + 10
         let segAngle = (2.0 * CGFloat.pi) / CGFloat(total)
-        let opacity = dimmed ? s.segmentBorderOpacity * s.deepJazzHandsDimming : s.segmentBorderOpacity
+        let opacity = dimmed ? s.segmentBorderOpacity * s.fingersDimming : s.segmentBorderOpacity
         let diameter = outerR * 2 + 4
 
         return Canvas { context, size in
@@ -310,9 +310,9 @@ struct JazzHandsView: View {
     private func jazzHandsTrackRing(radius: CGFloat, color: Color, dimmed: Bool, segmentCount: Int = 0, deepParentIndex: Int = -1) -> some View {
         let innerR = viewModel.centerDeadZone
         let outerR = radius + viewModel.segmentIconSize / 2 + 10
-        let fillOpacity = dimmed ? s.ringFillOpacity * s.deepJazzHandsDimming : s.ringFillOpacity
+        let fillOpacity = dimmed ? s.ringFillOpacity * s.fingersDimming : s.ringFillOpacity
         let useCutout = s.segmentBorderCutout && segmentCount > 0 && s.segmentBorderOpacity > 0
-        let slideOffset = viewModel.deepJazzHandsSlideOffset
+        let slideOffset = viewModel.fingersSlideOffset
 
         return ZStack {
             if useCutout {
@@ -343,7 +343,7 @@ struct JazzHandsView: View {
                         wedge.closeSubpath()
 
                         let wedgeFillOpacity = (isDeepParent || isReturning) ? s.ringFillOpacity : fillOpacity
-                        let wedgeStrokeOpacity = (isDeepParent || isReturning) ? s.ringOpacity : (dimmed ? s.ringOpacity * s.deepJazzHandsDimming : s.ringOpacity)
+                        let wedgeStrokeOpacity = (isDeepParent || isReturning) ? s.ringOpacity : (dimmed ? s.ringOpacity * s.fingersDimming : s.ringOpacity)
 
                         var drawCtx = context
                         if isDeepParent && slideOffset > 0 {
@@ -369,7 +369,7 @@ struct JazzHandsView: View {
                     }
                 }
                 .frame(width: (outerR + slideOffset) * 2 + 4, height: (outerR + slideOffset) * 2 + 4)
-                .shadow(color: color.opacity(min((dimmed ? 0.15 * s.deepJazzHandsDimming : 0.15) * s.glowIntensity, 1.0)), radius: 20 * s.glowIntensity)
+                .shadow(color: color.opacity(min((dimmed ? 0.15 * s.fingersDimming : 0.15) * s.glowIntensity, 1.0)), radius: 20 * s.glowIntensity)
             } else {
                 if fillOpacity > 0 {
                     Circle()
@@ -387,7 +387,7 @@ struct JazzHandsView: View {
 
             }
 
-            let centerOpacity = dimmed ? min(s.deepJazzHandsDimming * 0.25, s.centerRingOpacity) : s.centerRingOpacity
+            let centerOpacity = dimmed ? min(s.fingersDimming * 0.25, s.centerRingOpacity) : s.centerRingOpacity
             if centerOpacity > 0 {
                 Circle()
                     .stroke(s.ringColor.opacity(centerOpacity), lineWidth: 1.5)
@@ -413,7 +413,7 @@ struct AppSegmentView: View {
     private var s: JazzHandsSettings { JazzHandsSettings.shared }
 
     private var indicatorCount: Int {
-        guard s.deepJazzHandsEnabled, s.bumpOpacity > 0, windowCount > 1 else { return 0 }
+        guard s.fingersEnabled, s.bumpOpacity > 0, windowCount > 1 else { return 0 }
         return min(windowCount, 5)
     }
 
