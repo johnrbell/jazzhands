@@ -438,6 +438,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func openSettings() {
         if let w = settingsWindow {
             w.makeKeyAndOrderFront(nil)
+            NSApp.setActivationPolicy(.regular)
             NSApp.activate(ignoringOtherApps: true)
             showPreview()
             return
@@ -460,6 +461,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         w.isReleasedWhenClosed = false
         w.makeKeyAndOrderFront(nil)
+        NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow = w
 
@@ -470,6 +472,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ) { [weak self] _ in
             MainActor.assumeIsolated {
                 self?.previewController?.hidePreview()
+                NSApp.setActivationPolicy(.accessory)
             }
         }
 

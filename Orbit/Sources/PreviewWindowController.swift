@@ -15,8 +15,6 @@ final class PreviewWindowController {
     private var refreshTimer: Timer?
     private var settingsCancellable: AnyCancellable?
     private var trackingView: PreviewTrackingView?
-    private var moveObserver: Any?
-    private var offset: CGPoint?
 
     func showPreview(relativeTo settingsWindow: NSWindow?) {
         viewModel.refresh()
@@ -26,18 +24,11 @@ final class PreviewWindowController {
             let size = CGFloat(700)
             let contentRect = NSRect(x: 0, y: 0, width: size, height: size)
 
-            let wallpaper = desktopWallpaperImage(size: CGSize(width: size, height: size))
-            let previewContent = ZStack {
-                if let wallpaper {
-                    Image(nsImage: wallpaper)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: size, height: size)
-                        .clipped()
-                }
-                OrbitView(viewModel: viewModel)
-                PreviewOverlayView(lockState: lockState)
-            }
+            let previewContent = PreviewContentView(
+                viewModel: viewModel,
+                lockState: lockState,
+                wallpaperProvider: { [weak self] size in self?.desktopWallpaperImage(size: size) }
+            )
             let hosting = NSHostingView(rootView: previewContent)
             hosting.translatesAutoresizingMaskIntoConstraints = false
 
@@ -63,7 +54,7 @@ final class PreviewWindowController {
 
             let w = NSWindow(
                 contentRect: contentRect,
-                styleMask: [.titled, .closable],
+                styleMask: [.titled, .closable, .resizable],
                 backing: .buffered,
                 defer: false
             )
@@ -71,57 +62,28 @@ final class PreviewWindowController {
             w.contentView = tracker
             w.isReleasedWhenClosed = false
             w.backgroundColor = .black
+            w.minSize = NSSize(width: 400, height: 400)
             w.setFrameAutosaveName("PreviewWindow")
             w.makeFirstResponder(tracker)
             window = w
         }
 
-        if let sw = settingsWindow {
-            if !window!.setFrameUsingName("PreviewWindow") {
+        if !window!.setFrameUsingName("PreviewWindow") {
+            if let sw = settingsWindow {
                 let sf = sw.frame
                 let previewFrame = window!.frame
                 let x = sf.minX - previewFrame.width - 12
                 let y = sf.midY - previewFrame.height / 2
                 window?.setFrameOrigin(NSPoint(x: x, y: y))
-            }
-            sw.addChildWindow(window!, ordered: .above)
-        } else {
-            if !window!.setFrameUsingName("PreviewWindow") {
+            } else {
                 window?.center()
             }
         }
 
         window?.orderFront(nil)
 
-        if let sw = settingsWindow, let pw = window {
-            offset = CGPoint(
-                x: pw.frame.origin.x - sw.frame.origin.x,
-                y: pw.frame.origin.y - sw.frame.origin.y
-            )
-            observeSettingsMove(sw)
-        }
-
         startRefreshTimer()
         subscribeToSettings()
-    }
-
-    private func observeSettingsMove(_ settingsWindow: NSWindow) {
-        if let obs = moveObserver { NotificationCenter.default.removeObserver(obs) }
-        moveObserver = NotificationCenter.default.addObserver(
-            forName: NSWindow.didMoveNotification,
-            object: settingsWindow,
-            queue: .main
-        ) { [weak self] notification in
-            MainActor.assumeIsolated {
-                guard let self, let sw = notification.object as? NSWindow,
-                      let pw = self.window, let off = self.offset else { return }
-                let newOrigin = NSPoint(
-                    x: sw.frame.origin.x + off.x,
-                    y: sw.frame.origin.y + off.y
-                )
-                pw.setFrameOrigin(newOrigin)
-            }
-        }
     }
 
     func hidePreview() {
@@ -129,11 +91,6 @@ final class PreviewWindowController {
         refreshTimer = nil
         settingsCancellable?.cancel()
         settingsCancellable = nil
-        if let obs = moveObserver { NotificationCenter.default.removeObserver(obs) }
-        moveObserver = nil
-        if let w = window, let parent = w.parent {
-            parent.removeChildWindow(w)
-        }
         window?.orderOut(nil)
     }
 
@@ -165,6 +122,31 @@ final class PreviewWindowController {
                 guard let self else { return }
                 self.viewModel.objectWillChange.send()
                 self.viewModel.softRefresh()
+            }
+        }
+    }
+}
+
+// MARK: - Preview Content
+
+private struct PreviewContentView: View {
+    @ObservedObject var viewModel: OrbitViewModel
+    @ObservedObject var lockState: PreviewLockState
+    var wallpaperProvider: @MainActor (CGSize) -> NSImage?
+
+    var body: some View {
+        GeometryReader { geo in
+            let size = geo.size
+            ZStack {
+                if let wp = wallpaperProvider(size) {
+                    Image(nsImage: wp)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: size.width, height: size.height)
+                        .clipped()
+                }
+                OrbitView(viewModel: viewModel)
+                PreviewOverlayView(lockState: lockState)
             }
         }
     }
