@@ -28,6 +28,7 @@ final class OverlayWindowController {
     private var mouseMonitor: Any?
 
     private var screenCenter: CGPoint = .zero
+    private var preLaunchCursorPosition: CGPoint = .zero
     private var accumulatedDelta: CGPoint = .zero
     private var ignoreEventsUntil: TimeInterval = 0
     private var awaitingFirstDelta = true
@@ -79,6 +80,8 @@ final class OverlayWindowController {
         window?.makeFirstResponder(window?.contentView)
 
         screenCenter = CGPoint(x: frame.midX, y: frame.midY)
+        let mouseLocation = NSEvent.mouseLocation
+        preLaunchCursorPosition = CGPoint(x: mouseLocation.x, y: frame.height - mouseLocation.y)
         accumulatedDelta = .zero
         viewModel.isVisible = true
 
@@ -91,10 +94,27 @@ final class OverlayWindowController {
     func hideOrbit() {
         viewModel.isVisible = false
         stopMouseTracking()
+        restoreCursorPosition()
         unlockMouse()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.window?.orderOut(nil)
+        }
+    }
+
+    private func restoreCursorPosition() {
+        switch OrbitSettings.shared.cursorRestoreMode {
+        case "origin":
+            CGWarpMouseCursorPosition(preLaunchCursorPosition)
+        case "current":
+            let flippedY = (NSScreen.main?.frame.height ?? screenCenter.y * 2) - screenCenter.y
+            let target = CGPoint(
+                x: screenCenter.x + accumulatedDelta.x,
+                y: flippedY + accumulatedDelta.y
+            )
+            CGWarpMouseCursorPosition(target)
+        default:
+            break
         }
     }
 

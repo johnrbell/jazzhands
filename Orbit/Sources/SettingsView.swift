@@ -49,6 +49,12 @@ struct SettingsView: View {
                 sliderRow("Cursor sensitivity", value: $settings.cursorSensitivity,
                           range: 0.5...3.0, step: 0.1, format: { String(format: "%.1fx", $0) })
 
+                Picker("Cursor after release", selection: $settings.cursorRestoreMode) {
+                    Text("Center of screen").tag("center")
+                    Text("Where you started").tag("origin")
+                    Text("Where you ended").tag("current")
+                }
+
                 Picker("App sort order", selection: $settings.appSortOrder) {
                     Text("Recently used").tag("recent")
                     Text("Alphabetical").tag("alphabetical")
