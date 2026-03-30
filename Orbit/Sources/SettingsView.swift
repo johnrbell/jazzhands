@@ -54,6 +54,11 @@ struct SettingsView: View {
                     Text("Alphabetical").tag("alphabetical")
                 }
 
+                Picker("Window sort order", selection: $settings.windowSortOrder) {
+                    Text("Recently used").tag("recent")
+                    Text("Alphabetical").tag("alphabetical")
+                }
+
                 Toggle("Enable deep orbit (multi-window expansion)", isOn: $settings.deepOrbitEnabled)
 
                 if settings.deepOrbitEnabled {

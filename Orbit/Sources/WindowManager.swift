@@ -108,6 +108,13 @@ final class WindowManager {
                 windows = enrichWindowTitles(windows: windows, axTitles: axWindows)
             }
 
+            switch settings.windowSortOrder {
+            case "alphabetical":
+                windows.sort { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+            default:
+                break
+            }
+
             for (i, w) in windows.enumerated() {
                 log("  FINAL[\(i)] id=\(w.id) title='\(w.title)'")
             }
