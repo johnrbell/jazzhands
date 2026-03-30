@@ -44,6 +44,7 @@ final class OrbitSettings: ObservableObject {
     @AppStorage("ringFillOpacity") var ringFillOpacity: Double = 0.0
     @AppStorage("deepOrbitFillColorHex") var deepOrbitFillColorHex: String = "#FFFFFF"
     @AppStorage("deepOrbitFillOpacity") var deepOrbitFillOpacity: Double = 0.25
+    @AppStorage("deepOrbitInactiveOpacity") var deepOrbitInactiveOpacity: Double = 0.15
     @AppStorage("deepOrbitDimming") var deepOrbitDimming: Double = 0.4
     @AppStorage("segmentBorderColorHex") var segmentBorderColorHex: String = "#FFFFFF"
     @AppStorage("segmentBorderOpacity") var segmentBorderOpacity: Double = 0.0
@@ -160,7 +161,13 @@ final class OrbitSettings: ObservableObject {
             centerLabelFontWeight: centerLabelFontWeight, centerLabelFontDesign: centerLabelFontDesign,
             centerLabelColorHex: centerLabelColorHex, centerLabelOpacity: centerLabelOpacity,
             centerLabelMaxWidth: centerLabelMaxWidth, centerLabelShadowRadius: centerLabelShadowRadius,
-            bumpStyle: bumpStyle, bumpColorHex: bumpColorHex, bumpOpacity: bumpOpacity
+            centerLabelWrap: centerLabelWrap,
+            centerRingOpacity: centerRingOpacity, hoverHighlightOpacity: hoverHighlightOpacity,
+            centerFillOpacity: centerFillOpacity,
+            deepOrbitFillColorHex: deepOrbitFillColorHex, deepOrbitInactiveOpacity: deepOrbitInactiveOpacity,
+            deepOrbitDimming: deepOrbitDimming, deepOrbitScale: deepOrbitScale,
+            bumpStyle: bumpStyle, bumpColorHex: bumpColorHex, bumpOpacity: bumpOpacity,
+            bumpActiveScale: bumpActiveScale, bumpActiveOpacity: bumpActiveOpacity
         )
     }
 
@@ -198,9 +205,19 @@ final class OrbitSettings: ObservableObject {
         centerLabelOpacity = preset.centerLabelOpacity
         centerLabelMaxWidth = preset.centerLabelMaxWidth
         centerLabelShadowRadius = preset.centerLabelShadowRadius
+        centerLabelWrap = preset.centerLabelWrap
+        centerRingOpacity = preset.centerRingOpacity
+        hoverHighlightOpacity = preset.hoverHighlightOpacity
+        centerFillOpacity = preset.centerFillOpacity
+        deepOrbitFillColorHex = preset.deepOrbitFillColorHex
+        deepOrbitInactiveOpacity = preset.deepOrbitInactiveOpacity
+        deepOrbitDimming = preset.deepOrbitDimming
+        deepOrbitScale = preset.deepOrbitScale
         bumpStyle = preset.bumpStyle
         bumpColorHex = preset.bumpColorHex
         bumpOpacity = preset.bumpOpacity
+        bumpActiveScale = preset.bumpActiveScale
+        bumpActiveOpacity = preset.bumpActiveOpacity
     }
 
     static let defaultPreset = AppearancePreset(
@@ -381,9 +398,19 @@ struct AppearancePreset: Codable {
     var centerLabelOpacity: Double
     var centerLabelMaxWidth: Double
     var centerLabelShadowRadius: Double
+    var centerRingOpacity: Double
+    var hoverHighlightOpacity: Double
+    var centerFillOpacity: Double
+    var deepOrbitFillColorHex: String
+    var deepOrbitInactiveOpacity: Double
+    var deepOrbitDimming: Double
+    var deepOrbitScale: Double
+    var centerLabelWrap: Bool
     var bumpStyle: String
     var bumpColorHex: String
     var bumpOpacity: Double
+    var bumpActiveScale: Double
+    var bumpActiveOpacity: Double
 
     init(primaryRadius: Double, iconSize: Double, centerDeadZone: Double,
          glowColorHex: String, deepGlowColorHex: String, ringColorHex: String, hoverColorHex: String,
@@ -399,7 +426,13 @@ struct AppearancePreset: Codable {
          centerLabelFontWeight: String = "semibold", centerLabelFontDesign: String = "rounded",
          centerLabelColorHex: String = "#FFFFFF", centerLabelOpacity: Double = 1.0,
          centerLabelMaxWidth: Double = 160, centerLabelShadowRadius: Double = 0,
-         bumpStyle: String = "ring", bumpColorHex: String = "#FFFFFF", bumpOpacity: Double = 0.55) {
+         centerLabelWrap: Bool = false,
+         centerRingOpacity: Double = 0.25, hoverHighlightOpacity: Double = 1.0,
+         centerFillOpacity: Double = 0.0,
+         deepOrbitFillColorHex: String = "#FFFFFF", deepOrbitInactiveOpacity: Double = 0.15,
+         deepOrbitDimming: Double = 0.4, deepOrbitScale: Double = 1.0,
+         bumpStyle: String = "ring", bumpColorHex: String = "#FFFFFF", bumpOpacity: Double = 0.55,
+         bumpActiveScale: Double = 1.5, bumpActiveOpacity: Double = 1.0) {
         self.primaryRadius = primaryRadius; self.iconSize = iconSize
         self.centerDeadZone = centerDeadZone; self.glowColorHex = glowColorHex
         self.deepGlowColorHex = deepGlowColorHex; self.ringColorHex = ringColorHex
@@ -416,7 +449,13 @@ struct AppearancePreset: Codable {
         self.centerLabelFontWeight = centerLabelFontWeight; self.centerLabelFontDesign = centerLabelFontDesign
         self.centerLabelColorHex = centerLabelColorHex; self.centerLabelOpacity = centerLabelOpacity
         self.centerLabelMaxWidth = centerLabelMaxWidth; self.centerLabelShadowRadius = centerLabelShadowRadius
+        self.centerLabelWrap = centerLabelWrap
+        self.centerRingOpacity = centerRingOpacity; self.hoverHighlightOpacity = hoverHighlightOpacity
+        self.centerFillOpacity = centerFillOpacity
+        self.deepOrbitFillColorHex = deepOrbitFillColorHex; self.deepOrbitInactiveOpacity = deepOrbitInactiveOpacity
+        self.deepOrbitDimming = deepOrbitDimming; self.deepOrbitScale = deepOrbitScale
         self.bumpStyle = bumpStyle; self.bumpColorHex = bumpColorHex; self.bumpOpacity = bumpOpacity
+        self.bumpActiveScale = bumpActiveScale; self.bumpActiveOpacity = bumpActiveOpacity
     }
 
     init(from decoder: Decoder) throws {
@@ -459,9 +498,19 @@ struct AppearancePreset: Codable {
         centerLabelOpacity = (try? c.decode(Double.self, forKey: .centerLabelOpacity)) ?? d.centerLabelOpacity
         centerLabelMaxWidth = (try? c.decode(Double.self, forKey: .centerLabelMaxWidth)) ?? d.centerLabelMaxWidth
         centerLabelShadowRadius = (try? c.decode(Double.self, forKey: .centerLabelShadowRadius)) ?? d.centerLabelShadowRadius
+        centerLabelWrap = (try? c.decode(Bool.self, forKey: .centerLabelWrap)) ?? d.centerLabelWrap
+        centerRingOpacity = (try? c.decode(Double.self, forKey: .centerRingOpacity)) ?? d.centerRingOpacity
+        hoverHighlightOpacity = (try? c.decode(Double.self, forKey: .hoverHighlightOpacity)) ?? d.hoverHighlightOpacity
+        centerFillOpacity = (try? c.decode(Double.self, forKey: .centerFillOpacity)) ?? d.centerFillOpacity
+        deepOrbitFillColorHex = (try? c.decode(String.self, forKey: .deepOrbitFillColorHex)) ?? d.deepOrbitFillColorHex
+        deepOrbitInactiveOpacity = (try? c.decode(Double.self, forKey: .deepOrbitInactiveOpacity)) ?? d.deepOrbitInactiveOpacity
+        deepOrbitDimming = (try? c.decode(Double.self, forKey: .deepOrbitDimming)) ?? d.deepOrbitDimming
+        deepOrbitScale = (try? c.decode(Double.self, forKey: .deepOrbitScale)) ?? d.deepOrbitScale
         bumpStyle = (try? c.decode(String.self, forKey: .bumpStyle)) ?? d.bumpStyle
         bumpColorHex = (try? c.decode(String.self, forKey: .bumpColorHex)) ?? d.bumpColorHex
         bumpOpacity = (try? c.decode(Double.self, forKey: .bumpOpacity)) ?? d.bumpOpacity
+        bumpActiveScale = (try? c.decode(Double.self, forKey: .bumpActiveScale)) ?? d.bumpActiveScale
+        bumpActiveOpacity = (try? c.decode(Double.self, forKey: .bumpActiveOpacity)) ?? d.bumpActiveOpacity
     }
 
     func encode(to encoder: Encoder) throws {
@@ -499,9 +548,19 @@ struct AppearancePreset: Codable {
         try c.encode(centerLabelOpacity, forKey: .centerLabelOpacity)
         try c.encode(centerLabelMaxWidth, forKey: .centerLabelMaxWidth)
         try c.encode(centerLabelShadowRadius, forKey: .centerLabelShadowRadius)
+        try c.encode(centerLabelWrap, forKey: .centerLabelWrap)
+        try c.encode(centerRingOpacity, forKey: .centerRingOpacity)
+        try c.encode(hoverHighlightOpacity, forKey: .hoverHighlightOpacity)
+        try c.encode(centerFillOpacity, forKey: .centerFillOpacity)
+        try c.encode(deepOrbitFillColorHex, forKey: .deepOrbitFillColorHex)
+        try c.encode(deepOrbitInactiveOpacity, forKey: .deepOrbitInactiveOpacity)
+        try c.encode(deepOrbitDimming, forKey: .deepOrbitDimming)
+        try c.encode(deepOrbitScale, forKey: .deepOrbitScale)
         try c.encode(bumpStyle, forKey: .bumpStyle)
         try c.encode(bumpColorHex, forKey: .bumpColorHex)
         try c.encode(bumpOpacity, forKey: .bumpOpacity)
+        try c.encode(bumpActiveScale, forKey: .bumpActiveScale)
+        try c.encode(bumpActiveOpacity, forKey: .bumpActiveOpacity)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -509,13 +568,16 @@ struct AppearancePreset: Codable {
         case glowColorHex, deepGlowColorHex, ringColorHex, hoverColorHex
         case backgroundColorHex, ringFillColorHex, segmentBorderColorHex
         case backgroundOpacity, glowIntensity, ringOpacity, ringFillOpacity
-        case deepOrbitFillOpacity
+        case centerRingOpacity, hoverHighlightOpacity, centerFillOpacity
+        case deepOrbitFillOpacity, deepOrbitFillColorHex, deepOrbitInactiveOpacity
+        case deepOrbitDimming, deepOrbitScale
         case segmentBorderOpacity, segmentBorderWidth, segmentBorderCutout
         case animateParentWedge, parentWedgeSlideDistance
         case hoverRingSize, hoverStrokeWidth, hoverFillOpacity, hoverIconScale, hoverGlowRadius
         case centerLabelEnabled, centerLabelFontSize, centerLabelFontWeight, centerLabelFontDesign
         case centerLabelColorHex, centerLabelOpacity, centerLabelMaxWidth, centerLabelShadowRadius
-        case bumpStyle, bumpColorHex, bumpOpacity
+        case centerLabelWrap
+        case bumpStyle, bumpColorHex, bumpOpacity, bumpActiveScale, bumpActiveOpacity
         case spokeColorHex, spokeOpacity, spokeWidth
     }
 }

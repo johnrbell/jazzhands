@@ -164,7 +164,9 @@ struct SettingsView: View {
                     Section("Deep Orbit") {
                         sliderRow("Window arc scale", value: $settings.deepOrbitScale,
                                   range: 0.5...1.5, step: 0.05, format: { String(format: "%.0f%%", $0 * 100) })
-                        sliderRow("Background fill", value: $settings.deepOrbitFillOpacity,
+                        sliderRow("Selected fill", value: $settings.deepOrbitFillOpacity,
+                                  range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
+                        sliderRow("Unselected fill", value: $settings.deepOrbitInactiveOpacity,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
                         sliderRow("Primary ring dimming", value: $settings.deepOrbitDimming,
                                   range: 0...1, step: 0.05, format: { "\(Int($0 * 100))%" })
