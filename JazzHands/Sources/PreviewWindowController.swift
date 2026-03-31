@@ -80,7 +80,7 @@ final class PreviewWindowController {
             }
         }
 
-        window?.orderFront(nil)
+        window?.makeKeyAndOrderFront(nil)
 
         startRefreshTimer()
         subscribeToSettings()
