@@ -37,6 +37,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         try? FileManager.default.removeItem(atPath: AppDelegate.logFile)
         AppDelegate.log("Launch. PID=\(ProcessInfo.processInfo.processIdentifier)")
 
+        resetStalePermissionsIfNeeded()
+
         setupStatusBar()
         installHotKey()
         installFlagsMonitor()
@@ -45,6 +47,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         if !AXIsProcessTrusted() || !CGPreflightScreenCaptureAccess() {
             showOnboarding()
+        }
+    }
+
+    private func resetStalePermissionsIfNeeded() {
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.jazzhands.app"
+        if !AXIsProcessTrusted() {
+            AppDelegate.log("Accessibility not trusted — resetting TCC entry for \(bundleID)")
+            let proc = Process()
+            proc.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+            proc.arguments = ["reset", "Accessibility", bundleID]
+            try? proc.run()
+            proc.waitUntilExit()
+        }
+        if !CGPreflightScreenCaptureAccess() {
+            AppDelegate.log("Screen capture not granted — resetting TCC entry for \(bundleID)")
+            let proc = Process()
+            proc.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+            proc.arguments = ["reset", "ScreenCapture", bundleID]
+            try? proc.run()
+            proc.waitUntilExit()
         }
     }
 

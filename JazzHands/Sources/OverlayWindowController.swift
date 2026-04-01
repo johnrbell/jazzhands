@@ -95,7 +95,7 @@ final class OverlayWindowController {
         viewModel.isVisible = false
         stopMouseTracking()
 
-        if JazzHandsSettings.shared.centerCursorOnApp,
+        if JazzHandsSettings.shared.cursorRestoreMode == "app",
            let bounds = activatedWindowBounds,
            isOnDifferentScreen(bounds) {
             let center = CGPoint(x: bounds.midX, y: bounds.midY)

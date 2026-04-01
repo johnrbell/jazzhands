@@ -116,6 +116,13 @@ struct OnboardingView: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
+            if !allGranted {
+                Button("Reset Permissions") {
+                    resetPermissions()
+                }
+                .controlSize(.small)
+                .help("If toggling permissions doesn't work, click here to clear stale entries and try again")
+            }
             Button(allGranted ? "Done" : "Skip for Now") {
                 NSApp.windows.first { $0.title == "JazzHands Setup" }?.close()
             }
@@ -123,5 +130,17 @@ struct OnboardingView: View {
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 16)
+    }
+
+    private func resetPermissions() {
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.jazzhands.app"
+        for service in ["Accessibility", "ScreenCapture"] {
+            let proc = Process()
+            proc.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+            proc.arguments = ["reset", service, bundleID]
+            try? proc.run()
+            proc.waitUntilExit()
+        }
+        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
     }
 }

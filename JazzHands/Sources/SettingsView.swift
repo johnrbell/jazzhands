@@ -53,11 +53,12 @@ struct SettingsView: View {
                     Text("Center of screen").tag("center")
                     Text("Where you started").tag("origin")
                     Text("Where you ended").tag("current")
+                    Text("Center on selected app").tag("app")
                 }
-
-                Toggle("Center cursor on selected app", isOn: $settings.centerCursorOnApp)
-                Text("Moves the cursor to the selected app's window when it's on a different screen")
-                    .font(.caption).foregroundColor(.secondary)
+                if settings.cursorRestoreMode == "app" {
+                    Text("Moves the cursor to the selected app's window when it's on a different screen")
+                        .font(.caption).foregroundColor(.secondary)
+                }
 
                 Picker("App sort order", selection: $settings.appSortOrder) {
                     Text("Recently used").tag("recent")
