@@ -8,10 +8,35 @@ final class PreviewLockState: ObservableObject {
 }
 
 @MainActor
+final class PreviewWallpaperCache: ObservableObject {
+    @Published var image: NSImage?
+    private var cachedSize: CGSize = .zero
+
+    func update(for size: CGSize) {
+        let dx = abs(size.width - cachedSize.width)
+        let dy = abs(size.height - cachedSize.height)
+        guard dx > 2 || dy > 2 || image == nil else { return }
+        cachedSize = size
+
+        guard let screen = NSScreen.main,
+              let url = NSWorkspace.shared.desktopImageURL(for: screen),
+              let source = NSImage(contentsOf: url) else { return }
+        let result = NSImage(size: size)
+        result.lockFocus()
+        source.draw(in: NSRect(origin: .zero, size: size),
+                    from: NSRect(origin: .zero, size: source.size),
+                    operation: .copy, fraction: 1.0)
+        result.unlockFocus()
+        image = result
+    }
+}
+
+@MainActor
 final class PreviewWindowController {
     private var window: NSWindow?
     private let viewModel = JazzHandsViewModel()
     private let lockState = PreviewLockState()
+    private let wallpaperCache = PreviewWallpaperCache()
     private var refreshTimer: Timer?
     private var settingsCancellable: AnyCancellable?
     private var trackingView: PreviewTrackingView?
@@ -27,7 +52,7 @@ final class PreviewWindowController {
             let previewContent = PreviewContentView(
                 viewModel: viewModel,
                 lockState: lockState,
-                wallpaperProvider: { [weak self] size in self?.desktopWallpaperImage(size: size) }
+                wallpaperCache: wallpaperCache
             )
             let hosting = NSHostingView(rootView: previewContent)
             hosting.translatesAutoresizingMaskIntoConstraints = false
@@ -103,25 +128,11 @@ final class PreviewWindowController {
         }
     }
 
-    private func desktopWallpaperImage(size: CGSize) -> NSImage? {
-        guard let screen = NSScreen.main,
-              let url = NSWorkspace.shared.desktopImageURL(for: screen),
-              let image = NSImage(contentsOf: url) else { return nil }
-        let result = NSImage(size: size)
-        result.lockFocus()
-        image.draw(in: NSRect(origin: .zero, size: size),
-                   from: NSRect(origin: .zero, size: image.size),
-                   operation: .copy, fraction: 1.0)
-        result.unlockFocus()
-        return result
-    }
-
     private func subscribeToSettings() {
         settingsCancellable = JazzHandsSettings.shared.objectWillChange.sink { [weak self] _ in
             Task { @MainActor in
                 guard let self else { return }
                 self.viewModel.objectWillChange.send()
-                self.viewModel.softRefresh()
             }
         }
     }
@@ -132,13 +143,13 @@ final class PreviewWindowController {
 private struct PreviewContentView: View {
     @ObservedObject var viewModel: JazzHandsViewModel
     @ObservedObject var lockState: PreviewLockState
-    var wallpaperProvider: @MainActor (CGSize) -> NSImage?
+    @ObservedObject var wallpaperCache: PreviewWallpaperCache
 
     var body: some View {
         GeometryReader { geo in
             let size = geo.size
             ZStack {
-                if let wp = wallpaperProvider(size) {
+                if let wp = wallpaperCache.image {
                     Image(nsImage: wp)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
@@ -148,6 +159,9 @@ private struct PreviewContentView: View {
                 JazzHandsView(viewModel: viewModel)
                 PreviewOverlayView(lockState: lockState)
             }
+            .onAppear { wallpaperCache.update(for: size) }
+            .onChange(of: size.width) { _ in wallpaperCache.update(for: size) }
+            .onChange(of: size.height) { _ in wallpaperCache.update(for: size) }
         }
     }
 }
