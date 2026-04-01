@@ -425,7 +425,7 @@ struct AppSegmentView: View {
                 Circle()
                     .fill(s.hoverColor.opacity(s.hoverFillOpacity * ho))
                     .frame(width: iconSize + ringPad, height: iconSize + ringPad)
-                    .shadow(color: s.hoverColor.opacity(min(0.5 * s.glowIntensity * ho, 1.0)), radius: CGFloat(s.hoverGlowRadius) * s.glowIntensity)
+                    .blur(radius: CGFloat(s.hoverGlowRadius))
 
                 if s.hoverStrokeWidth > 0 {
                     Circle()
