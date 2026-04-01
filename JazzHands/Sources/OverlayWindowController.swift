@@ -94,12 +94,29 @@ final class OverlayWindowController {
     func hideJazzHands() {
         viewModel.isVisible = false
         stopMouseTracking()
-        restoreCursorPosition()
+
+        if JazzHandsSettings.shared.centerCursorOnApp,
+           let bounds = activatedWindowBounds,
+           isOnDifferentScreen(bounds) {
+            let center = CGPoint(x: bounds.midX, y: bounds.midY)
+            CGWarpMouseCursorPosition(center)
+        } else {
+            restoreCursorPosition()
+        }
+        activatedWindowBounds = nil
+
         unlockMouse()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.window?.orderOut(nil)
         }
+    }
+
+    private func isOnDifferentScreen(_ windowBounds: CGRect) -> Bool {
+        let launchScreen = NSScreen.screens.first { $0.frame.contains(screenCenter) } ?? NSScreen.main
+        let windowCenter = CGPoint(x: windowBounds.midX, y: windowBounds.midY)
+        let targetScreen = NSScreen.screens.first { $0.frame.contains(windowCenter) }
+        return targetScreen != nil && targetScreen != launchScreen
     }
 
     private func restoreCursorPosition() {
@@ -118,8 +135,10 @@ final class OverlayWindowController {
         }
     }
 
+    private var activatedWindowBounds: CGRect?
+
     func confirmSelection() {
-        viewModel.confirmSelection()
+        activatedWindowBounds = viewModel.confirmSelection()
     }
 
     func switchToLastApp() {

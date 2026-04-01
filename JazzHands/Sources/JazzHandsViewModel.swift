@@ -503,26 +503,33 @@ final class JazzHandsViewModel: ObservableObject {
 
     // MARK: - Selection
 
-    func confirmSelection() {
+    @discardableResult
+    func confirmSelection() -> CGRect? {
         switch tier {
         case .primary:
             guard selectedIndex >= 0, selectedIndex < apps.count else {
                 log("confirmSelection PRIMARY: no selection (idx=\(selectedIndex))")
-                return
+                return nil
             }
             log("confirmSelection PRIMARY: \(apps[selectedIndex].name)")
-            WindowManager.shared.activateApp(apps[selectedIndex])
+            let app = apps[selectedIndex]
+            WindowManager.shared.activateApp(app)
+            return app.windows.first?.bounds
         case .deep(let appIndex):
             log("confirmSelection DEEP: windowIdx=\(selectedWindowIndex) count=\(fingersWindows.count) distance=\(mouseDistance) deadZone=\(fingersDeadZone)")
             if selectedWindowIndex >= 0, selectedWindowIndex < fingersWindows.count {
                 let w = fingersWindows[selectedWindowIndex]
                 log("  activating window: '\(w.title)' id=\(w.id)")
                 WindowManager.shared.activateWindow(w)
+                return w.bounds
             } else {
                 log("  no window selected, activating app")
                 if appIndex >= 0, appIndex < apps.count {
-                    WindowManager.shared.activateApp(apps[appIndex])
+                    let app = apps[appIndex]
+                    WindowManager.shared.activateApp(app)
+                    return app.windows.first?.bounds
                 }
+                return nil
             }
         }
     }

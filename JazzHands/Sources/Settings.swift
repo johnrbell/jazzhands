@@ -19,6 +19,7 @@ final class JazzHandsSettings: ObservableObject {
     @AppStorage("showMinimizedWindows") var showMinimizedWindows: Bool = false
     @AppStorage("hideFinderUnlessWindowed") var hideFinderUnlessWindowed: Bool = false
     @AppStorage("cursorRestoreMode") var cursorRestoreMode: String = "center"
+    @AppStorage("centerCursorOnApp") var centerCursorOnApp: Bool = false
     @AppStorage("appSortOrder") var appSortOrder: String = "recent"
     @AppStorage("windowSortOrder") var windowSortOrder: String = "recent"
 
